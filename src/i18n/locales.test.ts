@@ -22,7 +22,7 @@ describe("negotiateLocale", () => {
   });
 
   it("ignores languages with zero quality", () => {
-    expect(negotiateLocale("ru;q=0,en")).toBe("en");
+    expect(negotiateLocale("ru;q=0,de")).toBe(defaultLocale);
   });
 
   it("falls back when nothing is supported", () => {
