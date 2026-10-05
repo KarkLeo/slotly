@@ -1,0 +1,11 @@
+{
+  "Home": {
+    "tagline": "Mini landing page and online booking for independent professionals"
+  },
+  "LocaleSwitcher": {
+    "label": "Language",
+    "uk": "Українська",
+    "ru": "Русский",
+    "en": "English"
+  }
+}
