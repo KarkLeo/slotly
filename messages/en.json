@@ -7,5 +7,26 @@
     "uk": "Українська",
     "ru": "Русский",
     "en": "English"
+  },
+  "SignIn": {
+    "title": "Sign in to your account",
+    "emailLabel": "Email",
+    "sendLink": "Get a sign-in link",
+    "codeSentTitle": "Check your email",
+    "codeSent": "We sent an email to {email}. Follow the link or enter the code from the email.",
+    "codeLabel": "Code from the email",
+    "verify": "Sign in",
+    "useAnotherEmail": "Use another email",
+    "errors": {
+      "invalidEmail": "Check the email address.",
+      "invalidCode": "The code is wrong or has expired.",
+      "rateLimited": "Too many attempts. Wait a minute and try again.",
+      "expiredLink": "The link has expired or was already used. Request a new one.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "Cabinet": {
+    "signedInAs": "Signed in as {email}",
+    "signOut": "Sign out"
   }
 }
