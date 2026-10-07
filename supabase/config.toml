@@ -244,6 +244,14 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+[auth.email.template.magic_link]
+subject = "{{ $l := \"uk\" }}{{ with .Data }}{{ with .locale }}{{ $l = printf \"%v\" . }}{{ end }}{{ end }}{{ if eq $l \"ru\" }}Вход в Slotly{{ else if eq $l \"en\" }}Sign in to Slotly{{ else }}Вхід у Slotly{{ end }}"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "{{ $l := \"uk\" }}{{ with .Data }}{{ with .locale }}{{ $l = printf \"%v\" . }}{{ end }}{{ end }}{{ if eq $l \"ru\" }}Подтвердите email в Slotly{{ else if eq $l \"en\" }}Confirm your email for Slotly{{ else }}Підтвердіть email у Slotly{{ end }}"
+content_path = "./supabase/templates/confirmation.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
