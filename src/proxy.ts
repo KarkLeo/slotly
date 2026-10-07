@@ -1,12 +1,26 @@
 import type { NextRequest } from "next/server";
-import { updateSession } from "@/db/session";
+import { isAppPath } from "@/auth/next-path";
+import { redirectKeepingCookies, updateSession } from "@/db/session";
 
-export function proxy(request: NextRequest) {
-  return updateSession(request);
+export async function proxy(request: NextRequest) {
+  const { response, isSignedIn } = await updateSession(request);
+  const { pathname, search } = request.nextUrl;
+
+  if (!isSignedIn && isAppPath(pathname)) {
+    const url = new URL("/login", request.url);
+    url.searchParams.set("next", pathname + search);
+    return redirectKeepingCookies(url, response);
+  }
+
+  if (isSignedIn && pathname === "/login") {
+    return redirectKeepingCookies(new URL("/app", request.url), response);
+  }
+
+  return response;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/health|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

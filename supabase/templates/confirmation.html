@@ -14,7 +14,7 @@
             <tr><td style="font-size:15px;line-height:22px;padding-bottom:24px">{{ $intro }}</td></tr>
             <tr>
               <td style="padding-bottom:24px">
-                <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;padding:12px 24px;border-radius:8px">{{ $button }}</a>
+                <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email" style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;padding:12px 24px;border-radius:8px">{{ $button }}</a>
               </td>
             </tr>
             <tr><td style="font-size:32px;font-weight:bold;letter-spacing:6px;font-family:'Courier New',monospace;padding-bottom:24px">{{ .Token }}</td></tr>
