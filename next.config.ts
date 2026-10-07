@@ -5,6 +5,7 @@ const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  output: "standalone",
 };
 
 export default withNextIntl(nextConfig);
