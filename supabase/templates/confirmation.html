@@ -1,0 +1,27 @@
+{{ $l := "uk" }}{{ with .Data }}{{ with .locale }}{{ $l = printf "%v" . }}{{ end }}{{ end }}
+{{ $title := "Підтвердіть email" }}{{ $intro := "Натисніть кнопку, щоб підтвердити адресу, або введіть код:" }}{{ $button := "Підтвердити" }}{{ $note := "Посилання і код дійсні 1 годину. Якщо ви не реєструвалися в Slotly, просто проігноруйте цей лист." }}
+{{ if eq $l "ru" }}{{ $title = "Подтвердите email" }}{{ $intro = "Нажмите кнопку, чтобы подтвердить адрес, или введите код:" }}{{ $button = "Подтвердить" }}{{ $note = "Ссылка и код действуют 1 час. Если вы не регистрировались в Slotly, просто проигнорируйте это письмо." }}{{ end }}
+{{ if eq $l "en" }}{{ $title = "Confirm your email" }}{{ $intro = "Click the button to confirm your address, or enter the code:" }}{{ $button = "Confirm" }}{{ $note = "The link and code are valid for 1 hour. If you did not sign up for Slotly, you can ignore this email." }}{{ end }}
+<!doctype html>
+<html lang="{{ $l }}">
+  <body style="margin:0;padding:24px;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:12px;padding:32px">
+            <tr><td style="font-size:20px;font-weight:bold;padding-bottom:16px">Slotly</td></tr>
+            <tr><td style="font-size:18px;font-weight:bold;padding-bottom:8px">{{ $title }}</td></tr>
+            <tr><td style="font-size:15px;line-height:22px;padding-bottom:24px">{{ $intro }}</td></tr>
+            <tr>
+              <td style="padding-bottom:24px">
+                <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;padding:12px 24px;border-radius:8px">{{ $button }}</a>
+              </td>
+            </tr>
+            <tr><td style="font-size:32px;font-weight:bold;letter-spacing:6px;font-family:'Courier New',monospace;padding-bottom:24px">{{ .Token }}</td></tr>
+            <tr><td style="font-size:13px;line-height:20px;color:#71717a">{{ $note }}</td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
