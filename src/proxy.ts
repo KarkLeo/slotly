@@ -1,12 +1,12 @@
 import type { NextRequest } from "next/server";
-import { isAppPath } from "@/auth/next-path";
+import { requiresSignIn } from "@/auth/next-path";
 import { redirectKeepingCookies, updateSession } from "@/db/session";
 
 export async function proxy(request: NextRequest) {
   const { response, isSignedIn } = await updateSession(request);
   const { pathname, search } = request.nextUrl;
 
-  if (!isSignedIn && isAppPath(pathname)) {
+  if (!isSignedIn && requiresSignIn(pathname)) {
     const url = new URL("/login", request.url);
     url.searchParams.set("next", pathname + search);
     return redirectKeepingCookies(url, response);

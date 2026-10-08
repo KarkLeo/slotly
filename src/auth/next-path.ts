@@ -7,6 +7,10 @@ export function safeNextPath(value: unknown): string {
   return value;
 }
 
-export function isAppPath(pathname: string): boolean {
-  return pathname === "/app" || pathname.startsWith("/app/");
+export function requiresSignIn(pathname: string): boolean {
+  return (
+    pathname === "/app" ||
+    pathname.startsWith("/app/") ||
+    pathname === "/oauth/consent"
+  );
 }
