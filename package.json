@@ -19,8 +19,11 @@
     "db:types": "supabase gen types typescript --local > src/db/types.ts && prettier --write src/db/types.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/server": "^2.3.1",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
+    "jose": "^6.2.12",
+    "mcp-handler": "^2.2.0",
     "next": "16.3.8",
     "next-intl": "^4.14.9",
     "react": "19.2.8",
