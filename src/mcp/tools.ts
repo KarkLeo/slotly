@@ -2,7 +2,7 @@ import type { AuthInfo, McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { AgentAuthExtra } from "./token";
 
-export const whoamiOutput = z.object({
+const whoamiOutput = z.object({
   userId: z.string(),
   email: z.string().optional(),
   clientId: z.string(),

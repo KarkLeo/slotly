@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
-import { whoami, whoamiOutput } from "./tools";
+import { registerTools, whoami } from "./tools";
 
 describe("whoami", () => {
   it("describes the master and the connected client", () => {
@@ -34,13 +35,25 @@ describe("whoami", () => {
     expect(result.structuredContent).not.toHaveProperty("email");
   });
 
-  it("declares an output schema without nullable type arrays", () => {
-    expect(JSON.stringify(z.toJSONSchema(whoamiOutput))).not.toMatch(
-      /"type":\[/,
-    );
-  });
-
   it("reports an error without auth info", () => {
     expect(whoami(undefined).isError).toBe(true);
   });
+});
+
+describe("registered tools", () => {
+  type ToolConfig = { inputSchema?: z.ZodType; outputSchema?: z.ZodType };
+  const tools = new Map<string, ToolConfig>();
+  registerTools({
+    registerTool: (name: string, config: ToolConfig) => tools.set(name, config),
+  } as unknown as McpServer);
+
+  it.each([...tools])(
+    "%s declares schemas without nullable type arrays",
+    (_name, { inputSchema, outputSchema }) => {
+      for (const schema of [inputSchema, outputSchema]) {
+        if (!schema) continue;
+        expect(JSON.stringify(z.toJSONSchema(schema))).not.toMatch(/"type":\[/);
+      }
+    },
+  );
 });
