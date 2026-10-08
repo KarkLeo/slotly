@@ -3,6 +3,7 @@ import { createRemoteJWKSet } from "jose";
 import { supabaseUrl } from "@/db/env";
 
 export const issuer = `${supabaseUrl}/auth/v1`;
+export const audience = "slotly-mcp";
 export const jwks = createRemoteJWKSet(
   new URL(`${issuer}/.well-known/jwks.json`),
 );

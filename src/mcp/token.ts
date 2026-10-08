@@ -6,9 +6,11 @@ export type AgentAuthExtra = { userId: string; email: string | null };
 export function createTokenVerifier({
   jwks,
   issuer,
+  audience,
 }: {
   jwks: JWTVerifyGetKey;
   issuer: string;
+  audience: string;
 }) {
   return async (token: string | undefined): Promise<AuthInfo | undefined> => {
     if (!token) return undefined;
@@ -17,6 +19,7 @@ export function createTokenVerifier({
     try {
       ({ payload } = await jwtVerify(token, jwks, {
         issuer,
+        audience,
         algorithms: ["ES256", "RS256"],
         requiredClaims: ["exp", "sub"],
       }));

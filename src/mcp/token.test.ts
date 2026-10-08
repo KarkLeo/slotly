@@ -9,6 +9,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { createTokenVerifier } from "./token";
 
 const issuer = "https://project.supabase.co/auth/v1";
+const audience = "slotly-mcp";
 const kid = "test-key";
 
 let privateKey: CryptoKey;
@@ -23,6 +24,7 @@ beforeAll(async () => {
   verify = createTokenVerifier({
     jwks: createLocalJWKSet({ keys: [jwk] }),
     issuer,
+    audience,
   });
 });
 
@@ -31,16 +33,17 @@ const oauthClaims: JWTPayload = {
   email: "master@example.com",
   client_id: "client-1",
   scope: "email profile",
-  role: "authenticated",
+  role: "agent",
 };
 
 function sign(
   claims: JWTPayload,
-  { key = privateKey, iss = issuer, expiresIn = "1h" } = {},
+  { key = privateKey, iss = issuer, aud = audience, expiresIn = "1h" } = {},
 ) {
   return new SignJWT(claims)
     .setProtectedHeader({ alg: "ES256", kid })
     .setIssuer(iss)
+    .setAudience(aud)
     .setIssuedAt()
     .setExpirationTime(expiresIn)
     .sign(key);
@@ -72,6 +75,11 @@ describe("createTokenVerifier", () => {
 
   it("rejects a token from another issuer", async () => {
     const token = await sign(oauthClaims, { iss: "https://evil.example" });
+    expect(await verify(token)).toBeUndefined();
+  });
+
+  it("rejects a token issued for another audience", async () => {
+    const token = await sign(oauthClaims, { aud: "authenticated" });
     expect(await verify(token)).toBeUndefined();
   });
 
