@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultNextPath, isAppPath, safeNextPath } from "./next-path";
+import { defaultNextPath, requiresSignIn, safeNextPath } from "./next-path";
 
 describe("safeNextPath", () => {
   it("keeps local paths with query strings", () => {
@@ -21,11 +21,16 @@ describe("safeNextPath", () => {
   });
 });
 
-describe("isAppPath", () => {
+describe("requiresSignIn", () => {
   it("matches the cabinet and its children only", () => {
-    expect(isAppPath("/app")).toBe(true);
-    expect(isAppPath("/app/today")).toBe(true);
-    expect(isAppPath("/application")).toBe(false);
-    expect(isAppPath("/anna")).toBe(false);
+    expect(requiresSignIn("/app")).toBe(true);
+    expect(requiresSignIn("/app/today")).toBe(true);
+    expect(requiresSignIn("/application")).toBe(false);
+    expect(requiresSignIn("/anna")).toBe(false);
+  });
+
+  it("matches the OAuth consent page", () => {
+    expect(requiresSignIn("/oauth/consent")).toBe(true);
+    expect(requiresSignIn("/oauth/consentx")).toBe(false);
   });
 });

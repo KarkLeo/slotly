@@ -28,5 +28,18 @@
   "Cabinet": {
     "signedInAs": "Signed in as {email}",
     "signOut": "Sign out"
+  },
+  "OAuthConsent": {
+    "title": "Connect {client} to Slotly?",
+    "access": "The app will be able to view and change your Slotly data on your behalf.",
+    "returnTo": "After you decide, you will return to {host}.",
+    "signedInAs": "Signed in as {email}",
+    "approve": "Allow",
+    "deny": "Deny",
+    "errors": {
+      "missing": "The connection link is incomplete. Start connecting again from the app.",
+      "expired": "This connection request has expired. Start connecting again from the app.",
+      "decision": "Could not save your decision. Please try again."
+    }
   }
 }
