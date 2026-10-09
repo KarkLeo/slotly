@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @custom-variant dark {
   &:where(.dark, .dark *) {
@@ -13,8 +15,32 @@
 
 :root {
   color-scheme: light dark;
-  --background: light-dark(#ffffff, #0a0a0a);
-  --foreground: light-dark(#171717, #ededed);
+  --radius: 12px;
+  --background: light-dark(#fffcf9, #16110e);
+  --foreground: light-dark(#141414, #f6efea);
+  --card: light-dark(#f8f1eb, #211a16);
+  --card-foreground: light-dark(#141414, #f6efea);
+  --popover: light-dark(#fffcf9, #211a16);
+  --popover-foreground: light-dark(#141414, #f6efea);
+  --primary: light-dark(#8a5652, #9a5f5b);
+  --primary-foreground: light-dark(#ffffff, #ffffff);
+  --secondary: light-dark(#f8f1eb, #382d27);
+  --secondary-foreground: light-dark(#141414, #f6efea);
+  --muted: light-dark(#efe5dc, #2c231e);
+  --muted-foreground: light-dark(#5f5a57, #b5a79c);
+  --accent: light-dark(#e9d5c6, #43322a);
+  --accent-foreground: light-dark(#141414, #e9d5c6);
+  --border: light-dark(#efe5dc, #382d27);
+  --input: light-dark(#9c8b7e, #76675c);
+  --ring: light-dark(#8a5652, #9a5f5b);
+  --destructive: light-dark(#b42318, #ff453a);
+  --destructive-solid: #b42318;
+  --destructive-solid-foreground: #ffffff;
+  --chart-1: light-dark(#5b3fd1, #a78bfa);
+  --chart-2: light-dark(#0f9f7b, #34d3a6);
+  --chart-3: light-dark(#0a8fb0, #22c3e6);
+  --chart-4: light-dark(#2f7bea, #6cb8ff);
+  --chart-5: light-dark(#e0628a, #f28db0);
 }
 
 :root.light {
@@ -28,8 +54,41 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-solid: var(--destructive-solid);
+  --color-destructive-solid-foreground: var(--destructive-solid-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-manrope);
+  --font-accent: var(--font-cormorant);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
 }
 
 body {

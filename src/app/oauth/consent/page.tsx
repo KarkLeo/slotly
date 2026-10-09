@@ -33,7 +33,7 @@ export default async function ConsentPage({
       <p className="text-sm">{t("returnTo", { host })}</p>
       <p className="text-sm">{t("signedInAs", { email: data.user.email })}</p>
       {error === "decision" && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {t("errors.decision")}
         </p>
       )}
@@ -47,7 +47,7 @@ export default async function ConsentPage({
           type="submit"
           name="decision"
           value="approve"
-          className={`${buttonClass} bg-foreground text-background`}
+          className={`${buttonClass} bg-primary text-primary-foreground`}
         >
           {t("approve")}
         </button>
@@ -55,7 +55,7 @@ export default async function ConsentPage({
           type="submit"
           name="decision"
           value="deny"
-          className={`${buttonClass} border border-current/20`}
+          className={`${buttonClass} bg-secondary text-secondary-foreground`}
         >
           {t("deny")}
         </button>

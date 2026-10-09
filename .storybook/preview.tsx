@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/nextjs-vite";
 import { NextIntlClientProvider } from "next-intl";
@@ -5,6 +6,7 @@ import { sb } from "storybook/test";
 import en from "../messages/en.json";
 import ru from "../messages/ru.json";
 import uk from "../messages/uk.json";
+import { fontVariables } from "../src/app/fonts";
 import { defaultLocale, isLocale, locales } from "../src/i18n/locales";
 import "../src/app/globals.css";
 
@@ -13,6 +15,9 @@ sb.mock(import("../src/i18n/actions.ts"));
 
 const messages = { uk, ru, en };
 
+const defaultTheme =
+  import.meta.env.VITE_STORY_THEME === "dark" ? "dark" : "light";
+
 const preview: Preview = {
   decorators: [
     (Story, context) => {
@@ -20,6 +25,7 @@ const preview: Preview = {
         ? context.globals.locale
         : defaultLocale;
       document.documentElement.lang = locale;
+      document.documentElement.classList.add(...fontVariables.split(" "));
       return (
         <NextIntlClientProvider
           locale={locale}
@@ -32,7 +38,7 @@ const preview: Preview = {
     },
     withThemeByClassName({
       themes: { light: "light", dark: "dark" },
-      defaultTheme: "light",
+      defaultTheme,
     }),
   ],
   globalTypes: {
