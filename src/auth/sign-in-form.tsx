@@ -5,9 +5,9 @@ import { useActionState, useState } from "react";
 import { signIn, type SignInState } from "./actions";
 
 const inputClass =
-  "w-full rounded-md border border-current/20 bg-transparent px-3 py-2 text-base";
+  "w-full rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-2 focus-visible:outline-ring";
 const buttonClass =
-  "w-full rounded-md bg-foreground px-3 py-2 font-medium text-background disabled:opacity-50";
+  "w-full rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground disabled:opacity-50";
 
 const initialState: SignInState = { step: "email" };
 
@@ -23,7 +23,7 @@ export function SignInForm({
   const [editingEmail, setEditingEmail] = useState(false);
 
   const error = state.error && (
-    <p role="alert" className="text-sm text-red-600">
+    <p role="alert" className="text-sm text-destructive">
       {t(`errors.${state.error}`)}
     </p>
   );
@@ -73,7 +73,7 @@ export function SignInForm({
       className="flex w-full flex-col gap-4"
     >
       {linkExpired && state === initialState && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {t("errors.expiredLink")}
         </p>
       )}

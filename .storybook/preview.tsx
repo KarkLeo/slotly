@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { withThemeByClassName } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/nextjs-vite";
 import { NextIntlClientProvider } from "next-intl";
@@ -13,6 +14,9 @@ sb.mock(import("../src/auth/actions.ts"));
 sb.mock(import("../src/i18n/actions.ts"));
 
 const messages = { uk, ru, en };
+
+const defaultTheme =
+  import.meta.env.VITE_STORY_THEME === "dark" ? "dark" : "light";
 
 const preview: Preview = {
   decorators: [
@@ -34,7 +38,7 @@ const preview: Preview = {
     },
     withThemeByClassName({
       themes: { light: "light", dark: "dark" },
-      defaultTheme: "light",
+      defaultTheme,
     }),
   ],
   globalTypes: {
