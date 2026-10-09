@@ -7,6 +7,23 @@ export type Json =
   | Json[];
 
 export type Database = {
+  agent_api: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      ping: { Args: Record<PropertyKey, never>; Returns: Json };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   graphql_public: {
     Tables: {
       [_ in never]: never;
@@ -169,6 +186,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  agent_api: {
+    Enums: {},
+  },
   graphql_public: {
     Enums: {},
   },
