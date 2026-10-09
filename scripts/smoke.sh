@@ -11,7 +11,7 @@ request() {
   local method=$1 path=$2 headers_file body_file
   headers_file=$(mktemp)
   body_file=$(mktemp)
-  local args=(-sS -o "$body_file" -D "$headers_file" -w '%{http_code}' -X "$method" -H "Host: $host")
+  local args=(-sS --max-time 10 -o "$body_file" -D "$headers_file" -w '%{http_code}' -X "$method" -H "Host: $host")
   if [[ $method == POST ]]; then
     args+=(-H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' --data '{}')
   fi
