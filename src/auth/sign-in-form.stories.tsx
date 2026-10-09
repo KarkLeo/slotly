@@ -83,9 +83,6 @@ export const RateLimited: Story = {
 };
 
 export const CodeSent: Story = {
-  beforeEach: () => {
-    mocked(signIn).mockResolvedValue({ step: "code", email });
-  },
   play: async ({ canvas, userEvent, globals }) => {
     const t = texts(globals.locale);
     await userEvent.type(canvas.getByLabelText(t.emailLabel), email);

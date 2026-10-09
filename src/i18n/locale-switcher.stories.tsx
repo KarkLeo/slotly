@@ -8,7 +8,6 @@ const meta = {
   component: LocaleSwitcher,
   beforeEach: () => {
     mocked(setLocale).mockReset();
-    mocked(setLocale).mockResolvedValue(undefined);
   },
 } satisfies Meta<typeof LocaleSwitcher>;
 
