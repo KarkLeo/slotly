@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
 
@@ -37,5 +38,15 @@ export const Dark: Story = {
   globals: { theme: "dark" },
   play: async () => {
     await expect(bodyLuminance()).toBeLessThan(0.05);
+  },
+};
+
+export const Default: Story = {
+  play: async () => {
+    const expected =
+      import.meta.env.VITE_STORY_THEME === "dark" ? "dark" : "light";
+    await expect(document.documentElement.classList.contains(expected)).toBe(
+      true,
+    );
   },
 };
