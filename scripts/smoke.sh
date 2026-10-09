@@ -4,6 +4,7 @@ set -uo pipefail
 
 base_url=${BASE_URL:-http://127.0.0.1:3000}
 host=${SMOKE_HOST:-slotly.example}
+site_url=${SITE_URL:-http://$host}
 failures=0
 status="" location="" www_authenticate="" body=""
 
@@ -65,11 +66,11 @@ expect "GET /auth/confirm location" "/login?error=link" "$location"
 request POST /api/mcp
 expect "POST /api/mcp status" 401 "$status"
 expect_contains "POST /api/mcp resource_metadata" \
-  "resource_metadata=\"http://$host/.well-known/oauth-protected-resource/api/mcp\"" "$www_authenticate"
+  "resource_metadata=\"$site_url/.well-known/oauth-protected-resource/api/mcp\"" "$www_authenticate"
 
 request GET /.well-known/oauth-protected-resource/api/mcp
 expect "GET protected resource metadata status" 200 "$status"
-expect "GET protected resource metadata resource" "http://$host/api/mcp" "$(json_field "$body" resource)"
+expect "GET protected resource metadata resource" "$site_url/api/mcp" "$(json_field "$body" resource)"
 
 if ((failures > 0)); then
   echo "$failures check(s) failed"
