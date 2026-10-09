@@ -127,3 +127,17 @@ export const Pending: Story = {
     await waitFor(() => expect(submit).toBeDisabled());
   },
 };
+
+export const KeyboardFocus: Story = {
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.click(canvas.getByLabelText(t.emailLabel));
+    await userEvent.tab();
+    const submit = canvas.getByRole("button", { name: t.sendLink });
+    await expect(submit).toHaveFocus();
+    const style = getComputedStyle(submit);
+    const alpha = Number(style.outlineColor.match(/\/\s*([\d.]+)\)/)?.[1] ?? 1);
+    await expect(style.outlineStyle).not.toBe("none");
+    await expect(alpha).toBe(1);
+  },
+};
