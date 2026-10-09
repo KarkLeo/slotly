@@ -5,6 +5,7 @@ import { sb } from "storybook/test";
 import en from "../messages/en.json";
 import ru from "../messages/ru.json";
 import uk from "../messages/uk.json";
+import { fontVariables } from "../src/app/fonts";
 import { defaultLocale, isLocale, locales } from "../src/i18n/locales";
 import "../src/app/globals.css";
 
@@ -20,6 +21,7 @@ const preview: Preview = {
         ? context.globals.locale
         : defaultLocale;
       document.documentElement.lang = locale;
+      document.documentElement.classList.add(...fontVariables.split(" "));
       return (
         <NextIntlClientProvider
           locale={locale}
