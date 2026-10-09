@@ -85,6 +85,24 @@ tester.run("no-raw-color", rule, {
       code: 'const a = <div style={{ boxShadow: "0 0 0 1px black" }} />;',
       errors: [{ messageId: "styleColor" }],
     },
+    { code: 'const a = "bg-taupe-100";', errors: [{ messageId: "palette" }] },
+    { code: 'const a = "text-mauve-700";', errors: [{ messageId: "palette" }] },
+    {
+      code: 'const a = "inset-shadow-black/20";',
+      errors: [{ messageId: "palette" }],
+    },
+    {
+      code: 'const a = "border-s-red-500";',
+      errors: [{ messageId: "palette" }],
+    },
+    {
+      code: 'const a = "text-shadow-red-500";',
+      errors: [{ messageId: "palette" }],
+    },
+    {
+      code: 'const a = "drop-shadow-black/50";',
+      errors: [{ messageId: "palette" }],
+    },
     // Known false positive: anchors that look like hex need an inline disable with a reason.
     { code: 'const a = "#add";', errors: [{ messageId: "hex" }] },
   ],

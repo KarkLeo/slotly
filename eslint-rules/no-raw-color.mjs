@@ -1,11 +1,20 @@
 // @ts-check
 
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+
 const hex = /(^|[^\w&/])#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})(?![\w-])/i;
 const colorFunction = /(^|[^\w-])(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\(/i;
 const utilities =
-  "bg|text|border(?:-[xytrbl])?|ring(?:-offset)?|outline|fill|stroke|decoration|shadow|from|via|to|caret|accent|placeholder|divide";
-const palette =
-  "slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose";
+  "bg|text|text-shadow|border(?:-[xytrbles])?|ring(?:-offset)?|inset-ring|outline|fill|stroke|decoration|shadow|inset-shadow|drop-shadow|from|via|to|caret|accent|placeholder|divide|shimmer-color";
+// Palette names come from the installed Tailwind theme so new palettes are covered automatically.
+const themeCss = readFileSync(
+  createRequire(import.meta.url).resolve("tailwindcss/theme.css"),
+  "utf8",
+);
+const palette = [...themeCss.matchAll(/--color-([a-z]+)-50:/g)]
+  .map((match) => match[1])
+  .join("|");
 const paletteClass = new RegExp(
   `(?:^|[\\s:])!?(?:${utilities})-(?:(?:${palette})-(?:50|[1-9]00|950)|white|black)(?:\\/\\d+)?(?![\\w-])`,
 );
