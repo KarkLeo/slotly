@@ -220,3 +220,18 @@ export const SameErrorTwice: Story = {
     );
   },
 };
+
+export const ServerThrows: Story = {
+  beforeEach: () => {
+    mocked(signIn).mockRejectedValue(new Error("Network error"));
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.type(canvas.getByLabelText(t.SignIn.emailLabel), email);
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.sendLink }),
+    );
+    await expectToast(t.Toasts.unexpected);
+    await expect(canvas.getByLabelText(t.SignIn.emailLabel)).toHaveValue(email);
+  },
+};

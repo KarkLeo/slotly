@@ -6,13 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useActionToast } from "@/toasts/use-action-toast";
+import { withUnexpectedToast } from "@/toasts/with-unexpected-toast";
 import { signIn, type SignInState } from "./actions";
 
 const initialState: SignInState = { step: "email" };
 
+const submit = withUnexpectedToast(signIn, (state, formData): SignInState =>
+  state.step === "email"
+    ? { step: "email", email: String(formData.get("email") ?? "").trim() }
+    : state,
+);
+
 export function SignInForm({ next }: { next?: string }) {
   const t = useTranslations("SignIn");
-  const [state, action, pending] = useActionState(signIn, initialState);
+  const [state, action, pending] = useActionState(submit, initialState);
   const [editingEmail, setEditingEmail] = useState(false);
   useActionToast(state.toast);
 

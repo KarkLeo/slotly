@@ -4,16 +4,16 @@ import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useActionToast } from "@/toasts/use-action-toast";
+import { withUnexpectedToast } from "@/toasts/with-unexpected-toast";
 import { type ConsentState, decideAuthorization } from "./oauth-actions";
 
 const initialState: ConsentState = {};
 
+const decide = withUnexpectedToast(decideAuthorization);
+
 export function ConsentForm({ authorizationId }: { authorizationId: string }) {
   const t = useTranslations("OAuthConsent");
-  const [state, action, pending] = useActionState(
-    decideAuthorization,
-    initialState,
-  );
+  const [state, action, pending] = useActionState(decide, initialState);
   const [choice, setChoice] = useState<"approve" | "deny">();
   useActionToast(state.toast);
 

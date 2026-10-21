@@ -1,7 +1,6 @@
 import { getTranslations } from "next-intl/server";
-import { signOut } from "@/auth/actions";
 import { requireUser } from "@/auth/session";
-import { SignOutButton } from "@/auth/sign-out-button";
+import { SignOutForm } from "@/auth/sign-out-form";
 
 export default async function CabinetPage() {
   const user = await requireUser();
@@ -13,9 +12,7 @@ export default async function CabinetPage() {
       <p className="text-muted-foreground">
         {t("signedInAs", { email: user.email ?? "" })}
       </p>
-      <form action={signOut}>
-        <SignOutButton />
-      </form>
+      <SignOutForm />
     </main>
   );
 }
