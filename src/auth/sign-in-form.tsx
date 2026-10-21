@@ -6,13 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useActionToast } from "@/toasts/use-action-toast";
+import { withUnexpectedToast } from "@/toasts/with-unexpected-toast";
 import { signIn, type SignInState } from "./actions";
 
 const initialState: SignInState = { step: "email" };
 
+// After a failure, show the step the user submitted from, with what they typed and without stale errors.
+const submit = withUnexpectedToast(signIn, (_state, formData): SignInState => {
+  const email = String(formData.get("email") ?? "").trim();
+  return formData.get("intent") === "verify"
+    ? { step: "code", email }
+    : { step: "email", email };
+});
+
 export function SignInForm({ next }: { next?: string }) {
   const t = useTranslations("SignIn");
-  const [state, action, pending] = useActionState(signIn, initialState);
+  const [state, action, pending] = useActionState(submit, initialState);
   const [editingEmail, setEditingEmail] = useState(false);
   useActionToast(state.toast);
 

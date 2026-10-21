@@ -32,3 +32,16 @@ export function negotiateLocale(acceptLanguage: string | null): Locale {
   const match = ranked.find(({ language }) => isLocale(language));
   return match ? (match.language as Locale) : defaultLocale;
 }
+
+// For screens rendered outside the root layout, where the server-side locale is unavailable.
+export function browserLocale(
+  cookies: string,
+  languages: readonly string[],
+): Locale {
+  const fromCookie = cookies
+    .split("; ")
+    .find((entry) => entry.startsWith(`${localeCookie}=`))
+    ?.slice(localeCookie.length + 1);
+  if (isLocale(fromCookie)) return fromCookie;
+  return negotiateLocale(languages.join(","));
+}

@@ -220,3 +220,79 @@ export const SameErrorTwice: Story = {
     );
   },
 };
+
+export const ServerThrows: Story = {
+  beforeEach: () => {
+    mocked(signIn).mockRejectedValue(new Error("Network error"));
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.type(canvas.getByLabelText(t.SignIn.emailLabel), email);
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.sendLink }),
+    );
+    await expectToast(t.Toasts.unexpected);
+    await expect(canvas.getByLabelText(t.SignIn.emailLabel)).toHaveValue(email);
+  },
+};
+
+export const AnotherEmailThrows: Story = {
+  beforeEach: () => {
+    mocked(signIn)
+      .mockResolvedValueOnce({ step: "code", email })
+      .mockRejectedValueOnce(new Error("Network error"));
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.type(canvas.getByLabelText(t.SignIn.emailLabel), email);
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.sendLink }),
+    );
+    await userEvent.click(
+      await canvas.findByRole("button", { name: t.SignIn.useAnotherEmail }),
+    );
+    const input = canvas.getByLabelText(t.SignIn.emailLabel);
+    await userEvent.clear(input);
+    await userEvent.type(input, "olena@example.com");
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.sendLink }),
+    );
+    await expectToast(t.Toasts.unexpected);
+    await expect(canvas.getByLabelText(t.SignIn.emailLabel)).toHaveValue(
+      "olena@example.com",
+    );
+  },
+};
+
+export const CodeStepThrows: Story = {
+  beforeEach: () => {
+    mocked(signIn)
+      .mockResolvedValueOnce({ step: "code", email })
+      .mockResolvedValueOnce({ step: "code", email, error: "invalidCode" })
+      .mockRejectedValueOnce(new Error("Network error"));
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.type(canvas.getByLabelText(t.SignIn.emailLabel), email);
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.sendLink }),
+    );
+    await userEvent.type(
+      await canvas.findByLabelText(t.SignIn.codeLabel),
+      "111111",
+    );
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.verify }),
+    );
+    await canvas.findByText(t.SignIn.errors.invalidCode);
+    const code = canvas.getByLabelText(t.SignIn.codeLabel);
+    await userEvent.clear(code);
+    await userEvent.type(code, "222222");
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.verify }),
+    );
+    await expectToast(t.Toasts.unexpected);
+    await expect(canvas.queryByText(t.SignIn.errors.invalidCode)).toBeNull();
+    await expect(canvas.getByLabelText(t.SignIn.codeLabel)).toBeVisible();
+  },
+};

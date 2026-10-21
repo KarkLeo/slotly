@@ -80,3 +80,18 @@ export const Pending: Story = {
     ).not.toHaveAttribute("aria-busy");
   },
 };
+
+export const ServerThrows: Story = {
+  beforeEach: () => {
+    mocked(decideAuthorization).mockRejectedValue(new Error("Network error"));
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.OAuthConsent.approve }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(t.Toasts.unexpected)).toBeVisible(),
+    );
+  },
+};
