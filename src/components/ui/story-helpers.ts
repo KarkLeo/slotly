@@ -1,6 +1,15 @@
 type ColorProperty = "backgroundColor" | "color" | "borderTopColor";
 
+// Opening animations scale and fade popups, and the theme decorator switches the class after mount.
+function settle() {
+  document
+    .getAnimations()
+    .filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
+    .forEach((animation) => animation.finish());
+}
+
 export function boxHeight(el: Element): number {
+  settle();
   return el.getBoundingClientRect().height;
 }
 
@@ -15,10 +24,7 @@ export function computedColor(
   el: Element,
   property: ColorProperty = "backgroundColor",
 ): string {
-  // The theme decorator switches the class after mount, so color transitions may still be running.
-  el.getAnimations()
-    .filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
-    .forEach((animation) => animation.finish());
+  settle();
   return getComputedStyle(el)[property];
 }
 
