@@ -5,18 +5,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 
 const periods = ["Today", "Week", "Month"];
 
-function TabsDemo() {
+function TabsDemo({ labels = periods }: { labels?: string[] }) {
   return (
     <div className="p-4">
-      <Tabs defaultValue="Today">
+      <Tabs defaultValue={labels[0]}>
         <TabsList aria-label="Calendar period">
-          {periods.map((period) => (
+          {labels.map((period) => (
             <TabsTrigger key={period} value={period}>
               {period}
             </TabsTrigger>
           ))}
         </TabsList>
-        {periods.map((period) => (
+        {labels.map((period) => (
           <TabsContent key={period} value={period}>
             {period} bookings
           </TabsContent>
@@ -46,6 +46,22 @@ export const Default: Story = {
     );
     await waitFor(() =>
       expect(canvas.getByRole("tabpanel")).toHaveTextContent("Week bookings"),
+    );
+  },
+};
+
+export const LongLabels: Story = {
+  args: {
+    labels: ["Today's bookings", "This week's bookings", "Whole month"],
+  },
+  globals: { viewport: { value: "mobile360", isRotated: false } },
+  play: async ({ canvas }) => {
+    const list = canvas.getByRole("tablist");
+    await expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(
+      window.innerWidth,
+    );
+    await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      window.innerWidth,
     );
   },
 };

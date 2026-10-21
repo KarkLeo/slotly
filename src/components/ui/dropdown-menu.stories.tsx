@@ -24,7 +24,8 @@ function DropdownDemo({ onReschedule }: { onReschedule: () => void }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onReschedule}>Reschedule</DropdownMenuItem>
-          <DropdownMenuItem>Message client</DropdownMenuItem>
+          <DropdownMenuItem>Message the client</DropdownMenuItem>
+          <DropdownMenuItem>Move to another day</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive">Cancel</DropdownMenuItem>
         </DropdownMenuContent>
@@ -60,5 +61,20 @@ export const Default: Story = {
     );
     await expect(args.onReschedule).toHaveBeenCalledOnce();
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+export const ItemsOnOneLine: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Booking actions" }),
+    );
+    const item = await screen.findByRole("menuitem", {
+      name: "Move to another day",
+    });
+    await expect(boxHeight(item)).toBe(44);
+    await expect(
+      screen.getByRole("menu").getBoundingClientRect().right,
+    ).toBeLessThanOrEqual(window.innerWidth);
   },
 };
