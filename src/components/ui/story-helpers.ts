@@ -1,0 +1,54 @@
+type ColorProperty = "backgroundColor" | "color" | "borderTopColor";
+
+// Opening animations scale and fade popups, and the theme decorator switches the class after mount.
+export function settle() {
+  document
+    .getAnimations()
+    .filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
+    .forEach((animation) => animation.finish());
+}
+
+export function boxHeight(el: Element): number {
+  settle();
+  return el.getBoundingClientRect().height;
+}
+
+export function overflowsX(el: Element): boolean {
+  return (
+    el.scrollWidth > el.clientWidth ||
+    el.getBoundingClientRect().right > window.innerWidth
+  );
+}
+
+export function computedColor(
+  el: Element,
+  property: ColorProperty = "backgroundColor",
+): string {
+  settle();
+  return getComputedStyle(el)[property];
+}
+
+// Resolves a token utility to the color the current theme renders for it.
+export function resolvedColor(
+  className: string,
+  property: ColorProperty = "backgroundColor",
+): string {
+  const probe = document.createElement("div");
+  probe.className = className;
+  document.body.append(probe);
+  const color = computedColor(probe, property);
+  probe.remove();
+  return color;
+}
+
+export function intersects(a: Element, b: Element): boolean {
+  settle();
+  const r1 = a.getBoundingClientRect();
+  const r2 = b.getBoundingClientRect();
+  return (
+    r1.left < r2.right &&
+    r2.left < r1.right &&
+    r1.top < r2.bottom &&
+    r2.top < r1.bottom
+  );
+}

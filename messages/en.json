@@ -41,5 +41,9 @@
       "expired": "This connection request has expired. Start connecting again from the app.",
       "decision": "Could not save your decision. Please try again."
     }
+  },
+  "UI": {
+    "close": "Close",
+    "notifications": "Notifications"
   }
 }
