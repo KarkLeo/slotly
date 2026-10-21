@@ -24,6 +24,18 @@ function ToastDemo({ message }: { message: string }) {
       <Button variant="outline" onClick={() => toast.error("Could not save")}>
         Error
       </Button>
+      <Button
+        variant="outline"
+        onClick={() => toast.warning("The slot is almost full")}
+      >
+        Warning
+      </Button>
+      <Button
+        variant="outline"
+        onClick={() => toast.info("New booking request")}
+      >
+        Info
+      </Button>
       <Button variant="outline" onClick={() => toast.loading("Saving…")}>
         Loading
       </Button>
@@ -58,14 +70,19 @@ export const Default: Story = {
 
 export const Variants: Story = {
   play: async ({ canvas }) => {
-    for (const [button, text] of [
-      ["Success", "Booking confirmed"],
-      ["Error", "Could not save"],
-      ["Loading", "Saving…"],
+    for (const [button, text, color] of [
+      ["Success", "Booking confirmed", "text-success"],
+      ["Error", "Could not save", "text-destructive"],
+      ["Warning", "The slot is almost full", "text-warning"],
+      ["Info", "New booking request", "text-info"],
+      ["Loading", "Saving…", "text-muted-foreground"],
     ]) {
       await userEvent.click(canvas.getByRole("button", { name: button }));
       await screen.findByText(text);
-      await expect(toastOf(text).querySelector("svg")).not.toBeNull();
+      const icon = toastOf(text).querySelector("svg")!;
+      await expect(computedColor(icon, "color")).toBe(
+        resolvedColor(color, "color"),
+      );
     }
   },
 };
