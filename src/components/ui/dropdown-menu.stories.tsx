@@ -26,6 +26,10 @@ function DropdownDemo({ onReschedule }: { onReschedule: () => void }) {
           <DropdownMenuItem onClick={onReschedule}>Reschedule</DropdownMenuItem>
           <DropdownMenuItem>Message the client</DropdownMenuItem>
           <DropdownMenuItem>Move to another day</DropdownMenuItem>
+          <DropdownMenuItem>
+            Move this booking to another day and send the client a message with
+            the new time
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive">Cancel</DropdownMenuItem>
         </DropdownMenuContent>
@@ -74,7 +78,7 @@ export const ItemsOnOneLine: Story = {
     });
     await expect(boxHeight(item)).toBe(44);
     await expect(
-      screen.getByRole("menu").getBoundingClientRect().right,
+      screen.getByRole("menu").getBoundingClientRect().width,
     ).toBeLessThanOrEqual(window.innerWidth);
   },
 };

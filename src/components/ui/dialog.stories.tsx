@@ -119,7 +119,11 @@ export const TallContent: Story = {
       window.innerHeight,
     );
     await expect(dialog.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
-    await expect(dialog.scrollHeight).toBeGreaterThan(dialog.clientHeight);
+    dialog.scrollTop = dialog.scrollHeight;
+    const keep = within(dialog).getByRole("button", { name: "Keep" });
+    await expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      window.innerHeight,
+    );
     const title = within(dialog).getByRole("heading");
     const style = getComputedStyle(title);
     await expect(

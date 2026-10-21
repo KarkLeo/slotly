@@ -57,6 +57,12 @@ export const LongLabels: Story = {
   globals: { viewport: { value: "mobile360", isRotated: false } },
   play: async ({ canvas }) => {
     const list = canvas.getByRole("tablist");
+    await expect(list.scrollWidth).toBeGreaterThan(list.clientWidth);
+    await expect(boxHeight(list)).toBe(44);
+    const first = canvas.getAllByRole("tab")[0];
+    await expect(first.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+      list.getBoundingClientRect().left,
+    );
     await expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(
       window.innerWidth,
     );

@@ -126,7 +126,17 @@ export const TallContent: Story = {
     const sheet = await screen.findByRole("dialog");
     settle();
     await expect(sheet.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
-    await expect(sheet.scrollHeight).toBeGreaterThan(sheet.clientHeight);
+    sheet.scrollTop = sheet.scrollHeight;
+    await waitFor(() => {
+      settle();
+      expect(sheet.getAnimations()).toHaveLength(0);
+    });
+    const last = within(sheet).getByText("Line 60 of the booking details.");
+    await expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      window.innerHeight,
+    );
+    // The caller's own padding must survive the safe-area spacing.
+    await expect(getComputedStyle(sheet).paddingBottom).toBe("24px");
   },
 };
 
@@ -134,7 +144,10 @@ export const EscapeCloses: Story = {
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Review booking" });
     await userEvent.click(trigger);
-    await screen.findByRole("dialog");
+    const sheet = await screen.findByRole("dialog");
+    await waitFor(() =>
+      expect(sheet).toContainElement(document.activeElement as HTMLElement),
+    );
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());

@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { useId } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { z } from "zod";
@@ -44,6 +45,8 @@ function BookingDemoForm({
 }: {
   onSubmit: (values: Values) => Promise<void>;
 }) {
+  const formId = useId();
+  const errorId = (field: keyof Values) => `${formId}-${field}-error`;
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { name: "", phone: "", notes: "", reminders: true },
@@ -62,9 +65,11 @@ function BookingDemoForm({
                 {...field}
                 id="name"
                 aria-invalid={fieldState.invalid}
-                aria-describedby="name-error"
+                aria-describedby={
+                  fieldState.invalid ? errorId("name") : undefined
+                }
               />
-              <FieldError id="name-error" errors={[fieldState.error]} />
+              <FieldError id={errorId("name")} errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -79,9 +84,11 @@ function BookingDemoForm({
                 id="phone"
                 type="tel"
                 aria-invalid={fieldState.invalid}
-                aria-describedby="phone-error"
+                aria-describedby={
+                  fieldState.invalid ? errorId("phone") : undefined
+                }
               />
-              <FieldError id="phone-error" errors={[fieldState.error]} />
+              <FieldError id={errorId("phone")} errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -98,7 +105,9 @@ function BookingDemoForm({
               >
                 <SelectTrigger
                   ref={field.ref}
-                  aria-describedby="service-error"
+                  aria-describedby={
+                    fieldState.invalid ? errorId("service") : undefined
+                  }
                   aria-labelledby="service-label"
                   aria-invalid={fieldState.invalid}
                   className="w-full"
@@ -113,7 +122,7 @@ function BookingDemoForm({
                   ))}
                 </SelectContent>
               </Select>
-              <FieldError id="service-error" errors={[fieldState.error]} />
+              <FieldError id={errorId("service")} errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -127,9 +136,11 @@ function BookingDemoForm({
                 {...field}
                 id="notes"
                 aria-invalid={fieldState.invalid}
-                aria-describedby="notes-error"
+                aria-describedby={
+                  fieldState.invalid ? errorId("notes") : undefined
+                }
               />
-              <FieldError id="notes-error" errors={[fieldState.error]} />
+              <FieldError id={errorId("notes")} errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -158,13 +169,15 @@ function BookingDemoForm({
                 checked={field.value === true}
                 onCheckedChange={field.onChange}
                 aria-invalid={fieldState.invalid}
-                aria-describedby="terms-error"
+                aria-describedby={
+                  fieldState.invalid ? errorId("terms") : undefined
+                }
               />
               <FieldContent>
                 <FieldLabel htmlFor="terms">
                   I accept the booking terms
                 </FieldLabel>
-                <FieldError id="terms-error" errors={[fieldState.error]} />
+                <FieldError id={errorId("terms")} errors={[fieldState.error]} />
               </FieldContent>
             </Field>
           )}
@@ -243,6 +256,9 @@ export const FocusFirstError: Story = {
     await waitFor(() =>
       expect(canvas.getByRole("combobox", { name: "Service" })).toHaveFocus(),
     );
+    await expect(
+      canvas.getByRole("combobox", { name: "Service" }),
+    ).toHaveAccessibleDescription("Choose a service");
     await userEvent.click(canvas.getByRole("combobox", { name: "Service" }));
     await userEvent.click(
       await screen.findByRole("option", { name: "Pedicure" }),
@@ -253,6 +269,12 @@ export const FocusFirstError: Story = {
       expect(
         canvas.getByRole("checkbox", { name: "I accept the booking terms" }),
       ).toHaveFocus(),
+    );
+    await expect(
+      canvas.getByRole("checkbox", { name: "I accept the booking terms" }),
+    ).toHaveAccessibleDescription("Accept the booking terms");
+    await expect(canvas.getByLabelText("Name")).not.toHaveAttribute(
+      "aria-describedby",
     );
     await expect(args.onSubmit).not.toHaveBeenCalled();
   },

@@ -56,7 +56,10 @@ export const EscapeThenOpen: Story = {
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Working hours" });
     await userEvent.click(trigger);
-    await screen.findByRole("dialog");
+    const popup = await screen.findByRole("dialog");
+    await waitFor(() =>
+      expect(popup).toContainElement(document.activeElement as HTMLElement),
+    );
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await expect(trigger).toHaveFocus();
