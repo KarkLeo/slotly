@@ -13,7 +13,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./sheet";
-import { computedColor, intersects, resolvedColor } from "./story-helpers";
+import {
+  computedColor,
+  intersects,
+  resolvedColor,
+  settle,
+} from "./story-helpers";
 
 const dictionaries = { uk, ru, en };
 
@@ -24,9 +29,11 @@ function texts(locale: unknown) {
 function SheetDemo({
   withCard = false,
   title = "Your booking",
+  lines = 0,
 }: {
   withCard?: boolean;
   title?: string;
+  lines?: number;
 }) {
   return (
     <div className="p-4">
@@ -39,6 +46,11 @@ function SheetDemo({
               Check the details before confirming.
             </SheetDescription>
           </SheetHeader>
+          {Array.from({ length: lines }, (_, index) => (
+            <p key={index} className="px-4">
+              Line {index + 1} of the booking details.
+            </p>
+          ))}
           {withCard && (
             <Card variant="inset" className="mx-4" data-testid="summary">
               <CardHeader>
@@ -102,5 +114,18 @@ export const LongTitle: Story = {
     await expect(intersects(within(sheet).getByRole("heading"), close)).toBe(
       false,
     );
+  },
+};
+
+export const TallContent: Story = {
+  args: { lines: 60 },
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Review booking" }),
+    );
+    const sheet = await screen.findByRole("dialog");
+    settle();
+    await expect(sheet.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+    await expect(sheet.scrollHeight).toBeGreaterThan(sheet.clientHeight);
   },
 };

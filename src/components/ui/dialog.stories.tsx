@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
-import { intersects, overflowsX } from "./story-helpers";
+import { intersects, overflowsX, settle } from "./story-helpers";
 
 type DemoProps = { title: string; description: string };
 
@@ -99,5 +99,31 @@ export const LongText: Story = {
     const close = within(dialog).getByRole("button", { name: uk.UI.close });
     const title = within(dialog).getByRole("heading");
     await expect(intersects(title, close)).toBe(false);
+  },
+};
+
+export const TallContent: Story = {
+  args: {
+    description: Array.from(
+      { length: 40 },
+      () => "The client will get an email that the booking is cancelled.",
+    ).join(" "),
+  },
+  play: async ({ canvas, args }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Cancel booking" }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: args.title });
+    settle();
+    await expect(dialog.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      window.innerHeight,
+    );
+    await expect(dialog.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+    await expect(dialog.scrollHeight).toBeGreaterThan(dialog.clientHeight);
+    const title = within(dialog).getByRole("heading");
+    const style = getComputedStyle(title);
+    await expect(
+      parseFloat(style.lineHeight) / parseFloat(style.fontSize),
+    ).toBeGreaterThanOrEqual(1.2);
   },
 };
