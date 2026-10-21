@@ -64,6 +64,10 @@ export const Default: Story = {
         within(dialog).getByRole("button", { name: "Keep" }),
       ).toHaveFocus(),
     );
+    // Nothing to scroll and buttons inside: the body must not be an extra Tab stop.
+    await expect(
+      dialog.querySelector("[data-slot=dialog-body]"),
+    ).not.toHaveAttribute("tabindex");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());

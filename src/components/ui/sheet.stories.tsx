@@ -143,6 +143,8 @@ export const TallContent: Story = {
     );
     await expect(getComputedStyle(body).paddingBottom).toBe("24px");
     await expect(body).not.toHaveFocus();
+    // Overflowing text with nothing focusable: keyboard users need the body itself.
+    await waitFor(() => expect(body).toHaveAttribute("tabindex", "0"));
   },
 };
 
