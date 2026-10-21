@@ -16,7 +16,9 @@ export function computedColor(
   property: ColorProperty = "backgroundColor",
 ): string {
   // The theme decorator switches the class after mount, so color transitions may still be running.
-  el.getAnimations().forEach((animation) => animation.finish());
+  el.getAnimations()
+    .filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
+    .forEach((animation) => animation.finish());
   return getComputedStyle(el)[property];
 }
 
