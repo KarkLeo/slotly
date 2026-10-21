@@ -45,5 +45,14 @@
   "UI": {
     "close": "Close",
     "notifications": "Notifications"
+  },
+  "Toasts": {
+    "codeSent": "Email sent. Check your inbox.",
+    "signedIn": "You are signed in.",
+    "signedOut": "You are signed out.",
+    "linkExpired": "The link has expired or was already used. Request a new one.",
+    "rateLimited": "Too many attempts. Wait a minute and try again.",
+    "unexpected": "Something went wrong. Please try again.",
+    "decisionFailed": "Could not save your decision. Please try again."
   }
 }
