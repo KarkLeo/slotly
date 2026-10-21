@@ -58,8 +58,13 @@ function BookingDemoForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="name">Name</FieldLabel>
-              <Input {...field} id="name" aria-invalid={fieldState.invalid} />
-              <FieldError errors={[fieldState.error]} />
+              <Input
+                {...field}
+                id="name"
+                aria-invalid={fieldState.invalid}
+                aria-describedby="name-error"
+              />
+              <FieldError id="name-error" errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -74,8 +79,9 @@ function BookingDemoForm({
                 id="phone"
                 type="tel"
                 aria-invalid={fieldState.invalid}
+                aria-describedby="phone-error"
               />
-              <FieldError errors={[fieldState.error]} />
+              <FieldError id="phone-error" errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -91,6 +97,8 @@ function BookingDemoForm({
                 onValueChange={field.onChange}
               >
                 <SelectTrigger
+                  ref={field.ref}
+                  aria-describedby="service-error"
                   aria-labelledby="service-label"
                   aria-invalid={fieldState.invalid}
                   className="w-full"
@@ -105,7 +113,7 @@ function BookingDemoForm({
                   ))}
                 </SelectContent>
               </Select>
-              <FieldError errors={[fieldState.error]} />
+              <FieldError id="service-error" errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -119,8 +127,9 @@ function BookingDemoForm({
                 {...field}
                 id="notes"
                 aria-invalid={fieldState.invalid}
+                aria-describedby="notes-error"
               />
-              <FieldError errors={[fieldState.error]} />
+              <FieldError id="notes-error" errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -144,16 +153,18 @@ function BookingDemoForm({
           render={({ field, fieldState }) => (
             <Field orientation="horizontal" data-invalid={fieldState.invalid}>
               <Checkbox
+                ref={field.ref}
                 id="terms"
                 checked={field.value === true}
                 onCheckedChange={field.onChange}
                 aria-invalid={fieldState.invalid}
+                aria-describedby="terms-error"
               />
               <FieldContent>
                 <FieldLabel htmlFor="terms">
                   I accept the booking terms
                 </FieldLabel>
-                <FieldError errors={[fieldState.error]} />
+                <FieldError id="terms-error" errors={[fieldState.error]} />
               </FieldContent>
             </Field>
           )}
@@ -190,6 +201,10 @@ export const Default: Story = {
       "true",
     );
     await expect(canvas.getByText("Enter your name")).toBeVisible();
+    await expect(canvas.getByLabelText("Name")).toHaveAccessibleDescription(
+      "Enter your name",
+    );
+    await expect(canvas.getByLabelText("Name")).toHaveFocus();
     await expect(canvas.getByText("Enter a phone number")).toBeVisible();
     await expect(args.onSubmit).not.toHaveBeenCalled();
 
@@ -217,5 +232,28 @@ export const Default: Story = {
       },
       expect.anything(),
     );
+  },
+};
+
+export const FocusFirstError: Story = {
+  play: async ({ canvas, args }) => {
+    await userEvent.type(canvas.getByLabelText("Name"), "Anna");
+    await userEvent.type(canvas.getByLabelText("Phone"), "+380670000000");
+    await userEvent.click(canvas.getByRole("button", { name: "Book" }));
+    await waitFor(() =>
+      expect(canvas.getByRole("combobox", { name: "Service" })).toHaveFocus(),
+    );
+    await userEvent.click(canvas.getByRole("combobox", { name: "Service" }));
+    await userEvent.click(
+      await screen.findByRole("option", { name: "Pedicure" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+    await userEvent.click(canvas.getByRole("button", { name: "Book" }));
+    await waitFor(() =>
+      expect(
+        canvas.getByRole("checkbox", { name: "I accept the booking terms" }),
+      ).toHaveFocus(),
+    );
+    await expect(args.onSubmit).not.toHaveBeenCalled();
   },
 };
