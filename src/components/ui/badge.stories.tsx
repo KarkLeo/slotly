@@ -32,15 +32,14 @@ export const Variants: Story = {
   ),
   play: async ({ canvas }) => {
     for (const variant of variants) {
-      const badge = canvas.getByText(variant);
+      const badge = canvas.getByText(variant).closest("[data-slot=badge]")!;
       const { height } = badge.getBoundingClientRect();
       await expect(
         parseFloat(getComputedStyle(badge).borderTopLeftRadius),
       ).toBeGreaterThanOrEqual(height / 2);
     }
-    await expect(computedColor(canvas.getByText("accent"))).toBe(
-      resolvedColor("bg-accent"),
-    );
+    const accent = canvas.getByText("accent").closest("[data-slot=badge]")!;
+    await expect(computedColor(accent)).toBe(resolvedColor("bg-accent"));
   },
 };
 
@@ -52,5 +51,8 @@ export const LongText: Story = {
   ),
   play: async ({ canvas }) => {
     await expect(overflowsX(canvas.getByTestId("wrapper"))).toBe(false);
+    const label = canvas.getByText("Awaiting confirmation from the client");
+    await expect(getComputedStyle(label).textOverflow).toBe("ellipsis");
+    await expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
   },
 };

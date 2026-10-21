@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Suspense } from "react";
@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "Slotly",
   description: "Booking pages for independent professionals",
 };
+
+// Lets env(safe-area-inset-*) report the iPhone notch and home indicator.
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();

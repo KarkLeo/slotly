@@ -16,7 +16,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme="system"
       containerAriaLabel={t("notifications")}
-      className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4 text-success" />,
         info: <InfoIcon className="size-4 text-info" />,
@@ -37,7 +36,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         closeButtonAriaLabel: t("close"),
         classNames: {
-          toast: "cn-toast",
+          description: "text-muted-foreground!",
         },
       }}
       {...props}

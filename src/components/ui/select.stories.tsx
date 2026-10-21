@@ -96,3 +96,20 @@ export const LongText: Story = {
     await expect(overflowsX(canvas.getByRole("combobox"))).toBe(false);
   },
 };
+
+export const EscapeThenOpen: Story = {
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Service" });
+    await userEvent.click(trigger);
+    const listbox = await screen.findByRole("listbox");
+    await waitFor(() =>
+      expect(listbox).toContainElement(document.activeElement as HTMLElement),
+    );
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+    await expect(trigger).toHaveFocus();
+    // Left open so the a11y check runs on the popup.
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole("listbox")).toBeVisible());
+  },
+};

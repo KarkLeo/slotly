@@ -140,3 +140,27 @@ export const WithAction: Story = {
     await expect(onUndo).toHaveBeenCalledOnce();
   },
 };
+
+export const WithDescription: Story = {
+  render: () => (
+    <div className="p-4">
+      <Toaster />
+      <Button
+        onClick={() =>
+          toast.success("Booking moved", {
+            description: "Friday, 10:30 · Manicure",
+          })
+        }
+      >
+        Move booking
+      </Button>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Move booking" }));
+    const description = await screen.findByText("Friday, 10:30 · Manicure");
+    await expect(computedColor(description, "color")).toBe(
+      resolvedColor("text-muted-foreground", "color"),
+    );
+  },
+};

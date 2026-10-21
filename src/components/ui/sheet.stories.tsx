@@ -13,7 +13,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./sheet";
-import { computedColor, intersects, resolvedColor } from "./story-helpers";
+import {
+  computedColor,
+  intersects,
+  resolvedColor,
+  settle,
+} from "./story-helpers";
 
 const dictionaries = { uk, ru, en };
 
@@ -24,9 +29,11 @@ function texts(locale: unknown) {
 function SheetDemo({
   withCard = false,
   title = "Your booking",
+  lines = 0,
 }: {
   withCard?: boolean;
   title?: string;
+  lines?: number;
 }) {
   return (
     <div className="p-4">
@@ -39,6 +46,11 @@ function SheetDemo({
               Check the details before confirming.
             </SheetDescription>
           </SheetHeader>
+          {Array.from({ length: lines }, (_, index) => (
+            <p key={index} className="px-4">
+              Line {index + 1} of the booking details.
+            </p>
+          ))}
           {withCard && (
             <Card variant="inset" className="mx-4" data-testid="summary">
               <CardHeader>
@@ -102,5 +114,42 @@ export const LongTitle: Story = {
     await expect(intersects(within(sheet).getByRole("heading"), close)).toBe(
       false,
     );
+  },
+};
+
+export const TallContent: Story = {
+  args: { lines: 60 },
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Review booking" }),
+    );
+    const sheet = await screen.findByRole("dialog");
+    settle();
+    await expect(sheet.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+    sheet.scrollTop = sheet.scrollHeight;
+    await waitFor(() => {
+      settle();
+      expect(sheet.getAnimations()).toHaveLength(0);
+    });
+    const last = within(sheet).getByText("Line 60 of the booking details.");
+    await expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      window.innerHeight,
+    );
+    // The caller's own padding must survive the safe-area spacing.
+    await expect(getComputedStyle(sheet).paddingBottom).toBe("24px");
+  },
+};
+
+export const EscapeCloses: Story = {
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Review booking" });
+    await userEvent.click(trigger);
+    const sheet = await screen.findByRole("dialog");
+    await waitFor(() =>
+      expect(sheet).toContainElement(document.activeElement as HTMLElement),
+    );
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
