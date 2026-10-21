@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, fn, userEvent } from "storybook/test";
+import { useState } from "react";
+import { expect, fn, userEvent, waitFor } from "storybook/test";
 import { Button } from "./button";
 import {
   boxHeight,
   computedColor,
   overflowsX,
   resolvedColor,
+  settle,
 } from "./story-helpers";
 
 const variants = [
@@ -128,6 +130,47 @@ export const FocusVisible: Story = {
     await userEvent.tab();
     const button = canvas.getByRole("button");
     await expect(button).toBe(document.activeElement);
-    await expect(getComputedStyle(button).boxShadow).not.toBe("none");
+    settle();
+    await expect(getComputedStyle(button).boxShadow).toContain(
+      resolvedColor("bg-ring"),
+    );
+  },
+};
+
+export const FlexRow: Story = {
+  render: () => (
+    <div className="flex gap-2 p-4" data-testid="row">
+      <Button variant="outline">Reschedule the booking</Button>
+      <Button>Confirm the booking now</Button>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const row = canvas.getByTestId("row");
+    const right = row.getBoundingClientRect().right;
+    for (const button of canvas.getAllByRole("button")) {
+      await expect(button.getBoundingClientRect().right).toBeLessThanOrEqual(
+        right,
+      );
+    }
+  },
+};
+
+function SubmitDemo() {
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button loading={loading} onClick={() => setLoading(true)}>
+      Book
+    </Button>
+  );
+}
+
+export const LoadingKeepsFocus: Story = {
+  render: () => <SubmitDemo />,
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole("button", { name: "Book" });
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(button).toHaveAttribute("aria-busy", "true"));
+    await expect(button).toHaveFocus();
   },
 };

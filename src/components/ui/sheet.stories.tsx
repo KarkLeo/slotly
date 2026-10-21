@@ -13,7 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./sheet";
-import { computedColor } from "./story-helpers";
+import { computedColor, intersects } from "./story-helpers";
 
 const dictionaries = { uk, ru, en };
 
@@ -21,14 +21,20 @@ function texts(locale: unknown) {
   return dictionaries[locale === "ru" || locale === "en" ? locale : "uk"].UI;
 }
 
-function SheetDemo({ withCard = false }: { withCard?: boolean }) {
+function SheetDemo({
+  withCard = false,
+  title = "Your booking",
+}: {
+  withCard?: boolean;
+  title?: string;
+}) {
   return (
     <div className="p-4">
       <Sheet>
         <SheetTrigger render={<Button />}>Review booking</SheetTrigger>
         <SheetContent side="bottom" className="pb-6">
           <SheetHeader>
-            <SheetTitle>Your booking</SheetTitle>
+            <SheetTitle>{title}</SheetTitle>
             <SheetDescription>
               Check the details before confirming.
             </SheetDescription>
@@ -78,5 +84,22 @@ export const SummaryCard: Story = {
     const sheet = await screen.findByRole("dialog");
     const card = within(sheet).getByTestId("summary");
     await expect(computedColor(card)).not.toBe(computedColor(sheet));
+  },
+};
+
+export const LongTitle: Story = {
+  args: {
+    title:
+      "Your booking for a classic manicure with gel polish and nail strengthening",
+  },
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Review booking" }),
+    );
+    const sheet = await screen.findByRole("dialog");
+    const close = sheet.querySelector('[data-slot="sheet-close"]')!;
+    await expect(intersects(within(sheet).getByRole("heading"), close)).toBe(
+      false,
+    );
   },
 };

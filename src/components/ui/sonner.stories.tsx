@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { toast } from "sonner";
+import ru from "../../../messages/ru.json";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "./button";
 import { Toaster } from "./sonner";
@@ -78,5 +79,16 @@ export const LongText: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Show" }));
     await screen.findByText(args.message);
     await expect(overflowsX(toastOf(args.message))).toBe(false);
+  },
+};
+
+export const RegionLabelRu: Story = {
+  globals: { locale: "ru" },
+  play: async ({ canvas, args }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Show" }));
+    await screen.findByText(args.message);
+    await expect(
+      screen.getByRole("region", { name: new RegExp(ru.UI.notifications) }),
+    ).toBeInTheDocument();
   },
 };

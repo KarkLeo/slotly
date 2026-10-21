@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import ru from "../../../messages/ru.json";
+import uk from "../../../messages/uk.json";
 import { Button } from "./button";
 import {
   Dialog,
@@ -12,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
-import { overflowsX } from "./story-helpers";
+import { intersects, overflowsX } from "./story-helpers";
 
 type DemoProps = { title: string; description: string };
 
@@ -93,6 +94,10 @@ export const LongText: Story = {
     await userEvent.click(
       canvas.getByRole("button", { name: "Cancel booking" }),
     );
-    await expect(overflowsX(await screen.findByRole("dialog"))).toBe(false);
+    const dialog = await screen.findByRole("dialog");
+    await expect(overflowsX(dialog)).toBe(false);
+    const close = within(dialog).getByRole("button", { name: uk.UI.close });
+    const title = within(dialog).getByRole("heading");
+    await expect(intersects(title, close)).toBe(false);
   },
 };

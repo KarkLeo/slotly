@@ -43,6 +43,7 @@
     }
   },
   "UI": {
-    "close": "Close"
+    "close": "Close",
+    "notifications": "Notifications"
   }
 }

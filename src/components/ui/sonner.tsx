@@ -8,11 +8,14 @@ import {
   OctagonXIcon,
   Loader2Icon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const t = useTranslations("UI");
   return (
     <Sonner
       theme="system"
+      containerAriaLabel={t("notifications")}
       className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4" />,
@@ -30,6 +33,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         } as React.CSSProperties
       }
       toastOptions={{
+        closeButtonAriaLabel: t("close"),
         classNames: {
           toast: "cn-toast",
         },

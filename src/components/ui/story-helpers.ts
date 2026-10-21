@@ -1,7 +1,7 @@
 type ColorProperty = "backgroundColor" | "color" | "borderTopColor";
 
 // Opening animations scale and fade popups, and the theme decorator switches the class after mount.
-function settle() {
+export function settle() {
   document
     .getAnimations()
     .filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
@@ -39,4 +39,16 @@ export function resolvedColor(
   const color = computedColor(probe, property);
   probe.remove();
   return color;
+}
+
+export function intersects(a: Element, b: Element): boolean {
+  settle();
+  const r1 = a.getBoundingClientRect();
+  const r2 = b.getBoundingClientRect();
+  return (
+    r1.left < r2.right &&
+    r2.left < r1.right &&
+    r1.top < r2.bottom &&
+    r2.top < r1.bottom
+  );
 }
