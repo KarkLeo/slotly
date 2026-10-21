@@ -60,7 +60,9 @@ export const Default: Story = {
     await userEvent.click(trigger);
     const dialog = await screen.findByRole("dialog", { name: args.title });
     await waitFor(() =>
-      expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      expect(
+        within(dialog).getByRole("button", { name: "Keep" }),
+      ).toHaveFocus(),
     );
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -120,14 +122,20 @@ export const TallContent: Story = {
     );
     await expect(dialog.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
     const keep = within(dialog).getByRole("button", { name: "Keep" });
+    const body = dialog.querySelector<HTMLElement>("[data-slot=dialog-body]")!;
     // Scrolling is ignored until the opening transition has laid the dialog out, so retry it.
     await waitFor(() => {
       settle();
-      dialog.scrollTop = dialog.scrollHeight;
+      body.scrollTop = body.scrollHeight;
       expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
         window.innerHeight,
       );
     });
+    // The close button stays reachable while the content is scrolled.
+    const close = within(dialog).getByRole("button", { name: uk.UI.close });
+    await expect(close.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      dialog.getBoundingClientRect().top,
+    );
     const title = within(dialog).getByRole("heading");
     const style = getComputedStyle(title);
     await expect(

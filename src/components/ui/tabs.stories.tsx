@@ -1,15 +1,23 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, userEvent, waitFor } from "storybook/test";
-import { boxHeight } from "./story-helpers";
+import { boxHeight, settle } from "./story-helpers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 
 const periods = ["Today", "Week", "Month"];
 
-function TabsDemo({ labels = periods }: { labels?: string[] }) {
+function TabsDemo({
+  labels = periods,
+  variant,
+  orientation,
+}: {
+  labels?: string[];
+  variant?: "default" | "line";
+  orientation?: "horizontal" | "vertical";
+}) {
   return (
     <div className="p-4">
-      <Tabs defaultValue={labels[0]}>
-        <TabsList aria-label="Calendar period">
+      <Tabs defaultValue={labels[0]} orientation={orientation}>
+        <TabsList aria-label="Calendar period" variant={variant}>
           {labels.map((period) => (
             <TabsTrigger key={period} value={period}>
               {period}
@@ -68,6 +76,49 @@ export const LongLabels: Story = {
     );
     await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
       window.innerWidth,
+    );
+  },
+};
+
+// The underline is drawn with ::after outside the trigger; it must stay inside the list's clipping box.
+function underlineBox(trigger: Element) {
+  settle();
+  const rect = trigger.getBoundingClientRect();
+  const style = getComputedStyle(trigger, "::after");
+  return {
+    bottom: rect.bottom - parseFloat(style.bottom),
+    right: rect.right - parseFloat(style.right),
+  };
+}
+
+export const Line: Story = {
+  args: { variant: "line" },
+  play: async ({ canvas }) => {
+    const list = canvas.getByRole("tablist");
+    const active = canvas.getByRole("tab", { name: "Today" });
+    await expect(underlineBox(active).bottom).toBeLessThanOrEqual(
+      list.getBoundingClientRect().bottom,
+    );
+    const inactive = canvas.getByRole("tab", { name: "Week" });
+    await expect(getComputedStyle(active, "::after").opacity).toBe("1");
+    await expect(getComputedStyle(inactive, "::after").opacity).toBe("0");
+  },
+};
+
+export const Vertical: Story = {
+  args: { variant: "line", orientation: "vertical" },
+  play: async ({ canvas }) => {
+    const list = canvas.getByRole("tablist");
+    await expect(list.scrollWidth).toBeLessThanOrEqual(list.clientWidth);
+    const active = canvas.getByRole("tab", { name: "Today" });
+    await expect(underlineBox(active).right).toBeLessThanOrEqual(
+      list.getBoundingClientRect().right,
+    );
+    await userEvent.click(active);
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(canvas.getByRole("tab", { name: "Week" })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
   },
 };
