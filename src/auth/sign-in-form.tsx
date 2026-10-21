@@ -2,43 +2,39 @@
 
 import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useActionToast } from "@/toasts/use-action-toast";
 import { signIn, type SignInState } from "./actions";
-
-const inputClass =
-  "w-full rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-2 focus-visible:outline-ring";
-const buttonClass =
-  "w-full rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground disabled:opacity-50";
 
 const initialState: SignInState = { step: "email" };
 
-export function SignInForm({
-  next,
-  linkExpired,
-}: {
-  next?: string;
-  linkExpired?: boolean;
-}) {
+export function SignInForm({ next }: { next?: string }) {
   const t = useTranslations("SignIn");
   const [state, action, pending] = useActionState(signIn, initialState);
   const [editingEmail, setEditingEmail] = useState(false);
-
-  const error = state.error && (
-    <p role="alert" className="text-sm text-destructive">
-      {t(`errors.${state.error}`)}
-    </p>
-  );
+  useActionToast(state.toast);
 
   if (state.step === "code" && !editingEmail) {
+    const invalid = state.error === "invalidCode";
     return (
-      <form action={action} className="flex w-full flex-col gap-4">
-        <h1 className="text-2xl font-semibold">{t("codeSentTitle")}</h1>
-        <p className="text-sm">{t("codeSent", { email: state.email })}</p>
+      <form action={action} className="flex w-full flex-col gap-5">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-extrabold tracking-tight">
+            {t("codeSentTitle")}
+          </h1>
+          <p className="text-muted-foreground">
+            {t("codeSent", { email: state.email })}
+          </p>
+        </div>
         <input type="hidden" name="intent" value="verify" />
         <input type="hidden" name="email" value={state.email} />
         <input type="hidden" name="next" value={next ?? ""} />
-        <label className="flex flex-col gap-1 text-sm">
-          {t("codeLabel")}
-          <input
+        <Field data-invalid={invalid || undefined}>
+          <FieldLabel htmlFor="code">{t("codeLabel")}</FieldLabel>
+          <Input
+            id="code"
             name="code"
             inputMode="numeric"
             autoComplete="one-time-code"
@@ -46,41 +42,42 @@ export function SignInForm({
             maxLength={6}
             required
             autoFocus
-            className={`${inputClass} tracking-[0.4em]`}
+            aria-invalid={invalid || undefined}
+            aria-describedby={invalid ? "code-error" : undefined}
+            className="tracking-[0.4em]"
           />
-        </label>
-        {error}
-        <button type="submit" disabled={pending} className={buttonClass}>
+          {invalid && (
+            <FieldError id="code-error">{t("errors.invalidCode")}</FieldError>
+          )}
+        </Field>
+        <Button type="submit" loading={pending} className="w-full">
           {t("verify")}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="link"
           onClick={() => setEditingEmail(true)}
-          className="text-sm underline"
         >
           {t("useAnotherEmail")}
-        </button>
+        </Button>
       </form>
     );
   }
 
+  const invalid = state.step === "email" && state.error === "invalidEmail";
   return (
     <form
       action={(formData) => {
         setEditingEmail(false);
         action(formData);
       }}
-      className="flex w-full flex-col gap-4"
+      className="flex w-full flex-col gap-5"
     >
-      {linkExpired && state === initialState && (
-        <p role="alert" className="text-sm text-destructive">
-          {t("errors.expiredLink")}
-        </p>
-      )}
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
-      <label className="flex flex-col gap-1 text-sm">
-        {t("emailLabel")}
-        <input
+      <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+      <Field data-invalid={invalid || undefined}>
+        <FieldLabel htmlFor="email">{t("emailLabel")}</FieldLabel>
+        <Input
+          id="email"
           name="email"
           type="email"
           autoComplete="email"
@@ -88,13 +85,16 @@ export function SignInForm({
           autoFocus
           defaultValue={state.step === "code" ? state.email : undefined}
           placeholder="you@example.com"
-          className={inputClass}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? "email-error" : undefined}
         />
-      </label>
-      {state.step === "email" && error}
-      <button type="submit" disabled={pending} className={buttonClass}>
+        {invalid && (
+          <FieldError id="email-error">{t("errors.invalidEmail")}</FieldError>
+        )}
+      </Field>
+      <Button type="submit" loading={pending} className="w-full">
         {t("sendLink")}
-      </button>
+      </Button>
     </form>
   );
 }

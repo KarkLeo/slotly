@@ -19,10 +19,7 @@
     "useAnotherEmail": "Use another email",
     "errors": {
       "invalidEmail": "Check the email address.",
-      "invalidCode": "The code is wrong or has expired.",
-      "rateLimited": "Too many attempts. Wait a minute and try again.",
-      "expiredLink": "The link has expired or was already used. Request a new one.",
-      "generic": "Something went wrong. Please try again."
+      "invalidCode": "The code is wrong or has expired."
     }
   },
   "Cabinet": {
