@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+import { useRef } from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { cn } from "cn";
 
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
+import { scrollBodyInitialFocus } from "./scroll-body";
 import { useTranslations } from "next-intl";
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
@@ -44,11 +46,15 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  bodyClassName,
+  initialFocus,
   ...props
 }: DialogPrimitive.Popup.Props & {
+  bodyClassName?: string;
   showCloseButton?: boolean;
 }) {
   const t = useTranslations("UI");
+  const body = useRef<HTMLDivElement>(null);
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -59,14 +65,22 @@ function DialogContent({
           showCloseButton && "**:data-[slot=dialog-header]:pr-10",
           className,
         )}
+        initialFocus={
+          initialFocus ??
+          ((openType) => scrollBodyInitialFocus(body.current, openType))
+        }
         {...props}
       >
         {/* Only the body scrolls, so the close button stays in place. */}
         <div
           data-slot="dialog-body"
+          ref={body}
           // Lets keyboard users scroll content that has nothing focusable.
           tabIndex={0}
-          className="grid min-h-0 gap-4 overflow-y-auto p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          className={cn(
+            "grid min-h-0 gap-4 overflow-y-auto p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-[inherit]",
+            bodyClassName,
+          )}
         >
           {children}
         </div>

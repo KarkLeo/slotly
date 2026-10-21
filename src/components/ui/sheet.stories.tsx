@@ -39,7 +39,7 @@ function SheetDemo({
     <div className="p-4">
       <Sheet>
         <SheetTrigger render={<Button />}>Review booking</SheetTrigger>
-        <SheetContent side="bottom" className="pb-6">
+        <SheetContent side="bottom" bodyClassName="pb-6">
           <SheetHeader>
             <SheetTitle>{title}</SheetTitle>
             <SheetDescription>
@@ -127,8 +127,7 @@ export const TallContent: Story = {
     settle();
     await expect(sheet.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
     const last = within(sheet).getByText("Line 60 of the booking details.");
-    const body =
-      sheet.querySelector<HTMLElement>("[data-slot=sheet-body]") ?? sheet;
+    const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
     // Scrolling is ignored until the opening transition has laid the sheet out, so retry it.
     await waitFor(() => {
       settle();
@@ -142,8 +141,8 @@ export const TallContent: Story = {
     await expect(close.getBoundingClientRect().top).toBeGreaterThanOrEqual(
       sheet.getBoundingClientRect().top,
     );
-    // The caller's own padding must survive the safe-area spacing.
-    await expect(getComputedStyle(sheet).paddingBottom).toBe("24px");
+    await expect(getComputedStyle(body).paddingBottom).toBe("24px");
+    await expect(body).not.toHaveFocus();
   },
 };
 

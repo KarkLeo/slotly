@@ -99,6 +99,9 @@ export const Line: Story = {
     await expect(underlineBox(active).bottom).toBeLessThanOrEqual(
       list.getBoundingClientRect().bottom,
     );
+    const inactive = canvas.getByRole("tab", { name: "Week" });
+    await expect(getComputedStyle(active, "::after").opacity).toBe("1");
+    await expect(getComputedStyle(inactive, "::after").opacity).toBe("0");
   },
 };
 

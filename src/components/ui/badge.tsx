@@ -29,11 +29,14 @@ const badgeVariants = cva(
 
 // Text-only labels, including mixed ones like `{count} new`, can be truncated and carry their full text as a title.
 function plainText(children: ReactNode): string | undefined {
-  const parts = Array.isArray(children) ? children : [children];
+  const parts = (Array.isArray(children) ? children : [children]).filter(
+    (part) => part != null && typeof part !== "boolean",
+  );
   const textOnly = parts.every(
     (part) => typeof part === "string" || typeof part === "number",
   );
-  return textOnly ? parts.join("") : undefined;
+  const text = parts.join("");
+  return textOnly && text ? text : undefined;
 }
 
 function Badge({

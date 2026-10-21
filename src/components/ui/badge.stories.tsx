@@ -62,16 +62,20 @@ export const LongText: Story = {
 };
 
 const count = 12;
+const urgent = false as boolean;
 
 export const CompositeText: Story = {
   render: () => (
-    <div className="w-50 p-4" data-testid="wrapper">
-      <Badge variant="secondary">{count} new bookings waiting this week</Badge>
+    <div className="w-50 p-4">
+      <Badge variant="secondary">
+        {count} new bookings waiting this week{urgent && "!"}
+      </Badge>
     </div>
   ),
   play: async ({ canvas }) => {
     const label = canvas.getByText("12 new bookings waiting this week");
     await expect(getComputedStyle(label).textOverflow).toBe("ellipsis");
+    await expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
     await expect(label.closest("[data-slot=badge]")).toHaveAttribute(
       "title",
       "12 new bookings waiting this week",

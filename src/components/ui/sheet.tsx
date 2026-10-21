@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+import { useRef } from "react";
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 import { cn } from "cn";
 
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
+import { scrollBodyInitialFocus } from "./scroll-body";
 import { useTranslations } from "next-intl";
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
@@ -42,12 +44,16 @@ function SheetContent({
   children,
   side = "right",
   showCloseButton = true,
+  bodyClassName,
+  initialFocus,
   ...props
 }: SheetPrimitive.Popup.Props & {
+  bodyClassName?: string;
   side?: "top" | "right" | "bottom" | "left";
   showCloseButton?: boolean;
 }) {
   const t = useTranslations("UI");
+  const body = useRef<HTMLDivElement>(null);
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -59,14 +65,22 @@ function SheetContent({
           showCloseButton && "**:data-[slot=sheet-header]:pr-14",
           className,
         )}
+        initialFocus={
+          initialFocus ??
+          ((openType) => scrollBodyInitialFocus(body.current, openType))
+        }
         {...props}
       >
         {/* Only the body scrolls, so the close button stays in place. */}
         <div
           data-slot="sheet-body"
+          ref={body}
           // Lets keyboard users scroll content that has nothing focusable.
           tabIndex={0}
-          className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          className={cn(
+            "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-[inherit]",
+            bodyClassName,
+          )}
         >
           {children}
         </div>

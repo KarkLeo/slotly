@@ -8,6 +8,7 @@ import {
   OctagonXIcon,
   Loader2Icon,
 } from "lucide-react";
+import { cn } from "cn";
 import { useTranslations } from "next-intl";
 
 const Toaster = ({ toastOptions, ...props }: ToasterProps) => {
@@ -37,8 +38,11 @@ const Toaster = ({ toastOptions, ...props }: ToasterProps) => {
         closeButtonAriaLabel: t("close"),
         ...toastOptions,
         classNames: {
-          description: "text-muted-foreground!",
           ...toastOptions?.classNames,
+          description: cn(
+            "text-muted-foreground!",
+            toastOptions?.classNames?.description,
+          ),
         },
       }}
       {...props}

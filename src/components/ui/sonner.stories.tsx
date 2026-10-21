@@ -176,7 +176,13 @@ export const WithDescription: Story = {
 export const CustomOptions: Story = {
   render: () => (
     <div className="p-4">
-      <Toaster closeButton toastOptions={{ duration: 8000 }} />
+      <Toaster
+        closeButton
+        toastOptions={{
+          closeButtonAriaLabel: "Dismiss",
+          classNames: { title: "font-bold", description: "text-xs" },
+        }}
+      />
       <Button
         onClick={() =>
           toast("Booking moved", { description: "Friday, 10:30 · Manicure" })
@@ -186,15 +192,32 @@ export const CustomOptions: Story = {
       </Button>
     </div>
   ),
-  play: async ({ canvas, globals }) => {
+  play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Move booking" }));
     const description = await screen.findByText("Friday, 10:30 · Manicure");
     await expect(computedColor(description, "color")).toBe(
       resolvedColor("text-muted-foreground", "color"),
     );
-    const close = texts(globals.locale).close;
+    await expect(getComputedStyle(description).fontSize).toBe("12px");
+    await expect(screen.getByText("Booking moved")).toHaveClass("font-bold");
     await expect(
-      screen.getByRole("button", { name: close }),
+      screen.getByRole("button", { name: "Dismiss" }),
+    ).toBeInTheDocument();
+  },
+};
+
+export const LocalizedClose: Story = {
+  render: () => (
+    <div className="p-4">
+      <Toaster closeButton toastOptions={{ duration: 8000 }} />
+      <Button onClick={() => toast("Booking saved")}>Save booking</Button>
+    </div>
+  ),
+  play: async ({ canvas, globals }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Save booking" }));
+    await screen.findByText("Booking saved");
+    await expect(
+      screen.getByRole("button", { name: texts(globals.locale).close }),
     ).toBeInTheDocument();
   },
 };
