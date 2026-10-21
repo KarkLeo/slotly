@@ -51,3 +51,17 @@ export const Default: Story = {
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   },
 };
+
+export const EscapeThenOpen: Story = {
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Working hours" });
+    await userEvent.click(trigger);
+    await screen.findByRole("dialog");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await expect(trigger).toHaveFocus();
+    // Left open so the a11y check runs on the popup.
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeVisible());
+  },
+};

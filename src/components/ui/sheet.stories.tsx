@@ -129,3 +129,14 @@ export const TallContent: Story = {
     await expect(sheet.scrollHeight).toBeGreaterThan(sheet.clientHeight);
   },
 };
+
+export const EscapeCloses: Story = {
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Review booking" });
+    await userEvent.click(trigger);
+    await screen.findByRole("dialog");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
