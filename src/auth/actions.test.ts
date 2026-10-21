@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { cookieSet } from "@/test/server-mocks";
+import { cookieSet, redirectError } from "@/test/server-mocks";
 import { flashCookie } from "@/toasts/toast";
 import { signIn, signOut } from "./actions";
 
@@ -44,6 +44,10 @@ describe("signIn", () => {
       email,
       toast: { type: "success", key: "codeSent" },
     });
+    expect(auth.signInWithOtp).toHaveBeenCalledWith({
+      email,
+      options: { shouldCreateUser: true, data: { locale: "uk" } },
+    });
   });
 
   it("reports a rate limit as a toast", async () => {
@@ -82,7 +86,12 @@ describe("signIn", () => {
         { step: "code", email },
         form({ intent: "verify", email, code: "123456", next: "/app" }),
       ),
-    ).rejects.toThrow("redirect:/app");
+    ).rejects.toThrow(redirectError("/app"));
+    expect(auth.verifyOtp).toHaveBeenCalledWith({
+      email,
+      token: "123456",
+      type: "email",
+    });
     expect(cookieSet).toHaveBeenCalledWith(
       flashCookie,
       "success:signedIn",
@@ -93,7 +102,8 @@ describe("signIn", () => {
 
 describe("signOut", () => {
   it("flashes signedOut and redirects home", async () => {
-    await expect(signOut()).rejects.toThrow("redirect:/");
+    await expect(signOut()).rejects.toThrow(redirectError("/"));
+    expect(auth.signOut).toHaveBeenCalled();
     expect(cookieSet).toHaveBeenCalledWith(
       flashCookie,
       "success:signedOut",

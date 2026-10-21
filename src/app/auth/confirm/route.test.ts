@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { cookieSet } from "@/test/server-mocks";
+import { cookieSet, redirectError } from "@/test/server-mocks";
 import { flashCookie } from "@/toasts/toast";
 import { GET } from "./route";
 
@@ -16,7 +16,7 @@ describe("GET /auth/confirm", () => {
     const request = new NextRequest(
       "http://localhost/auth/confirm?token_hash=x&type=email",
     );
-    await expect(GET(request)).rejects.toThrow("redirect:/login");
+    await expect(GET(request)).rejects.toThrow(redirectError("/login"));
     expect(cookieSet).toHaveBeenCalledWith(
       flashCookie,
       "error:linkExpired",
@@ -29,7 +29,11 @@ describe("GET /auth/confirm", () => {
     const request = new NextRequest(
       "http://localhost/auth/confirm?token_hash=x&type=email&next=/app",
     );
-    await expect(GET(request)).rejects.toThrow("redirect:/app");
+    await expect(GET(request)).rejects.toThrow(redirectError("/app"));
+    expect(auth.verifyOtp).toHaveBeenCalledWith({
+      token_hash: "x",
+      type: "email",
+    });
     expect(cookieSet).toHaveBeenCalledWith(
       flashCookie,
       "success:signedIn",

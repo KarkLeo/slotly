@@ -14,6 +14,7 @@ export function boxHeight(el: Element): number {
 }
 
 export function overflowsX(el: Element): boolean {
+  settle();
   return (
     el.scrollWidth > el.clientWidth ||
     el.getBoundingClientRect().right > window.innerWidth
@@ -34,10 +35,14 @@ export function resolvedColor(
   property: ColorProperty = "backgroundColor",
 ): string {
   const probe = document.createElement("div");
-  probe.className = className;
   document.body.append(probe);
+  const fallback = computedColor(probe, property);
+  probe.className = className;
   const color = computedColor(probe, property);
   probe.remove();
+  // A missing token makes Tailwind skip the class; both sides would then share the fallback.
+  if (color === fallback)
+    throw new Error(`${className} does not set ${property} (missing token?)`);
   return color;
 }
 

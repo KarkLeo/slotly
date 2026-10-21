@@ -34,8 +34,14 @@ const meta = {
   ),
   afterEach: () => {
     toast.dismiss();
+    document.cookie = `${flashCookie}=; path=/; max-age=0`;
   },
 } satisfies Meta<typeof FlashToast>;
+
+// Sonner renders a toast on a timer; give a wrongly shown one time to appear.
+function tick() {
+  return new Promise((resolve) => setTimeout(resolve, 100));
+}
 
 export default meta;
 
@@ -70,6 +76,7 @@ export const Garbage: Story = {
   },
   play: async () => {
     await waitFor(() => expect(flashCookieValue()).toBeUndefined());
+    await tick();
     await expect(document.querySelector("[data-sonner-toast]")).toBeNull();
   },
 };
@@ -96,6 +103,7 @@ export const AfterNavigation: Story = {
     const text = texts(globals.locale).signedIn;
     document.cookie = `${flashCookie}=success%3AsignedIn; path=/`;
     await userEvent.click(canvas.getByRole("button", { name: "Rerender" }));
+    await tick();
     await expect(screen.queryByText(text)).toBeNull();
     mocked(usePathname).mockReturnValue("/app");
     await userEvent.click(canvas.getByRole("button", { name: "Rerender" }));

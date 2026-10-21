@@ -32,6 +32,8 @@ export const WithDisabledPeer: Story = {
     </div>
   ),
   play: async ({ canvas }) => {
-    await expect(canvas.getByLabelText("Email")).toBeDisabled();
+    await expect(getComputedStyle(canvas.getByText("Email")).opacity).toBe(
+      "0.5",
+    );
   },
 };

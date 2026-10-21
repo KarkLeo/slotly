@@ -60,7 +60,6 @@ export const English: Story = {
     await expect(
       canvas.getByRole("heading", { name: en.SignIn.title }),
     ).toBeVisible();
-    await expect(document.documentElement.lang).toBe("en");
   },
 };
 
@@ -213,6 +212,7 @@ export const SameErrorTwice: Story = {
     const submit = canvas.getByRole("button", { name: t.SignIn.sendLink });
     await userEvent.click(submit);
     await expectToast(t.Toasts.rateLimited);
+    await expect(screen.getAllByText(t.Toasts.rateLimited)).toHaveLength(1);
     await waitFor(() => expect(submit).not.toHaveAttribute("aria-busy"));
     await userEvent.click(submit);
     await waitFor(() =>
