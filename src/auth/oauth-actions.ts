@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/db/server";
+import { setFlash } from "@/toasts/flash";
 
 export async function decideAuthorization(formData: FormData) {
   const authorizationId = String(formData.get("authorization_id") ?? "");
@@ -14,10 +15,8 @@ export async function decideAuthorization(formData: FormData) {
     : await supabase.auth.oauth.denyAuthorization(authorizationId, options);
 
   if (error || !data) {
-    const params = new URLSearchParams({
-      authorization_id: authorizationId,
-      error: "decision",
-    });
+    await setFlash({ type: "error", key: "decisionFailed" });
+    const params = new URLSearchParams({ authorization_id: authorizationId });
     redirect(`/oauth/consent?${params}`);
   }
 
