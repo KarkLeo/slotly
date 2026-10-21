@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { unstable_rethrow } from "next/navigation";
 import { toast } from "sonner";
+import { unexpectedToast } from "@/toasts/with-unexpected-toast";
 import { signOut } from "./actions";
 import { SignOutButton } from "./sign-out-button";
 
@@ -15,8 +15,7 @@ export function SignOutForm() {
         try {
           await signOut();
         } catch (error) {
-          unstable_rethrow(error);
-          toast.error(t("unexpected"));
+          toast.error(t(unexpectedToast(error).key));
         }
       }}
     >

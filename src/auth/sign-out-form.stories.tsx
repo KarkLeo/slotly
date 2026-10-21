@@ -23,6 +23,9 @@ const meta = {
       <SignOutForm />
     </div>
   ),
+  beforeEach: () => {
+    mocked(signOut).mockReset();
+  },
   afterEach: () => {
     toast.dismiss();
   },
@@ -40,6 +43,10 @@ export const SignsOut: Story = {
       }),
     );
     await waitFor(() => expect(signOut).toHaveBeenCalledOnce());
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await expect(
+      screen.queryByText(texts(globals.locale).Toasts.unexpected),
+    ).toBeNull();
   },
 };
 

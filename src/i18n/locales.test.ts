@@ -40,6 +40,7 @@ describe("browserLocale", () => {
   });
 
   it("ignores an unknown cookie value", () => {
-    expect(browserLocale("NEXT_LOCALE=de", ["fr"])).toBe("uk");
+    expect(browserLocale("NEXT_LOCALE=de", ["en"])).toBe("en");
+    expect(browserLocale("NEXT_LOCALE=de", ["fr"])).toBe(defaultLocale);
   });
 });

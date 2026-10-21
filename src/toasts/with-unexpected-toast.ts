@@ -1,5 +1,17 @@
-import { unstable_rethrow } from "next/navigation";
+import {
+  unstable_isUnrecognizedActionError,
+  unstable_rethrow,
+} from "next/navigation";
 import type { ActionToast } from "./toast";
+
+// Lets Next.js control flow through and turns anything else into the unexpected toast.
+export function unexpectedToast(error: unknown): ActionToast {
+  unstable_rethrow(error);
+  // A tab opened before a deploy calls actions the new server no longer knows; only a reload fixes it.
+  if (unstable_isUnrecognizedActionError(error)) window.location.reload();
+  console.error(error);
+  return { type: "error", key: "unexpected" };
+}
 
 // Wraps an action for useActionState so a thrown error or a failed request becomes a toast instead of the error page.
 export function withUnexpectedToast<S extends { toast?: ActionToast }>(
@@ -10,11 +22,7 @@ export function withUnexpectedToast<S extends { toast?: ActionToast }>(
     try {
       return await action(state, formData);
     } catch (error) {
-      unstable_rethrow(error);
-      return {
-        ...fallback(state, formData),
-        toast: { type: "error", key: "unexpected" },
-      };
+      return { ...fallback(state, formData), toast: unexpectedToast(error) };
     }
   };
 }

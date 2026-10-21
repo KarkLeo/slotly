@@ -11,11 +11,13 @@ import { signIn, type SignInState } from "./actions";
 
 const initialState: SignInState = { step: "email" };
 
-const submit = withUnexpectedToast(signIn, (state, formData): SignInState =>
-  state.step === "email"
-    ? { step: "email", email: String(formData.get("email") ?? "").trim() }
-    : state,
-);
+// After a failure, show the step the user submitted from, with what they typed and without stale errors.
+const submit = withUnexpectedToast(signIn, (_state, formData): SignInState => {
+  const email = String(formData.get("email") ?? "").trim();
+  return formData.get("intent") === "verify"
+    ? { step: "code", email }
+    : { step: "email", email };
+});
 
 export function SignInForm({ next }: { next?: string }) {
   const t = useTranslations("SignIn");
