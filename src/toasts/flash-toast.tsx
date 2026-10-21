@@ -4,16 +4,13 @@ import { useTranslations } from "next-intl";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { decodeFlash, flashCookie } from "./toast";
+import { flashCookie, readFlashCookie } from "./toast";
 
 function takeFlashCookie() {
-  const prefix = `${flashCookie}=`;
-  const cookie = document.cookie
-    .split("; ")
-    .find((entry) => entry.startsWith(prefix));
-  if (!cookie) return null;
+  if (!document.cookie.includes(`${flashCookie}=`)) return null;
+  const flash = readFlashCookie(document.cookie);
   document.cookie = `${flashCookie}=; path=/; max-age=0`;
-  return decodeFlash(decodeURIComponent(cookie.slice(prefix.length)));
+  return flash;
 }
 
 export function FlashToast() {

@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { flashCookie } from "@/toasts/toast";
 import { cookieSet } from "@/toasts/test-mocks";
 import { decideAuthorization } from "./oauth-actions";
 
@@ -9,21 +8,33 @@ vi.mock("@/db/server", () => ({
   createClient: async () => ({ auth: { oauth } }),
 }));
 
+function decision(value: string) {
+  const data = new FormData();
+  data.set("authorization_id", "abc");
+  data.set("decision", value);
+  return data;
+}
+
 beforeEach(() => vi.clearAllMocks());
 
 describe("decideAuthorization", () => {
-  it("flashes decisionFailed and returns to the consent page", async () => {
+  it("stays on the page with a decisionFailed toast", async () => {
     oauth.approveAuthorization.mockResolvedValue({ data: null, error: {} });
-    const data = new FormData();
-    data.set("authorization_id", "abc");
-    data.set("decision", "approve");
-    await expect(decideAuthorization(data)).rejects.toThrow(
-      "redirect:/oauth/consent?authorization_id=abc",
+    await expect(decideAuthorization({}, decision("approve"))).resolves.toEqual(
+      {
+        toast: { type: "error", key: "decisionFailed" },
+      },
     );
-    expect(cookieSet).toHaveBeenCalledWith(
-      flashCookie,
-      "error:decisionFailed",
-      expect.objectContaining({ path: "/" }),
+    expect(cookieSet).not.toHaveBeenCalled();
+  });
+
+  it("returns to the client after a decision", async () => {
+    oauth.denyAuthorization.mockResolvedValue({
+      data: { redirect_url: "https://client.example/cb" },
+      error: null,
+    });
+    await expect(decideAuthorization({}, decision("deny"))).rejects.toThrow(
+      "redirect:https://client.example/cb",
     );
   });
 });

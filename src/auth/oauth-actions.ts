@@ -2,9 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/db/server";
-import { setFlash } from "@/toasts/flash";
+import type { ActionToast } from "@/toasts/toast";
 
-export async function decideAuthorization(formData: FormData) {
+export type ConsentState = { toast?: ActionToast };
+
+export async function decideAuthorization(
+  _state: ConsentState,
+  formData: FormData,
+): Promise<ConsentState> {
   const authorizationId = String(formData.get("authorization_id") ?? "");
   const approve = formData.get("decision") === "approve";
 
@@ -14,11 +19,8 @@ export async function decideAuthorization(formData: FormData) {
     ? await supabase.auth.oauth.approveAuthorization(authorizationId, options)
     : await supabase.auth.oauth.denyAuthorization(authorizationId, options);
 
-  if (error || !data) {
-    await setFlash({ type: "error", key: "decisionFailed" });
-    const params = new URLSearchParams({ authorization_id: authorizationId });
-    redirect(`/oauth/consent?${params}`);
-  }
+  if (error || !data)
+    return { toast: { type: "error", key: "decisionFailed" } };
 
   redirect(data.redirect_url);
 }

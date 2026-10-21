@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flashCookie } from "@/toasts/toast";
 import { cookieSet } from "@/toasts/test-mocks";
 import { GET } from "./route";
@@ -7,6 +7,8 @@ import { GET } from "./route";
 const auth = { verifyOtp: vi.fn() };
 
 vi.mock("@/db/server", () => ({ createClient: async () => ({ auth }) }));
+
+beforeEach(() => vi.clearAllMocks());
 
 describe("GET /auth/confirm", () => {
   it("flashes linkExpired and sends the user to login", async () => {

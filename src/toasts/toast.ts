@@ -25,3 +25,17 @@ export function decodeFlash(value: string | undefined): ActionToast | null {
   if (!Object.hasOwn(toastKeys, key)) return null;
   return { type, key: key as ToastKey };
 }
+
+export function readFlashCookie(cookies: string): ActionToast | null {
+  const prefix = `${flashCookie}=`;
+  const raw = cookies
+    .split("; ")
+    .find((entry) => entry.startsWith(prefix))
+    ?.slice(prefix.length);
+  if (raw === undefined) return null;
+  try {
+    return decodeFlash(decodeURIComponent(raw));
+  } catch {
+    return null;
+  }
+}

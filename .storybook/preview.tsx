@@ -11,6 +11,7 @@ import { defaultLocale, isLocale, locales } from "../src/i18n/locales";
 import "../src/app/globals.css";
 
 sb.mock(import("../src/auth/actions.ts"));
+sb.mock(import("../src/auth/oauth-actions.ts"));
 sb.mock(import("../src/i18n/actions.ts"));
 
 const messages = { uk, ru, en };

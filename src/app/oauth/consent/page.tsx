@@ -1,8 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { decideAuthorization } from "@/auth/oauth-actions";
+import { ConsentForm } from "@/auth/consent-form";
 import { redirectHost } from "@/auth/redirect-host";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/db/server";
 
 export default async function ConsentPage({
@@ -35,30 +34,7 @@ export default async function ConsentPage({
       <p className="text-muted-foreground">
         {t("signedInAs", { email: data.user.email })}
       </p>
-      <form action={decideAuthorization} className="flex flex-col gap-3">
-        <input
-          type="hidden"
-          name="authorization_id"
-          value={data.authorization_id}
-        />
-        <Button
-          type="submit"
-          name="decision"
-          value="approve"
-          className="w-full"
-        >
-          {t("approve")}
-        </Button>
-        <Button
-          type="submit"
-          name="decision"
-          value="deny"
-          variant="outline"
-          className="w-full"
-        >
-          {t("deny")}
-        </Button>
-      </form>
+      <ConsentForm authorizationId={data.authorization_id} />
     </main>
   );
 }
