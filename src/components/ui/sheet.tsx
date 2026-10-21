@@ -77,7 +77,7 @@ function SheetContent({
           ref={setBody}
           tabIndex={bodyTabIndex}
           className={cn(
-            "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-[inherit]",
+            "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-4 has-[>[data-slot=sheet-footer]:last-child]:pb-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-[inherit]",
             bodyClassName,
           )}
         >

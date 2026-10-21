@@ -9,6 +9,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -30,16 +31,20 @@ function SheetDemo({
   withCard = false,
   title = "Your booking",
   lines = 0,
+  bodyClassName,
+  withFooter = false,
 }: {
   withCard?: boolean;
   title?: string;
   lines?: number;
+  bodyClassName?: string;
+  withFooter?: boolean;
 }) {
   return (
     <div className="p-4">
       <Sheet>
         <SheetTrigger render={<Button />}>Review booking</SheetTrigger>
-        <SheetContent side="bottom" bodyClassName="pb-6">
+        <SheetContent side="bottom" bodyClassName={bodyClassName}>
           <SheetHeader>
             <SheetTitle>{title}</SheetTitle>
             <SheetDescription>
@@ -58,6 +63,11 @@ function SheetDemo({
               </CardHeader>
               <CardContent>Tomorrow, 14:00 · 90 min · 900 UAH</CardContent>
             </Card>
+          )}
+          {withFooter && (
+            <SheetFooter data-testid="footer">
+              <Button>Confirm</Button>
+            </SheetFooter>
           )}
         </SheetContent>
       </Sheet>
@@ -118,7 +128,7 @@ export const LongTitle: Story = {
 };
 
 export const TallContent: Story = {
-  args: { lines: 60 },
+  args: { lines: 60, bodyClassName: "pb-6" },
   play: async ({ canvas }) => {
     await userEvent.click(
       canvas.getByRole("button", { name: "Review booking" }),
@@ -159,5 +169,29 @@ export const EscapeCloses: Story = {
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+export const DefaultBottomSpacing: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Review booking" }),
+    );
+    const sheet = await screen.findByRole("dialog");
+    const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
+    await expect(getComputedStyle(body).paddingBottom).toBe("16px");
+  },
+};
+
+export const FooterSpacing: Story = {
+  args: { withFooter: true },
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Review booking" }),
+    );
+    const sheet = await screen.findByRole("dialog");
+    const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
+    // The footer brings its own padding; the body adds none after it.
+    await expect(getComputedStyle(body).paddingBottom).toBe("0px");
   },
 };
