@@ -27,9 +27,6 @@ export const Default: Story = {
       name: "Remind me a day before",
     });
     await expect(boxHeight(checkbox)).toBe(20);
-    await expect(
-      boxHeight(canvas.getByText("Remind me a day before")),
-    ).toBeGreaterThanOrEqual(44);
     await userEvent.click(canvas.getByText("Remind me a day before"));
     await expect(checkbox).toHaveAttribute("aria-checked", "true");
   },

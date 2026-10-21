@@ -1,15 +1,13 @@
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { decideAuthorization } from "@/auth/oauth-actions";
+import { ConsentForm } from "@/auth/consent-form";
 import { redirectHost } from "@/auth/redirect-host";
 import { createClient } from "@/db/server";
-
-const buttonClass = "w-full rounded-md px-3 py-2 font-medium";
 
 export default async function ConsentPage({
   searchParams,
 }: PageProps<"/oauth/consent">) {
-  const { authorization_id: authorizationId, error } = await searchParams;
+  const { authorization_id: authorizationId } = await searchParams;
   const t = await getTranslations("OAuthConsent");
 
   if (typeof authorizationId !== "string" || !authorizationId) {
@@ -28,38 +26,15 @@ export default async function ConsentPage({
 
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-4 p-6">
-      <h1 className="text-2xl font-semibold">{t("title", { client })}</h1>
-      <p className="text-sm">{t("access")}</p>
-      <p className="text-sm">{t("returnTo", { host })}</p>
-      <p className="text-sm">{t("signedInAs", { email: data.user.email })}</p>
-      {error === "decision" && (
-        <p role="alert" className="text-sm text-destructive">
-          {t("errors.decision")}
-        </p>
-      )}
-      <form action={decideAuthorization} className="flex flex-col gap-2">
-        <input
-          type="hidden"
-          name="authorization_id"
-          value={data.authorization_id}
-        />
-        <button
-          type="submit"
-          name="decision"
-          value="approve"
-          className={`${buttonClass} bg-primary text-primary-foreground`}
-        >
-          {t("approve")}
-        </button>
-        <button
-          type="submit"
-          name="decision"
-          value="deny"
-          className={`${buttonClass} bg-secondary text-secondary-foreground`}
-        >
-          {t("deny")}
-        </button>
-      </form>
+      <h1 className="text-2xl font-extrabold tracking-tight">
+        {t("title", { client })}
+      </h1>
+      <p>{t("access")}</p>
+      <p className="text-muted-foreground">{t("returnTo", { host })}</p>
+      <p className="text-muted-foreground">
+        {t("signedInAs", { email: data.user.email })}
+      </p>
+      <ConsentForm authorizationId={data.authorization_id} />
     </main>
   );
 }

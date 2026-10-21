@@ -13,7 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./sheet";
-import { computedColor, intersects } from "./story-helpers";
+import { computedColor, intersects, resolvedColor } from "./story-helpers";
 
 const dictionaries = { uk, ru, en };
 
@@ -83,6 +83,7 @@ export const SummaryCard: Story = {
     );
     const sheet = await screen.findByRole("dialog");
     const card = within(sheet).getByTestId("summary");
+    await expect(computedColor(card)).toBe(resolvedColor("bg-secondary"));
     await expect(computedColor(card)).not.toBe(computedColor(sheet));
   },
 };

@@ -6,7 +6,7 @@ base_url=${BASE_URL:-http://127.0.0.1:3000}
 host=${SMOKE_HOST:-slotly.example}
 site_url=${SITE_URL:-http://$host}
 failures=0
-status="" location="" www_authenticate="" body=""
+status="" location="" www_authenticate="" set_cookie="" body=""
 
 request() {
   local method=$1 path=$2 headers_file body_file
@@ -19,6 +19,7 @@ request() {
   status=$(curl "${args[@]}" "$base_url$path") || status=000
   location=$(header location "$headers_file")
   www_authenticate=$(header www-authenticate "$headers_file")
+  set_cookie=$(grep -i "^set-cookie:" "$headers_file" | tr -d '\r')
   body=$(cat "$body_file")
   rm -f "$headers_file" "$body_file"
 }
@@ -61,7 +62,8 @@ expect "GET /app location" "/login?next=%2Fapp" "$location"
 
 request GET "/auth/confirm?token_hash=bad&type=email"
 expect "GET /auth/confirm status" 307 "$status"
-expect "GET /auth/confirm location" "/login?error=link" "$location"
+expect "GET /auth/confirm location" "/login" "$location"
+expect_contains "GET /auth/confirm flash" "slotly-flash=error%3AlinkExpired" "$set_cookie"
 
 request POST /api/mcp
 expect "POST /api/mcp status" 401 "$status"

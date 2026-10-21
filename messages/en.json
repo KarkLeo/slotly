@@ -19,13 +19,11 @@
     "useAnotherEmail": "Use another email",
     "errors": {
       "invalidEmail": "Check the email address.",
-      "invalidCode": "The code is wrong or has expired.",
-      "rateLimited": "Too many attempts. Wait a minute and try again.",
-      "expiredLink": "The link has expired or was already used. Request a new one.",
-      "generic": "Something went wrong. Please try again."
+      "invalidCode": "The code is wrong or has expired."
     }
   },
   "Cabinet": {
+    "title": "Dashboard",
     "signedInAs": "Signed in as {email}",
     "signOut": "Sign out"
   },
@@ -38,12 +36,20 @@
     "deny": "Deny",
     "errors": {
       "missing": "The connection link is incomplete. Start connecting again from the app.",
-      "expired": "This connection request has expired. Start connecting again from the app.",
-      "decision": "Could not save your decision. Please try again."
+      "expired": "This connection request has expired. Start connecting again from the app."
     }
   },
   "UI": {
     "close": "Close",
     "notifications": "Notifications"
+  },
+  "Toasts": {
+    "codeSent": "Email sent. Check your inbox.",
+    "signedIn": "You are signed in.",
+    "signedOut": "You are signed out.",
+    "linkExpired": "The link has expired or was already used. Request a new one.",
+    "rateLimited": "Too many attempts. Wait a minute and try again.",
+    "unexpected": "Something went wrong. Please try again.",
+    "decisionFailed": "Could not save your decision. Please try again."
   }
 }

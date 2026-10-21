@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 import { safeNextPath } from "@/auth/next-path";
 import { createClient } from "@/db/server";
+import { setFlash } from "@/toasts/flash";
 
 const allowedTypes = new Set<EmailOtpType>(["email", "magiclink", "signup"]);
 
@@ -17,8 +18,12 @@ export async function GET(request: NextRequest) {
       token_hash: tokenHash,
       type,
     });
-    if (!error) redirect(safeNextPath(searchParams.get("next")));
+    if (!error) {
+      await setFlash({ type: "success", key: "signedIn" });
+      redirect(safeNextPath(searchParams.get("next")));
+    }
   }
 
-  redirect("/login?error=link");
+  await setFlash({ type: "error", key: "linkExpired" });
+  redirect("/login");
 }

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { toast } from "sonner";
 import ru from "../../../messages/ru.json";
-import { expect, screen, userEvent, waitFor } from "storybook/test";
+import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "./button";
 import { Toaster } from "./sonner";
 import { computedColor, overflowsX, resolvedColor } from "./story-helpers";
@@ -107,5 +107,36 @@ export const RegionLabelRu: Story = {
     await expect(
       screen.getByRole("region", { name: new RegExp(ru.UI.notifications) }),
     ).toBeInTheDocument();
+  },
+};
+
+const onUndo = fn();
+
+export const WithAction: Story = {
+  render: () => (
+    <div className="p-4">
+      <Toaster />
+      <Button
+        onClick={() =>
+          toast.success("Booking cancelled", {
+            action: { label: "Undo", onClick: onUndo },
+          })
+        }
+      >
+        Cancel booking
+      </Button>
+    </div>
+  ),
+  beforeEach: () => {
+    onUndo.mockReset();
+  },
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Cancel booking" }),
+    );
+    const undo = await screen.findByRole("button", { name: "Undo" });
+    await waitFor(() => expect(undo).toBeVisible());
+    await userEvent.click(undo);
+    await expect(onUndo).toHaveBeenCalledOnce();
   },
 };
