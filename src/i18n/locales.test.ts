@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultLocale, negotiateLocale } from "./locales";
+import { browserLocale, defaultLocale, negotiateLocale } from "./locales";
 
 describe("negotiateLocale", () => {
   it("falls back to the default locale without a header", () => {
@@ -27,5 +27,19 @@ describe("negotiateLocale", () => {
 
   it("falls back when nothing is supported", () => {
     expect(negotiateLocale("de,fr;q=0.8,*;q=0.1")).toBe(defaultLocale);
+  });
+});
+
+describe("browserLocale", () => {
+  it("prefers the locale cookie", () => {
+    expect(browserLocale("a=1; NEXT_LOCALE=ru", ["en-US"])).toBe("ru");
+  });
+
+  it("falls back to the browser languages", () => {
+    expect(browserLocale("a=1", ["en-US", "uk"])).toBe("en");
+  });
+
+  it("ignores an unknown cookie value", () => {
+    expect(browserLocale("NEXT_LOCALE=de", ["fr"])).toBe("uk");
   });
 });

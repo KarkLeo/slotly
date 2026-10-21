@@ -51,5 +51,10 @@
     "rateLimited": "Too many attempts. Wait a minute and try again.",
     "unexpected": "Something went wrong. Please try again.",
     "decisionFailed": "Could not save your decision. Please try again."
+  },
+  "Errors": {
+    "title": "Something went wrong",
+    "description": "We could not load this page. Try again in a moment.",
+    "retry": "Try again"
   }
 }
