@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect } from "storybook/test";
+import { expect, waitFor } from "storybook/test";
 import { Badge } from "./badge";
 import { computedColor, overflowsX, resolvedColor } from "./story-helpers";
 
@@ -31,8 +31,12 @@ export const Variants: Story = {
     </div>
   ),
   play: async ({ canvas }) => {
+    // Give the truncation observer time to (wrongly) add a title.
+    await new Promise((resolve) => setTimeout(resolve, 100));
     for (const variant of variants) {
       const badge = canvas.getByText(variant).closest("[data-slot=badge]")!;
+      // Fits without truncation, so no redundant tooltip.
+      await expect(badge).not.toHaveAttribute("title");
       const { height } = badge.getBoundingClientRect();
       await expect(
         parseFloat(getComputedStyle(badge).borderTopLeftRadius),
@@ -54,9 +58,16 @@ export const LongText: Story = {
     const label = canvas.getByText("Awaiting confirmation from the client");
     await expect(getComputedStyle(label).textOverflow).toBe("ellipsis");
     await expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
-    await expect(label.closest("[data-slot=badge]")).toHaveAttribute(
-      "title",
-      "Awaiting confirmation from the client",
+    await waitFor(() =>
+      expect(label.closest("[data-slot=badge]")).toHaveAttribute(
+        "title",
+        "Awaiting confirmation from the client",
+      ),
+    );
+    // Once there is room, the title goes away again.
+    canvas.getByTestId("wrapper").style.width = "40rem";
+    await waitFor(() =>
+      expect(label.closest("[data-slot=badge]")).not.toHaveAttribute("title"),
     );
   },
 };
@@ -76,9 +87,11 @@ export const CompositeText: Story = {
     const label = canvas.getByText("12 new bookings waiting this week");
     await expect(getComputedStyle(label).textOverflow).toBe("ellipsis");
     await expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
-    await expect(label.closest("[data-slot=badge]")).toHaveAttribute(
-      "title",
-      "12 new bookings waiting this week",
+    await waitFor(() =>
+      expect(label.closest("[data-slot=badge]")).toHaveAttribute(
+        "title",
+        "12 new bookings waiting this week",
+      ),
     );
   },
 };

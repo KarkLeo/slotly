@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
-import { intersects, overflowsX, settle } from "./story-helpers";
+import { intersects, nextFrames, overflowsX, settle } from "./story-helpers";
 
 type DemoProps = { title: string; description: string };
 
@@ -64,6 +64,11 @@ export const Default: Story = {
         within(dialog).getByRole("button", { name: "Keep" }),
       ).toHaveFocus(),
     );
+    // Nothing to scroll and buttons inside: the body must not be an extra Tab stop.
+    await nextFrames();
+    await expect(
+      dialog.querySelector("[data-slot=dialog-body]"),
+    ).toHaveAttribute("tabindex", "-1");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());
@@ -131,6 +136,9 @@ export const TallContent: Story = {
         window.innerHeight,
       );
     });
+    // Overflowing, but the buttons inside already give keyboard users a way in.
+    await nextFrames();
+    await expect(body).toHaveAttribute("tabindex", "-1");
     // The close button stays reachable while the content is scrolled.
     const close = within(dialog).getByRole("button", { name: uk.UI.close });
     await expect(close.getBoundingClientRect().top).toBeGreaterThanOrEqual(

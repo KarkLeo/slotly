@@ -9,6 +9,7 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -16,6 +17,7 @@ import {
 import {
   computedColor,
   intersects,
+  nextFrames,
   resolvedColor,
   settle,
 } from "./story-helpers";
@@ -30,16 +32,20 @@ function SheetDemo({
   withCard = false,
   title = "Your booking",
   lines = 0,
+  bodyClassName,
+  withFooter = false,
 }: {
   withCard?: boolean;
   title?: string;
   lines?: number;
+  bodyClassName?: string;
+  withFooter?: boolean;
 }) {
   return (
     <div className="p-4">
       <Sheet>
         <SheetTrigger render={<Button />}>Review booking</SheetTrigger>
-        <SheetContent side="bottom" bodyClassName="pb-6">
+        <SheetContent side="bottom" bodyClassName={bodyClassName}>
           <SheetHeader>
             <SheetTitle>{title}</SheetTitle>
             <SheetDescription>
@@ -58,6 +64,11 @@ function SheetDemo({
               </CardHeader>
               <CardContent>Tomorrow, 14:00 · 90 min · 900 UAH</CardContent>
             </Card>
+          )}
+          {withFooter && (
+            <SheetFooter data-testid="footer">
+              <Button>Confirm</Button>
+            </SheetFooter>
           )}
         </SheetContent>
       </Sheet>
@@ -118,7 +129,7 @@ export const LongTitle: Story = {
 };
 
 export const TallContent: Story = {
-  args: { lines: 60 },
+  args: { lines: 60, bodyClassName: "pb-6" },
   play: async ({ canvas }) => {
     await userEvent.click(
       canvas.getByRole("button", { name: "Review booking" }),
@@ -143,6 +154,8 @@ export const TallContent: Story = {
     );
     await expect(getComputedStyle(body).paddingBottom).toBe("24px");
     await expect(body).not.toHaveFocus();
+    // Overflowing text with nothing focusable: keyboard users need the body itself.
+    await waitFor(() => expect(body).toHaveAttribute("tabindex", "0"));
   },
 };
 
@@ -157,5 +170,35 @@ export const EscapeCloses: Story = {
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+export const DefaultBottomSpacing: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Review booking" }),
+    );
+    const sheet = await screen.findByRole("dialog");
+    const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
+    await expect(getComputedStyle(body).paddingBottom).toBe("16px");
+    // Fits on screen: not a Tab stop.
+    await nextFrames();
+    await expect(body).toHaveAttribute("tabindex", "-1");
+    // Shrinking the sheet makes the text overflow, and the body becomes reachable.
+    sheet.style.maxHeight = "60px";
+    await waitFor(() => expect(body).toHaveAttribute("tabindex", "0"));
+  },
+};
+
+export const FooterSpacing: Story = {
+  args: { withFooter: true },
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Review booking" }),
+    );
+    const sheet = await screen.findByRole("dialog");
+    const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
+    // The footer brings its own padding; the body adds none after it.
+    await expect(getComputedStyle(body).paddingBottom).toBe("0px");
   },
 };

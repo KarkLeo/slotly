@@ -8,6 +8,12 @@ export function settle() {
     .forEach((animation) => animation.finish());
 }
 
+// Lets ResizeObserver callbacks run before asserting that something did not change.
+export async function nextFrames(count = 3) {
+  for (let i = 0; i < count; i++)
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+}
+
 export function boxHeight(el: Element): number {
   settle();
   return el.getBoundingClientRect().height;
