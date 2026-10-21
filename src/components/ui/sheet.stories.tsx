@@ -17,6 +17,7 @@ import {
 import {
   computedColor,
   intersects,
+  nextFrames,
   resolvedColor,
   settle,
 } from "./story-helpers";
@@ -180,6 +181,12 @@ export const DefaultBottomSpacing: Story = {
     const sheet = await screen.findByRole("dialog");
     const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
     await expect(getComputedStyle(body).paddingBottom).toBe("16px");
+    // Fits on screen: not a Tab stop.
+    await nextFrames();
+    await expect(body).toHaveAttribute("tabindex", "-1");
+    // Shrinking the sheet makes the text overflow, and the body becomes reachable.
+    sheet.style.maxHeight = "60px";
+    await waitFor(() => expect(body).toHaveAttribute("tabindex", "0"));
   },
 };
 

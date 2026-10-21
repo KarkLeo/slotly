@@ -24,15 +24,27 @@ export function useScrollBodyTabIndex(body: HTMLElement | null) {
         body.scrollHeight > body.clientHeight && !body.querySelector(tabbable),
       );
     const resize = new ResizeObserver(update);
-    resize.observe(body);
-    for (const child of body.children) resize.observe(child);
-    const mutation = new MutationObserver(update);
-    mutation.observe(body, { childList: true, subtree: true });
+    const observeChildren = () => {
+      resize.observe(body);
+      for (const child of body.children) resize.observe(child);
+    };
+    observeChildren();
+    const mutation = new MutationObserver(() => {
+      observeChildren();
+      update();
+    });
+    mutation.observe(body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["disabled", "tabindex", "href", "hidden", "inert"],
+    });
     return () => {
       resize.disconnect();
       mutation.disconnect();
     };
   }, [body]);
 
-  return focusable ? 0 : undefined;
+  // -1 rather than no attribute, so a focused body keeps focus when it stops needing to be a Tab stop.
+  return focusable ? 0 : -1;
 }

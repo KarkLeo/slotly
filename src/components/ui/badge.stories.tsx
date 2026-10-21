@@ -64,6 +64,11 @@ export const LongText: Story = {
         "Awaiting confirmation from the client",
       ),
     );
+    // Once there is room, the title goes away again.
+    canvas.getByTestId("wrapper").style.width = "40rem";
+    await waitFor(() =>
+      expect(label.closest("[data-slot=badge]")).not.toHaveAttribute("title"),
+    );
   },
 };
 
