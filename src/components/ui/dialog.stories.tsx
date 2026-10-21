@@ -119,11 +119,15 @@ export const TallContent: Story = {
       window.innerHeight,
     );
     await expect(dialog.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
-    dialog.scrollTop = dialog.scrollHeight;
     const keep = within(dialog).getByRole("button", { name: "Keep" });
-    await expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-      window.innerHeight,
-    );
+    // Scrolling is ignored until the opening transition has laid the dialog out, so retry it.
+    await waitFor(() => {
+      settle();
+      dialog.scrollTop = dialog.scrollHeight;
+      expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        window.innerHeight,
+      );
+    });
     const title = within(dialog).getByRole("heading");
     const style = getComputedStyle(title);
     await expect(
