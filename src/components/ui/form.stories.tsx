@@ -5,7 +5,13 @@ import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { z } from "zod";
 import { Button } from "./button";
 import { Checkbox } from "./checkbox";
-import { Field, FieldError, FieldGroup, FieldLabel } from "./field";
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "./field";
 import { Input } from "./input";
 import {
   Select,
@@ -143,10 +149,12 @@ function BookingDemoForm({
                 onCheckedChange={field.onChange}
                 aria-invalid={fieldState.invalid}
               />
-              <FieldLabel htmlFor="terms">
-                I accept the booking terms
-              </FieldLabel>
-              <FieldError errors={[fieldState.error]} />
+              <FieldContent>
+                <FieldLabel htmlFor="terms">
+                  I accept the booking terms
+                </FieldLabel>
+                <FieldError errors={[fieldState.error]} />
+              </FieldContent>
             </Field>
           )}
         />
