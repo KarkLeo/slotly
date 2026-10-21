@@ -66,7 +66,11 @@ export const English: Story = {
 
 export const InvalidEmail: Story = {
   beforeEach: () => {
-    mocked(signIn).mockResolvedValue({ step: "email", error: "invalidEmail" });
+    mocked(signIn).mockResolvedValue({
+      step: "email",
+      email,
+      error: "invalidEmail",
+    });
   },
   play: async ({ canvas, userEvent, globals }) => {
     const t = texts(globals.locale).SignIn;
@@ -75,6 +79,7 @@ export const InvalidEmail: Story = {
     await userEvent.click(canvas.getByRole("button", { name: t.sendLink }));
     await expect(await canvas.findByText(t.errors.invalidEmail)).toBeVisible();
     await expect(input).toHaveAttribute("aria-invalid", "true");
+    await expect(input).toHaveValue(email);
   },
 };
 
@@ -82,6 +87,7 @@ export const RateLimited: Story = {
   beforeEach: () => {
     mocked(signIn).mockResolvedValue({
       step: "email",
+      email,
       toast: { type: "error", key: "rateLimited" },
     });
   },
@@ -93,6 +99,7 @@ export const RateLimited: Story = {
     );
     await expectToast(t.Toasts.rateLimited);
     await expect(canvas.queryByRole("alert")).toBeNull();
+    await expect(canvas.getByLabelText(t.SignIn.emailLabel)).toHaveValue(email);
   },
 };
 
@@ -134,7 +141,14 @@ export const InvalidCode: Story = {
 
 export const Pending: Story = {
   beforeEach: () => {
-    mocked(signIn).mockReturnValue(new Promise(() => {}));
+    let release = () => {};
+    mocked(signIn).mockReturnValue(
+      new Promise((resolve) => {
+        release = () => resolve({ step: "email" });
+      }),
+    );
+    // React 19 entangles pending actions; a never-settling one would block later stories.
+    return () => release();
   },
   play: async ({ canvas, userEvent, globals }) => {
     const t = texts(globals.locale).SignIn;
@@ -155,6 +169,54 @@ export const KeyboardFocus: Story = {
     settle();
     await expect(getComputedStyle(submit).boxShadow).toContain(
       resolvedColor("bg-ring"),
+    );
+  },
+};
+
+export const RateLimitedOnCode: Story = {
+  beforeEach: () => {
+    mocked(signIn)
+      .mockResolvedValueOnce({ step: "code", email })
+      .mockResolvedValueOnce({
+        step: "code",
+        email,
+        toast: { type: "error", key: "rateLimited" },
+      });
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.type(canvas.getByLabelText(t.SignIn.emailLabel), email);
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.sendLink }),
+    );
+    const code = await canvas.findByLabelText(t.SignIn.codeLabel);
+    await userEvent.type(code, "123456");
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.SignIn.verify }),
+    );
+    await expectToast(t.Toasts.rateLimited);
+    await expect(code).not.toHaveAttribute("aria-invalid");
+  },
+};
+
+export const SameErrorTwice: Story = {
+  beforeEach: () => {
+    mocked(signIn).mockImplementation(async () => ({
+      step: "email",
+      email,
+      toast: { type: "error", key: "rateLimited" },
+    }));
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.type(canvas.getByLabelText(t.SignIn.emailLabel), email);
+    const submit = canvas.getByRole("button", { name: t.SignIn.sendLink });
+    await userEvent.click(submit);
+    await expectToast(t.Toasts.rateLimited);
+    await waitFor(() => expect(submit).not.toHaveAttribute("aria-busy"));
+    await userEvent.click(submit);
+    await waitFor(() =>
+      expect(screen.getAllByText(t.Toasts.rateLimited)).toHaveLength(2),
     );
   },
 };

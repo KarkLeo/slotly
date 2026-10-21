@@ -97,6 +97,19 @@ function SelectContent({
   );
 }
 
+function SelectFieldLabel({
+  className,
+  ...props
+}: SelectPrimitive.Label.Props) {
+  return (
+    <SelectPrimitive.Label
+      data-slot="select-field-label"
+      className={cn("text-sm font-medium select-none", className)}
+      {...props}
+    />
+  );
+}
+
 function SelectLabel({
   className,
   ...props
@@ -192,6 +205,7 @@ export {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectFieldLabel,
   SelectLabel,
   SelectScrollDownButton,
   SelectScrollUpButton,

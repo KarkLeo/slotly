@@ -83,7 +83,7 @@ export function SignInForm({ next }: { next?: string }) {
           autoComplete="email"
           required
           autoFocus
-          defaultValue={state.step === "code" ? state.email : undefined}
+          defaultValue={state.email}
           placeholder="you@example.com"
           aria-invalid={invalid || undefined}
           aria-describedby={invalid ? "email-error" : undefined}

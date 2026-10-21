@@ -23,6 +23,7 @@
     }
   },
   "Cabinet": {
+    "title": "Кабинет",
     "signedInAs": "Вы вошли как {email}",
     "signOut": "Выйти"
   },

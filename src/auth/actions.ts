@@ -9,7 +9,12 @@ import type { ActionToast } from "@/toasts/toast";
 import { safeNextPath } from "./next-path";
 
 export type SignInState =
-  | { step: "email"; error?: "invalidEmail"; toast?: ActionToast }
+  | {
+      step: "email";
+      email?: string;
+      error?: "invalidEmail";
+      toast?: ActionToast;
+    }
   | {
       step: "code";
       email: string;
@@ -30,10 +35,10 @@ export async function signIn(
   _state: SignInState,
   formData: FormData,
 ): Promise<SignInState> {
-  const email = emailSchema.safeParse(
-    String(formData.get("email") ?? "").trim(),
-  );
-  if (!email.success) return { step: "email", error: "invalidEmail" };
+  const typed = String(formData.get("email") ?? "").trim();
+  const email = emailSchema.safeParse(typed);
+  if (!email.success)
+    return { step: "email", email: typed, error: "invalidEmail" };
 
   const supabase = await createClient();
 
@@ -66,7 +71,12 @@ export async function signIn(
     email: email.data,
     options: { shouldCreateUser: true, data: { locale: await getLocale() } },
   });
-  if (error) return { step: "email", toast: failureToast(error.code) };
+  if (error)
+    return {
+      step: "email",
+      email: email.data,
+      toast: failureToast(error.code),
+    };
 
   return {
     step: "code",

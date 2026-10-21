@@ -36,3 +36,11 @@ export const Default: Story = {
     await expect(setLocale).toHaveBeenCalledWith("en");
   },
 };
+
+export const LabelFocusesSelect: Story = {
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await userEvent.click(canvas.getByText(t.label));
+    await expect(canvas.getByRole("combobox", { name: t.label })).toHaveFocus();
+  },
+};

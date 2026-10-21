@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cookieSet } from "@/test/server-mocks";
 import { flashCookie } from "@/toasts/toast";
-import { cookieSet } from "@/toasts/test-mocks";
 import { signIn, signOut } from "./actions";
 
 const auth = {
@@ -33,6 +33,7 @@ describe("signIn", () => {
       signIn({ step: "email" }, form({ email: "nope" })),
     ).resolves.toEqual({
       step: "email",
+      email: "nope",
       error: "invalidEmail",
     });
   });
@@ -51,6 +52,7 @@ describe("signIn", () => {
     });
     await expect(signIn({ step: "email" }, form({ email }))).resolves.toEqual({
       step: "email",
+      email,
       toast: { type: "error", key: "rateLimited" },
     });
   });
@@ -59,6 +61,7 @@ describe("signIn", () => {
     auth.signInWithOtp.mockResolvedValue({ error: { code: "boom" } });
     await expect(signIn({ step: "email" }, form({ email }))).resolves.toEqual({
       step: "email",
+      email,
       toast: { type: "error", key: "unexpected" },
     });
   });

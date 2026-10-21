@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cookieSet } from "@/test/server-mocks";
 import { flashCookie } from "@/toasts/toast";
-import { cookieSet } from "@/toasts/test-mocks";
 import { GET } from "./route";
 
 const auth = { verifyOtp: vi.fn() };

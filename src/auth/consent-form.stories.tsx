@@ -61,7 +61,14 @@ export const DecisionFailed: Story = {
 
 export const Pending: Story = {
   beforeEach: () => {
-    mocked(decideAuthorization).mockReturnValue(new Promise(() => {}));
+    let release = () => {};
+    mocked(decideAuthorization).mockReturnValue(
+      new Promise((resolve) => {
+        release = () => resolve({});
+      }),
+    );
+    // React 19 entangles pending actions; a never-settling one would block later stories.
+    return () => release();
   },
   play: async ({ canvas, userEvent, globals }) => {
     const t = texts(globals.locale).OAuthConsent;

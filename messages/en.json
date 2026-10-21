@@ -23,6 +23,7 @@
     }
   },
   "Cabinet": {
+    "title": "Dashboard",
     "signedInAs": "Signed in as {email}",
     "signOut": "Sign out"
   },

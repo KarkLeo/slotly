@@ -12,6 +12,7 @@ export default defineConfig({
         test: {
           name: "unit",
           include: ["src/**/*.test.ts", "eslint-rules/**/*.test.ts"],
+          setupFiles: ["src/test/server-mocks.ts"],
         },
       },
       {

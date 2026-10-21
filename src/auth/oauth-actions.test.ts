@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { cookieSet } from "@/toasts/test-mocks";
+import { cookieSet } from "@/test/server-mocks";
 import { decideAuthorization } from "./oauth-actions";
 
 const oauth = { approveAuthorization: vi.fn(), denyAuthorization: vi.fn() };
