@@ -38,8 +38,11 @@ insert into public.appointments (id, master_id, service_id, during, buffer_minut
   ('00000000-0000-0000-0000-0000000000f2', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000a1',
    '[2030-01-16 10:00+00,2030-01-16 11:00+00)', 15, 'cancelled', 'client', 'uk', 'master');
 
-insert into public.appointment_clients (appointment_id, user_id, name) values
-  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000c', 'Iryna');
+insert into public.client_cards (id, master_id, user_id, name) values
+  ('00000000-0000-0000-0000-0000000000ca', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000c', 'Iryna');
+
+insert into public.appointment_clients (appointment_id, master_id, client_card_id, name) values
+  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000ca', 'Iryna');
 
 insert into public.blocks (master_id, during) values
   ('00000000-0000-0000-0000-00000000000a', '[2030-01-19 08:00+00,2030-01-19 09:00+00)');

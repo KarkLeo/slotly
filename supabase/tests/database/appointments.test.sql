@@ -19,8 +19,11 @@ insert into public.appointments (id, master_id, service_id, during, buffer_minut
   ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000a1',
    '[2030-01-14 10:00+00,2030-01-14 11:00+00)', 15, 'confirmed', 'client', 'uk');
 
-insert into public.appointment_clients (appointment_id, user_id, name) values
-  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000c', 'Iryna');
+insert into public.client_cards (id, master_id, user_id, name) values
+  ('00000000-0000-0000-0000-0000000000ca', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000c', 'Iryna');
+
+insert into public.appointment_clients (appointment_id, master_id, client_card_id, name) values
+  ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000ca', 'Iryna');
 
 -- Busy time
 
@@ -257,8 +260,8 @@ select is(
 insert into public.appointments (id, master_id, service_id, during, status, source, locale) values
   ('00000000-0000-0000-0000-0000000000f4', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000a1',
    tstzrange(date_trunc('hour', now()) + interval '3 hours', date_trunc('hour', now()) + interval '4 hours'), 'confirmed', 'client', 'uk');
-insert into public.appointment_clients (appointment_id, user_id, name) values
-  ('00000000-0000-0000-0000-0000000000f4', '00000000-0000-0000-0000-00000000000c', 'Iryna');
+insert into public.appointment_clients (appointment_id, master_id, client_card_id, name) values
+  ('00000000-0000-0000-0000-0000000000f4', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000ca', 'Iryna');
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000000c", "role": "authenticated"}', true);
@@ -346,7 +349,8 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ insert into public.appointment_clients (appointment_id, name) values ('00000000-0000-0000-0000-0000000000f1', 'Second client') $$,
+  $$ insert into public.appointment_clients (appointment_id, master_id, client_card_id, name) values
+       ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000ca', 'Second client') $$,
   '23505', null,
   'an appointment has one client'
 );
