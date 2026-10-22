@@ -6,4 +6,5 @@ export const cookieGet = vi.fn();
 vi.mock("server-only", () => ({}));
 vi.mock("next/headers", () => ({
   cookies: async () => ({ set: cookieSet, get: cookieGet, getAll: () => [] }),
+  headers: async () => new Headers(),
 }));

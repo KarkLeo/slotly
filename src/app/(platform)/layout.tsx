@@ -7,8 +7,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { getTheme } from "@/theme/server";
 import { themeClass } from "@/theme/theme";
 import { FlashToast } from "@/toasts/flash-toast";
-import { fontVariables } from "./fonts";
-import "./globals.css";
+import { fontVariables } from "../fonts";
+import "../globals.css";
 
 export const metadata: Metadata = {
   title: "Slotly",

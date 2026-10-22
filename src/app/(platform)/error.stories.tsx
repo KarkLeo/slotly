@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn } from "storybook/test";
-import en from "../../messages/errors/en.json";
-import ru from "../../messages/errors/ru.json";
-import uk from "../../messages/errors/uk.json";
+import en from "../../../messages/errors/en.json";
+import ru from "../../../messages/errors/ru.json";
+import uk from "../../../messages/errors/uk.json";
 import ErrorPage from "./error";
 
 const dictionaries = { uk, ru, en };

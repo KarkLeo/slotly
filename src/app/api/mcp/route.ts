@@ -1,11 +1,6 @@
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
-import {
-  audience,
-  issuer,
-  jwks,
-  resourceMetadataPath,
-  siteUrl,
-} from "@/mcp/config";
+import { siteUrl } from "@/lib/site-url";
+import { audience, issuer, jwks, resourceMetadataPath } from "@/mcp/config";
 import { createTokenVerifier } from "@/mcp/token";
 import { registerTools } from "@/mcp/tools";
 

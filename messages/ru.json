@@ -57,5 +57,25 @@
     "rateLimited": "Слишком много попыток. Подождите минуту и попробуйте снова.",
     "unexpected": "Что-то пошло не так. Попробуйте ещё раз.",
     "decisionFailed": "Не удалось сохранить решение. Попробуйте ещё раз."
+  },
+  "Landing": {
+    "languages": "Язык страницы",
+    "book": "Записаться",
+    "servicesTitle": "<accent>Услуги</accent>",
+    "otherServices": "Другое",
+    "bookService": "Записаться на «{service}»",
+    "priceFrom": "от {price}",
+    "online": "Онлайн",
+    "atClient": "Выезд к клиенту",
+    "bookingTitle": "Выберите <accent>услугу</accent>",
+    "noServices": "Мастер ещё не добавил услуги.",
+    "madeWith": "Сделано на <link>Slotly</link>",
+    "metaTitle": "{name} — онлайн-запись",
+    "metaDescription": "{name}: {specialties}. Выберите услугу и время онлайн.",
+    "metaDescriptionPlain": "{name}: выберите услугу и время онлайн.",
+    "notFoundTitle": "Страница <accent>не найдена</accent>",
+    "notFoundText": "Возможно, мастер сменил адрес или ещё не опубликовал страницу.",
+    "notFoundHome": "На главную Slotly",
+    "unpublished": "Страница ещё не опубликована: её видите только вы."
   }
 }
