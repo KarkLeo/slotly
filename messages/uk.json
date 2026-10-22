@@ -8,6 +8,12 @@
     "ru": "Русский",
     "en": "English"
   },
+  "ThemeSwitcher": {
+    "label": "Тема",
+    "system": "Системна",
+    "light": "Світла",
+    "dark": "Темна"
+  },
   "SignIn": {
     "title": "Вхід до кабінету",
     "emailLabel": "Email",
