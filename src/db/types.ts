@@ -51,42 +51,120 @@ export type Database = {
   };
   public: {
     Tables: {
-      masters: {
+      blocks: {
         Row: {
           created_at: string;
+          during: unknown;
+          id: string;
+          master_id: string;
+          note: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          during: unknown;
+          id?: string;
+          master_id: string;
+          note?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          during?: unknown;
+          id?: string;
+          master_id?: string;
+          note?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blocks_master_id_fkey";
+            columns: ["master_id"];
+            isOneToOne: false;
+            referencedRelation: "masters";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      masters: {
+        Row: {
+          auto_confirm: boolean;
+          cancel_deadline_minutes: number;
+          created_at: string;
           currency: string;
+          horizon_days: number;
           id: string;
           locales: Database["public"]["Enums"]["locale"][];
+          max_active_bookings: number;
+          min_notice_minutes: number;
           name: string;
           primary_locale: Database["public"]["Enums"]["locale"];
           published_at: string | null;
+          slot_step_minutes: number;
           slug: string;
           timezone: string;
         };
         ComputedFields: never;
         Insert: {
+          auto_confirm?: boolean;
+          cancel_deadline_minutes?: number;
           created_at?: string;
           currency?: string;
+          horizon_days?: number;
           id: string;
           locales?: Database["public"]["Enums"]["locale"][];
+          max_active_bookings?: number;
+          min_notice_minutes?: number;
           name: string;
           primary_locale?: Database["public"]["Enums"]["locale"];
           published_at?: string | null;
+          slot_step_minutes?: number;
           slug: string;
           timezone?: string;
         };
         Update: {
+          auto_confirm?: boolean;
+          cancel_deadline_minutes?: number;
           created_at?: string;
           currency?: string;
+          horizon_days?: number;
           id?: string;
           locales?: Database["public"]["Enums"]["locale"][];
+          max_active_bookings?: number;
+          min_notice_minutes?: number;
           name?: string;
           primary_locale?: Database["public"]["Enums"]["locale"];
           published_at?: string | null;
+          slot_step_minutes?: number;
           slug?: string;
           timezone?: string;
         };
         Relationships: [];
+      };
+      schedule_exceptions: {
+        Row: {
+          day: string;
+          hours: unknown;
+          master_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          day: string;
+          hours?: unknown;
+          master_id: string;
+        };
+        Update: {
+          day?: string;
+          hours?: unknown;
+          master_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "schedule_exceptions_master_id_fkey";
+            columns: ["master_id"];
+            isOneToOne: false;
+            referencedRelation: "masters";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       service_categories: {
         Row: {
@@ -178,6 +256,33 @@ export type Database = {
           },
           {
             foreignKeyName: "services_master_id_fkey";
+            columns: ["master_id"];
+            isOneToOne: false;
+            referencedRelation: "masters";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      work_template: {
+        Row: {
+          hours: unknown;
+          master_id: string;
+          weekday: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          hours: unknown;
+          master_id: string;
+          weekday: number;
+        };
+        Update: {
+          hours?: unknown;
+          master_id?: string;
+          weekday?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "work_template_master_id_fkey";
             columns: ["master_id"];
             isOneToOne: false;
             referencedRelation: "masters";
