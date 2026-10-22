@@ -51,6 +51,103 @@ export type Database = {
   };
   public: {
     Tables: {
+      appointment_clients: {
+        Row: {
+          appointment_id: string;
+          created_at: string;
+          id: string;
+          name: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          appointment_id: string;
+          created_at?: string;
+          id?: string;
+          name: string;
+          user_id?: string | null;
+        };
+        Update: {
+          appointment_id?: string;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "appointment_clients_appointment_id_fkey";
+            columns: ["appointment_id"];
+            isOneToOne: true;
+            referencedRelation: "appointments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      appointments: {
+        Row: {
+          buffer_minutes: number;
+          cancel_comment: string | null;
+          cancelled_by: Database["public"]["Enums"]["canceller"] | null;
+          contact_confirmed_at: string | null;
+          created_at: string;
+          during: unknown;
+          hold_until: string | null;
+          id: string;
+          locale: Database["public"]["Enums"]["locale"];
+          master_id: string;
+          service_id: string;
+          source: Database["public"]["Enums"]["appointment_source"];
+          status: Database["public"]["Enums"]["appointment_status"];
+        };
+        ComputedFields: never;
+        Insert: {
+          buffer_minutes?: number;
+          cancel_comment?: string | null;
+          cancelled_by?: Database["public"]["Enums"]["canceller"] | null;
+          contact_confirmed_at?: string | null;
+          created_at?: string;
+          during: unknown;
+          hold_until?: string | null;
+          id?: string;
+          locale: Database["public"]["Enums"]["locale"];
+          master_id: string;
+          service_id: string;
+          source: Database["public"]["Enums"]["appointment_source"];
+          status: Database["public"]["Enums"]["appointment_status"];
+        };
+        Update: {
+          buffer_minutes?: number;
+          cancel_comment?: string | null;
+          cancelled_by?: Database["public"]["Enums"]["canceller"] | null;
+          contact_confirmed_at?: string | null;
+          created_at?: string;
+          during?: unknown;
+          hold_until?: string | null;
+          id?: string;
+          locale?: Database["public"]["Enums"]["locale"];
+          master_id?: string;
+          service_id?: string;
+          source?: Database["public"]["Enums"]["appointment_source"];
+          status?: Database["public"]["Enums"]["appointment_status"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "appointments_master_id_fkey";
+            columns: ["master_id"];
+            isOneToOne: false;
+            referencedRelation: "masters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "appointments_master_id_service_id_fkey";
+            columns: ["master_id", "service_id"];
+            isOneToOne: false;
+            referencedRelation: "services";
+            referencedColumns: ["master_id", "id"];
+          },
+        ];
+      };
       blocks: {
         Row: {
           created_at: string;
@@ -295,9 +392,29 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      cancel_appointment: {
+        Args: { appointment_id: string; comment?: string };
+        Returns: undefined;
+      };
+      confirm_appointment: {
+        Args: { appointment_id: string };
+        Returns: undefined;
+      };
       health: { Args: Record<PropertyKey, never>; Returns: string };
+      reschedule_appointment: {
+        Args: { appointment_id: string; starts_at: string };
+        Returns: undefined;
+      };
+      set_no_show: {
+        Args: { appointment_id: string; no_show: boolean };
+        Returns: undefined;
+      };
     };
     Enums: {
+      appointment_source: "client" | "manual";
+      appointment_status:
+        "pending" | "confirmed" | "completed" | "cancelled" | "no_show";
+      canceller: "client" | "master" | "system";
       locale: "uk" | "ru" | "en";
       price_kind: "fixed" | "from" | "none";
       service_format: "on_site" | "online" | "at_client";
@@ -434,6 +551,15 @@ export const Constants = {
   },
   public: {
     Enums: {
+      appointment_source: ["client", "manual"],
+      appointment_status: [
+        "pending",
+        "confirmed",
+        "completed",
+        "cancelled",
+        "no_show",
+      ],
+      canceller: ["client", "master", "system"],
       locale: ["uk", "ru", "en"],
       price_kind: ["fixed", "from", "none"],
       service_format: ["on_site", "online", "at_client"],
