@@ -7,6 +7,7 @@ import { Button } from "./button";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import {
   Sheet,
+  SheetBody,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -17,7 +18,6 @@ import {
 import {
   computedColor,
   intersects,
-  nextFrames,
   resolvedColor,
   settle,
 } from "./story-helpers";
@@ -32,38 +32,43 @@ function SheetDemo({
   withCard = false,
   title = "Your booking",
   lines = 0,
-  bodyClassName,
+  contentClassName,
   withFooter = false,
 }: {
   withCard?: boolean;
   title?: string;
   lines?: number;
-  bodyClassName?: string;
+  contentClassName?: string;
   withFooter?: boolean;
 }) {
   return (
     <div className="p-4">
       <Sheet>
         <SheetTrigger render={<Button />}>Review booking</SheetTrigger>
-        <SheetContent side="bottom" bodyClassName={bodyClassName}>
+        <SheetContent side="bottom" className={contentClassName}>
           <SheetHeader>
             <SheetTitle>{title}</SheetTitle>
             <SheetDescription>
               Check the details before confirming.
             </SheetDescription>
           </SheetHeader>
-          {Array.from({ length: lines }, (_, index) => (
-            <p key={index} className="px-4">
-              Line {index + 1} of the booking details.
-            </p>
-          ))}
+          {lines > 0 && (
+            // Plain text has nothing to focus, so the body itself takes focus for keyboard scrolling.
+            <SheetBody tabIndex={0}>
+              {Array.from({ length: lines }, (_, index) => (
+                <p key={index}>Line {index + 1} of the booking details.</p>
+              ))}
+            </SheetBody>
+          )}
           {withCard && (
-            <Card variant="inset" className="mx-4" data-testid="summary">
-              <CardHeader>
-                <CardTitle>Manicure with gel polish</CardTitle>
-              </CardHeader>
-              <CardContent>Tomorrow, 14:00 · 90 min · 900 UAH</CardContent>
-            </Card>
+            <SheetBody>
+              <Card variant="inset" data-testid="summary">
+                <CardHeader>
+                  <CardTitle>Manicure with gel polish</CardTitle>
+                </CardHeader>
+                <CardContent>Tomorrow, 14:00 · 90 min · 900 UAH</CardContent>
+              </Card>
+            </SheetBody>
           )}
           {withFooter && (
             <SheetFooter data-testid="footer">
@@ -129,7 +134,7 @@ export const LongTitle: Story = {
 };
 
 export const TallContent: Story = {
-  args: { lines: 60, bodyClassName: "pb-6" },
+  args: { lines: 60, contentClassName: "pb-6" },
   play: async ({ canvas }) => {
     await userEvent.click(
       canvas.getByRole("button", { name: "Review booking" }),
@@ -137,25 +142,33 @@ export const TallContent: Story = {
     const sheet = await screen.findByRole("dialog");
     settle();
     await expect(sheet.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
-    const last = within(sheet).getByText("Line 60 of the booking details.");
     const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
-    // Scrolling is ignored until the opening transition has laid the sheet out, so retry it.
+    const header = sheet.querySelector("[data-slot=sheet-header]")!;
+    const last = within(sheet).getByText("Line 60 of the booking details.");
+    const close = within(sheet).getByRole("button", { name: uk.UI.close });
+    await waitFor(() => {
+      settle();
+      expect(sheet.getAnimations()).toHaveLength(0);
+    });
+    await expect(
+      header.getBoundingClientRect().top - sheet.getBoundingClientRect().top,
+    ).toBe(0);
+    const headerTop = header.getBoundingClientRect().top;
+    const closeTop = close.getBoundingClientRect().top;
     await waitFor(() => {
       settle();
       body.scrollTop = body.scrollHeight;
+      expect(body.scrollTop).toBeGreaterThan(0);
       expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(
         window.innerHeight,
       );
     });
-    // The close button stays reachable while the content is scrolled.
-    const close = within(sheet).getByRole("button", { name: uk.UI.close });
-    await expect(close.getBoundingClientRect().top).toBeGreaterThanOrEqual(
-      sheet.getBoundingClientRect().top,
-    );
-    await expect(getComputedStyle(body).paddingBottom).toBe("24px");
-    await expect(body).not.toHaveFocus();
-    // Overflowing text with nothing focusable: keyboard users need the body itself.
-    await waitFor(() => expect(body).toHaveAttribute("tabindex", "0"));
+    // Only the body scrolls: the header and the close button stay in place.
+    await expect(sheet.scrollTop).toBe(0);
+    await expect(header.getBoundingClientRect().top).toBeCloseTo(headerTop, 0);
+    await expect(close.getBoundingClientRect().top).toBeCloseTo(closeTop, 0);
+    // The caller's own padding wins over the default.
+    await expect(getComputedStyle(sheet).paddingBottom).toBe("24px");
   },
 };
 
@@ -179,14 +192,7 @@ export const DefaultBottomSpacing: Story = {
       canvas.getByRole("button", { name: "Review booking" }),
     );
     const sheet = await screen.findByRole("dialog");
-    const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
-    await expect(getComputedStyle(body).paddingBottom).toBe("16px");
-    // Fits on screen: not a Tab stop.
-    await nextFrames();
-    await expect(body).toHaveAttribute("tabindex", "-1");
-    // Shrinking the sheet makes the text overflow, and the body becomes reachable.
-    sheet.style.maxHeight = "60px";
-    await waitFor(() => expect(body).toHaveAttribute("tabindex", "0"));
+    await expect(getComputedStyle(sheet).paddingBottom).toBe("16px");
   },
 };
 
@@ -197,8 +203,7 @@ export const FooterSpacing: Story = {
       canvas.getByRole("button", { name: "Review booking" }),
     );
     const sheet = await screen.findByRole("dialog");
-    const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
-    // The footer brings its own padding; the body adds none after it.
-    await expect(getComputedStyle(body).paddingBottom).toBe("0px");
+    // The footer brings its own padding; the sheet adds none after it.
+    await expect(getComputedStyle(sheet).paddingBottom).toBe("0px");
   },
 };

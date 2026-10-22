@@ -5,6 +5,7 @@ import uk from "../../../messages/uk.json";
 import { Button } from "./button";
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -13,11 +14,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
-import { intersects, nextFrames, overflowsX, settle } from "./story-helpers";
+import { intersects, overflowsX, settle } from "./story-helpers";
 
-type DemoProps = { title: string; description: string };
+type DemoProps = { title: string; description: string; lines?: number };
 
-function DialogDemo({ title, description }: DemoProps) {
+function DialogDemo({ title, description, lines = 0 }: DemoProps) {
   return (
     <div className="p-4">
       <Dialog>
@@ -29,6 +30,14 @@ function DialogDemo({ title, description }: DemoProps) {
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
+          {lines > 0 && (
+            // Plain text has nothing to focus, so the body itself takes focus for keyboard scrolling.
+            <DialogBody tabIndex={0}>
+              {Array.from({ length: lines }, (_, index) => (
+                <p key={index}>Line {index + 1} of the booking details.</p>
+              ))}
+            </DialogBody>
+          )}
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>
               Keep
@@ -64,11 +73,6 @@ export const Default: Story = {
         within(dialog).getByRole("button", { name: "Keep" }),
       ).toHaveFocus(),
     );
-    // Nothing to scroll and buttons inside: the body must not be an extra Tab stop.
-    await nextFrames();
-    await expect(
-      dialog.querySelector("[data-slot=dialog-body]"),
-    ).toHaveAttribute("tabindex", "-1");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());
@@ -110,12 +114,7 @@ export const LongText: Story = {
 };
 
 export const TallContent: Story = {
-  args: {
-    description: Array.from(
-      { length: 40 },
-      () => "The client will get an email that the booking is cancelled.",
-    ).join(" "),
-  },
+  args: { lines: 60 },
   play: async ({ canvas, args }) => {
     await userEvent.click(
       canvas.getByRole("button", { name: "Cancel booking" }),
@@ -126,26 +125,33 @@ export const TallContent: Story = {
       window.innerHeight,
     );
     await expect(dialog.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
-    const keep = within(dialog).getByRole("button", { name: "Keep" });
     const body = dialog.querySelector<HTMLElement>("[data-slot=dialog-body]")!;
+    const heading = within(dialog).getByRole("heading");
+    const close = within(dialog).getByRole("button", { name: uk.UI.close });
+    const keep = within(dialog).getByRole("button", { name: "Keep" });
+    const last = within(dialog).getByText("Line 60 of the booking details.");
+    await expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      window.innerHeight,
+    );
+    const headingTop = heading.getBoundingClientRect().top;
+    const closeTop = close.getBoundingClientRect().top;
     // Scrolling is ignored until the opening transition has laid the dialog out, so retry it.
     await waitFor(() => {
       settle();
       body.scrollTop = body.scrollHeight;
-      expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-        window.innerHeight,
+      expect(body.scrollTop).toBeGreaterThan(0);
+      expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        body.getBoundingClientRect().bottom,
       );
     });
-    // Overflowing, but the buttons inside already give keyboard users a way in.
-    await nextFrames();
-    await expect(body).toHaveAttribute("tabindex", "-1");
-    // The close button stays reachable while the content is scrolled.
-    const close = within(dialog).getByRole("button", { name: uk.UI.close });
-    await expect(close.getBoundingClientRect().top).toBeGreaterThanOrEqual(
-      dialog.getBoundingClientRect().top,
+    // Only the body scrolls: the header and the close button stay in place.
+    await expect(dialog.scrollTop).toBe(0);
+    await expect(heading.getBoundingClientRect().top).toBeCloseTo(
+      headingTop,
+      0,
     );
-    const title = within(dialog).getByRole("heading");
-    const style = getComputedStyle(title);
+    await expect(close.getBoundingClientRect().top).toBeCloseTo(closeTop, 0);
+    const style = getComputedStyle(heading);
     await expect(
       parseFloat(style.lineHeight) / parseFloat(style.fontSize),
     ).toBeGreaterThanOrEqual(1.2);
