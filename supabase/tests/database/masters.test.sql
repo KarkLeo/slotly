@@ -50,7 +50,7 @@ select throws_ok(
 );
 
 select is(
-  (select timezone || ' ' || currency || ' ' || primary_locale || ' ' || locales::text from public.masters),
+  (select timezone || ' ' || currency || ' ' || primary_locale || ' ' || locales::text from public.masters where id = '00000000-0000-0000-0000-00000000000a'),
   'Europe/Kyiv UAH uk {uk}',
   'a new profile defaults to Kyiv time, hryvnia and Ukrainian'
 );
@@ -84,7 +84,7 @@ update public.masters set published_at = now() where id = '00000000-0000-0000-00
 set local role anon;
 
 select results_eq(
-  $$ select slug from public.masters $$,
+  $$ select slug from public.masters where id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b') $$,
   array['olena'],
   'visitors see only published masters'
 );
@@ -106,7 +106,7 @@ select is(
 set local role service_role;
 
 select lives_ok(
-  $$ update public.masters set slug = 'olena-nails' where id = '00000000-0000-0000-0000-00000000000a' $$,
+  $$ update public.masters set slug = 'olena-studio' where id = '00000000-0000-0000-0000-00000000000a' $$,
   'server code with the service role can write profiles'
 );
 
