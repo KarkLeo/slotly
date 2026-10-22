@@ -104,11 +104,18 @@ describe("signIn", () => {
 });
 
 describe("signOut", () => {
-  it("keeps the user signed in and fails when Supabase cannot sign out", async () => {
+  it("still signs out and logs when Supabase cannot revoke the session", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const failure = new Error("network");
     auth.signOut.mockResolvedValue({ error: failure });
-    await expect(signOut()).rejects.toBe(failure);
-    expect(cookieSet).not.toHaveBeenCalled();
+    await expect(redirectTarget(signOut())).resolves.toBe("/");
+    expect(log).toHaveBeenCalledWith(failure);
+    expect(cookieSet).toHaveBeenCalledWith(
+      flashCookie,
+      "success:signedOut",
+      expect.objectContaining({ path: "/" }),
+    );
+    log.mockRestore();
   });
 
   it("flashes signedOut and redirects home", async () => {
