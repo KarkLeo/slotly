@@ -54,25 +54,28 @@ export type Database = {
       appointment_clients: {
         Row: {
           appointment_id: string;
+          client_card_id: string;
           created_at: string;
           id: string;
+          master_id: string;
           name: string;
-          user_id: string | null;
         };
         ComputedFields: never;
         Insert: {
           appointment_id: string;
+          client_card_id: string;
           created_at?: string;
           id?: string;
+          master_id: string;
           name: string;
-          user_id?: string | null;
         };
         Update: {
           appointment_id?: string;
+          client_card_id?: string;
           created_at?: string;
           id?: string;
+          master_id?: string;
           name?: string;
-          user_id?: string | null;
         };
         Relationships: [
           {
@@ -81,6 +84,20 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: "appointments";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "appointment_clients_master_id_appointment_id_fkey";
+            columns: ["master_id", "appointment_id"];
+            isOneToOne: false;
+            referencedRelation: "appointments";
+            referencedColumns: ["master_id", "id"];
+          },
+          {
+            foreignKeyName: "appointment_clients_master_id_client_card_id_fkey";
+            columns: ["master_id", "client_card_id"];
+            isOneToOne: false;
+            referencedRelation: "client_cards";
+            referencedColumns: ["master_id", "id"];
           },
         ];
       };
@@ -180,6 +197,70 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      client_cards: {
+        Row: {
+          created_at: string;
+          id: string;
+          master_id: string;
+          name: string;
+          note: string | null;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          master_id: string;
+          name: string;
+          note?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          master_id?: string;
+          name?: string;
+          note?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "client_cards_master_id_fkey";
+            columns: ["master_id"];
+            isOneToOne: false;
+            referencedRelation: "masters";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contacts: {
+        Row: {
+          address: string;
+          channel: Database["public"]["Enums"]["contact_channel"];
+          confirmed_at: string;
+          created_at: string;
+          id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          address: string;
+          channel: Database["public"]["Enums"]["contact_channel"];
+          confirmed_at: string;
+          created_at?: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          address?: string;
+          channel?: Database["public"]["Enums"]["contact_channel"];
+          confirmed_at?: string;
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       masters: {
         Row: {
@@ -435,6 +516,7 @@ export type Database = {
       appointment_status:
         "pending" | "confirmed" | "completed" | "cancelled" | "no_show";
       canceller: "client" | "master" | "system";
+      contact_channel: "email" | "telegram";
       locale: "uk" | "ru" | "en";
       price_kind: "fixed" | "from" | "none";
       service_format: "on_site" | "online" | "at_client";
@@ -580,6 +662,7 @@ export const Constants = {
         "no_show",
       ],
       canceller: ["client", "master", "system"],
+      contact_channel: ["email", "telegram"],
       locale: ["uk", "ru", "en"],
       price_kind: ["fixed", "from", "none"],
       service_format: ["on_site", "online", "at_client"],
