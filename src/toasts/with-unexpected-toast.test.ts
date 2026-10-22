@@ -1,6 +1,7 @@
 import { UnrecognizedActionError } from "next/dist/client/components/unrecognized-action-error";
 import { redirect } from "next/navigation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { redirectTarget } from "@/test/redirect";
 import type { ActionToast } from "./toast";
 import { unexpectedToast, withUnexpectedToast } from "./with-unexpected-toast";
 
@@ -42,16 +43,8 @@ describe("withUnexpectedToast", () => {
   });
 
   it("lets Next.js redirects through", async () => {
-    let redirectError: unknown;
-    try {
-      redirect("/app");
-    } catch (error) {
-      redirectError = error;
-    }
-    const action = withUnexpectedToast<State>(async () => {
-      throw redirectError;
-    });
-    await expect(action({}, formData)).rejects.toBe(redirectError);
+    const action = withUnexpectedToast<State>(async () => redirect("/app"));
+    await expect(redirectTarget(action({}, formData))).resolves.toBe("/app");
   });
 });
 
