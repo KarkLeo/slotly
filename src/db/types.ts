@@ -400,6 +400,26 @@ export type Database = {
         Args: { appointment_id: string };
         Returns: undefined;
       };
+      get_available_days: {
+        Args: {
+          day_from: string;
+          day_to: string;
+          duration_minutes?: number;
+          ignore_appointment_id?: string;
+          service_id: string;
+        };
+        Returns: string[];
+      };
+      get_available_slots: {
+        Args: {
+          day_from: string;
+          day_to: string;
+          duration_minutes?: number;
+          ignore_appointment_id?: string;
+          service_id: string;
+        };
+        Returns: string[];
+      };
       health: { Args: Record<PropertyKey, never>; Returns: string };
       reschedule_appointment: {
         Args: { appointment_id: string; starts_at: string };
