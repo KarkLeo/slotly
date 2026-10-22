@@ -9,10 +9,13 @@ failures=0
 status="" location="" www_authenticate="" set_cookie="" body=""
 
 request() {
-  local method=$1 path=$2 headers_file body_file
+  local method=$1 path=$2 cookie=${3:-} headers_file body_file
   headers_file=$(mktemp)
   body_file=$(mktemp)
   local args=(-sS --max-time 10 -o "$body_file" -D "$headers_file" -w '%{http_code}' -X "$method" -H "Host: $host")
+  if [[ -n $cookie ]]; then
+    args+=(-H "Cookie: $cookie")
+  fi
   if [[ $method == POST ]]; then
     args+=(-H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' --data '{}')
   fi
@@ -52,6 +55,24 @@ json_field() {
 
 request GET /
 expect "GET / status" 200 "$status"
+
+html_class() {
+  grep -o '<html[^>]*>' <<<"$body" | head -n1 | sed -E 's/.*class="([^"]*)".*/\1/'
+}
+
+forced_theme() {
+  grep -oE ' (light|dark) ' <<<" $(html_class) " || true
+}
+
+expect "GET / without a theme cookie leaves the theme to the system" "" "$(forced_theme)"
+
+request GET / "slotly-theme=sepia"
+expect "GET / with an unknown theme cookie leaves the theme to the system" "" "$(forced_theme)"
+
+for theme in light dark; do
+  request GET / "slotly-theme=$theme"
+  expect_contains "GET / with the $theme theme cookie marks <html>" " $theme " " $(html_class) "
+done
 
 request GET /api/health
 expect "GET /api/health status" 200 "$status"

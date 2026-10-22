@@ -1,3 +1,5 @@
+import { readCookie } from "@/lib/cookies";
+
 export const locales = ["uk", "ru", "en"] as const;
 
 export type Locale = (typeof locales)[number];
@@ -38,10 +40,7 @@ export function browserLocale(
   cookies: string,
   languages: readonly string[],
 ): Locale {
-  const fromCookie = cookies
-    .split("; ")
-    .find((entry) => entry.startsWith(`${localeCookie}=`))
-    ?.slice(localeCookie.length + 1);
+  const fromCookie = readCookie(cookies, localeCookie);
   if (isLocale(fromCookie)) return fromCookie;
   return negotiateLocale(languages.join(","));
 }

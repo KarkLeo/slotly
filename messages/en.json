@@ -8,6 +8,12 @@
     "ru": "Русский",
     "en": "English"
   },
+  "ThemeSwitcher": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "SignIn": {
     "title": "Sign in to your account",
     "emailLabel": "Email",
