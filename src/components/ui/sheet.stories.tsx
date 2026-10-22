@@ -7,6 +7,7 @@ import { Button } from "./button";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import {
   Sheet,
+  SheetBody,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -51,18 +52,23 @@ function SheetDemo({
               Check the details before confirming.
             </SheetDescription>
           </SheetHeader>
-          {Array.from({ length: lines }, (_, index) => (
-            <p key={index} className="px-4">
-              Line {index + 1} of the booking details.
-            </p>
-          ))}
+          {lines > 0 && (
+            // Plain text has nothing to focus, so the body itself takes focus for keyboard scrolling.
+            <SheetBody tabIndex={0}>
+              {Array.from({ length: lines }, (_, index) => (
+                <p key={index}>Line {index + 1} of the booking details.</p>
+              ))}
+            </SheetBody>
+          )}
           {withCard && (
-            <Card variant="inset" className="mx-4" data-testid="summary">
-              <CardHeader>
-                <CardTitle>Manicure with gel polish</CardTitle>
-              </CardHeader>
-              <CardContent>Tomorrow, 14:00 · 90 min · 900 UAH</CardContent>
-            </Card>
+            <SheetBody>
+              <Card variant="inset" data-testid="summary">
+                <CardHeader>
+                  <CardTitle>Manicure with gel polish</CardTitle>
+                </CardHeader>
+                <CardContent>Tomorrow, 14:00 · 90 min · 900 UAH</CardContent>
+              </Card>
+            </SheetBody>
           )}
           {withFooter && (
             <SheetFooter data-testid="footer">
@@ -136,28 +142,30 @@ export const TallContent: Story = {
     const sheet = await screen.findByRole("dialog");
     settle();
     await expect(sheet.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+    const body = sheet.querySelector<HTMLElement>("[data-slot=sheet-body]")!;
+    const header = sheet.querySelector("[data-slot=sheet-header]")!;
     const last = within(sheet).getByText("Line 60 of the booking details.");
     const close = within(sheet).getByRole("button", { name: uk.UI.close });
     await waitFor(() => {
       settle();
       expect(sheet.getAnimations()).toHaveLength(0);
     });
-    // The sticky close button takes no room: the header starts at the top edge.
     await expect(
-      sheet.querySelector("[data-slot=sheet-header]")!.getBoundingClientRect()
-        .top - sheet.getBoundingClientRect().top,
+      header.getBoundingClientRect().top - sheet.getBoundingClientRect().top,
     ).toBe(0);
+    const headerTop = header.getBoundingClientRect().top;
     const closeTop = close.getBoundingClientRect().top;
-    // Scrolling is ignored until the opening transition has laid the sheet out, so retry it.
     await waitFor(() => {
       settle();
-      sheet.scrollTop = sheet.scrollHeight;
-      expect(sheet.scrollTop).toBeGreaterThan(0);
+      body.scrollTop = body.scrollHeight;
+      expect(body.scrollTop).toBeGreaterThan(0);
       expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(
         window.innerHeight,
       );
     });
-    // The close button stays where it was while the content scrolls under it.
+    // Only the body scrolls: the header and the close button stay in place.
+    await expect(sheet.scrollTop).toBe(0);
+    await expect(header.getBoundingClientRect().top).toBeCloseTo(headerTop, 0);
     await expect(close.getBoundingClientRect().top).toBeCloseTo(closeTop, 0);
     // The caller's own padding wins over the default.
     await expect(getComputedStyle(sheet).paddingBottom).toBe("24px");

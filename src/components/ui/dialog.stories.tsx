@@ -5,6 +5,7 @@ import uk from "../../../messages/uk.json";
 import { Button } from "./button";
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -15,9 +16,9 @@ import {
 } from "./dialog";
 import { intersects, overflowsX, settle } from "./story-helpers";
 
-type DemoProps = { title: string; description: string };
+type DemoProps = { title: string; description: string; lines?: number };
 
-function DialogDemo({ title, description }: DemoProps) {
+function DialogDemo({ title, description, lines = 0 }: DemoProps) {
   return (
     <div className="p-4">
       <Dialog>
@@ -29,6 +30,14 @@ function DialogDemo({ title, description }: DemoProps) {
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
+          {lines > 0 && (
+            // Plain text has nothing to focus, so the body itself takes focus for keyboard scrolling.
+            <DialogBody tabIndex={0}>
+              {Array.from({ length: lines }, (_, index) => (
+                <p key={index}>Line {index + 1} of the booking details.</p>
+              ))}
+            </DialogBody>
+          )}
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>
               Keep
@@ -105,12 +114,7 @@ export const LongText: Story = {
 };
 
 export const TallContent: Story = {
-  args: {
-    description: Array.from(
-      { length: 40 },
-      () => "The client will get an email that the booking is cancelled.",
-    ).join(" "),
-  },
+  args: { lines: 60 },
   play: async ({ canvas, args }) => {
     await userEvent.click(
       canvas.getByRole("button", { name: "Cancel booking" }),
@@ -121,31 +125,33 @@ export const TallContent: Story = {
       window.innerHeight,
     );
     await expect(dialog.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
-    const keep = within(dialog).getByRole("button", { name: "Keep" });
-    const close = within(dialog).getByRole("button", { name: uk.UI.close });
-    // The sticky close button takes no room: the title starts right at the popup's padding.
-    // Focus on "Keep" may already have scrolled the popup, so measure from the content start.
-    settle();
+    const body = dialog.querySelector<HTMLElement>("[data-slot=dialog-body]")!;
     const heading = within(dialog).getByRole("heading");
-    await expect(
-      heading.getBoundingClientRect().top -
-        dialog.getBoundingClientRect().top +
-        dialog.scrollTop,
-    ).toBe(parseFloat(getComputedStyle(dialog).paddingTop));
+    const close = within(dialog).getByRole("button", { name: uk.UI.close });
+    const keep = within(dialog).getByRole("button", { name: "Keep" });
+    const last = within(dialog).getByText("Line 60 of the booking details.");
+    await expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      window.innerHeight,
+    );
+    const headingTop = heading.getBoundingClientRect().top;
     const closeTop = close.getBoundingClientRect().top;
     // Scrolling is ignored until the opening transition has laid the dialog out, so retry it.
     await waitFor(() => {
       settle();
-      dialog.scrollTop = dialog.scrollHeight;
-      expect(dialog.scrollTop).toBeGreaterThan(0);
-      expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-        window.innerHeight,
+      body.scrollTop = body.scrollHeight;
+      expect(body.scrollTop).toBeGreaterThan(0);
+      expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        body.getBoundingClientRect().bottom,
       );
     });
-    // The close button stays where it was while the content scrolls under it.
+    // Only the body scrolls: the header and the close button stay in place.
+    await expect(dialog.scrollTop).toBe(0);
+    await expect(heading.getBoundingClientRect().top).toBeCloseTo(
+      headingTop,
+      0,
+    );
     await expect(close.getBoundingClientRect().top).toBeCloseTo(closeTop, 0);
-    const title = within(dialog).getByRole("heading");
-    const style = getComputedStyle(title);
+    const style = getComputedStyle(heading);
     await expect(
       parseFloat(style.lineHeight) / parseFloat(style.fontSize),
     ).toBeGreaterThanOrEqual(1.2);

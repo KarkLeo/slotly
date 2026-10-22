@@ -55,7 +55,7 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 flex w-full flex-col max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 max-h-[calc(100dvh-2rem)] gap-4 overflow-y-auto rounded-2xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "fixed top-1/2 left-1/2 z-50 flex w-full flex-col max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 max-h-[calc(100dvh-2rem)] gap-4 overflow-hidden rounded-2xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           showCloseButton && "**:data-[slot=dialog-header]:pr-10",
           className,
         )}
@@ -63,18 +63,19 @@ function DialogContent({
       >
         {children}
         {showCloseButton && (
-          // Last in the DOM so focus starts on the content, shown first and kept on screen while the popup scrolls.
-          <div className="sticky top-4 z-10 order-first -mb-4 h-0 self-end">
-            <DialogPrimitive.Close
-              data-slot="dialog-close"
-              render={
-                <Button variant="ghost" size="icon" className="-mt-2 -mr-2" />
-              }
-            >
-              <XIcon />
-              <span className="sr-only">{t("close")}</span>
-            </DialogPrimitive.Close>
-          </div>
+          <DialogPrimitive.Close
+            data-slot="dialog-close"
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2"
+              />
+            }
+          >
+            <XIcon />
+            <span className="sr-only">{t("close")}</span>
+          </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Popup>
     </DialogPortal>
@@ -86,6 +87,19 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-header"
       className={cn("flex flex-col gap-2", className)}
+      {...props}
+    />
+  );
+}
+
+function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn(
+        "-mx-4 min-h-0 overflow-y-auto px-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+        className,
+      )}
       {...props}
     />
   );
@@ -147,6 +161,7 @@ function DialogDescription({
 
 export {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
