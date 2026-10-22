@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useTransition } from "react";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -10,11 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { unexpectedToast } from "@/toasts/with-unexpected-toast";
 import { setLocale } from "./actions";
 import { locales } from "./locales";
 
 export function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher");
+  const toasts = useTranslations("Toasts");
   const locale = useLocale();
   const [isPending, startTransition] = useTransition();
   const items = locales.map((option) => ({ value: option, label: t(option) }));
@@ -25,7 +28,14 @@ export function LocaleSwitcher() {
       value={locale}
       disabled={isPending}
       onValueChange={(next) => {
-        if (next) startTransition(() => setLocale(next));
+        if (!next) return;
+        startTransition(async () => {
+          try {
+            await setLocale(next);
+          } catch (error) {
+            toast.error(toasts(unexpectedToast(error).key));
+          }
+        });
       }}
     >
       <div className="flex items-center gap-3">
