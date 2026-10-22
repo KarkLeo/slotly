@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
-import { intersects, nextFrames, overflowsX, settle } from "./story-helpers";
+import { intersects, overflowsX, settle } from "./story-helpers";
 
 type DemoProps = { title: string; description: string };
 
@@ -64,11 +64,6 @@ export const Default: Story = {
         within(dialog).getByRole("button", { name: "Keep" }),
       ).toHaveFocus(),
     );
-    // Nothing to scroll and buttons inside: the body must not be an extra Tab stop.
-    await nextFrames();
-    await expect(
-      dialog.querySelector("[data-slot=dialog-body]"),
-    ).toHaveAttribute("tabindex", "-1");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());
@@ -127,23 +122,19 @@ export const TallContent: Story = {
     );
     await expect(dialog.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
     const keep = within(dialog).getByRole("button", { name: "Keep" });
-    const body = dialog.querySelector<HTMLElement>("[data-slot=dialog-body]")!;
+    const close = within(dialog).getByRole("button", { name: uk.UI.close });
+    const closeTop = close.getBoundingClientRect().top;
     // Scrolling is ignored until the opening transition has laid the dialog out, so retry it.
     await waitFor(() => {
       settle();
-      body.scrollTop = body.scrollHeight;
+      dialog.scrollTop = dialog.scrollHeight;
+      expect(dialog.scrollTop).toBeGreaterThan(0);
       expect(keep.getBoundingClientRect().bottom).toBeLessThanOrEqual(
         window.innerHeight,
       );
     });
-    // Overflowing, but the buttons inside already give keyboard users a way in.
-    await nextFrames();
-    await expect(body).toHaveAttribute("tabindex", "-1");
-    // The close button stays reachable while the content is scrolled.
-    const close = within(dialog).getByRole("button", { name: uk.UI.close });
-    await expect(close.getBoundingClientRect().top).toBeGreaterThanOrEqual(
-      dialog.getBoundingClientRect().top,
-    );
+    // The close button stays where it was while the content scrolls under it.
+    await expect(close.getBoundingClientRect().top).toBeCloseTo(closeTop, 0);
     const title = within(dialog).getByRole("heading");
     const style = getComputedStyle(title);
     await expect(
