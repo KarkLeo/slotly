@@ -51,6 +51,10 @@ export const System: Story = {
     const system = canvas.getByRole("button", { name: t.system });
     const dark = canvas.getByRole("button", { name: t.dark });
     await expect(group).toBeVisible();
+    // Matches the language switcher label next to it.
+    const label = canvas.getByText(t.label);
+    await expect(getComputedStyle(label).fontSize).toBe("14px");
+    await expect(getComputedStyle(label).fontWeight).toBe("500");
     await expect(boxHeight(system)).toBe(44);
     await expect(system).toHaveAttribute("aria-pressed", "true");
     await userEvent.click(dark);
@@ -60,6 +64,10 @@ export const System: Story = {
     await expect(system).toHaveAttribute("aria-pressed", "false");
   },
 };
+
+export const Russian: Story = { ...System, globals: { locale: "ru" } };
+
+export const English: Story = { ...System, globals: { locale: "en" } };
 
 export const Light: Story = {
   args: { theme: "light" },

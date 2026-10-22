@@ -60,6 +60,15 @@ html_class() {
   grep -o '<html[^>]*>' <<<"$body" | head -n1 | sed -E 's/.*class="([^"]*)".*/\1/'
 }
 
+forced_theme() {
+  grep -oE ' (light|dark) ' <<<" $(html_class) " || true
+}
+
+expect "GET / without a theme cookie leaves the theme to the system" "" "$(forced_theme)"
+
+request GET / "slotly-theme=sepia"
+expect "GET / with an unknown theme cookie leaves the theme to the system" "" "$(forced_theme)"
+
 for theme in light dark; do
   request GET / "slotly-theme=$theme"
   expect_contains "GET / with the $theme theme cookie marks <html>" " $theme " " $(html_class) "

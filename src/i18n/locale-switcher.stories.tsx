@@ -41,11 +41,20 @@ export const Default: Story = {
     const t = texts(globals.locale).LocaleSwitcher;
     const trigger = canvas.getByRole("combobox", { name: t.label });
     await expect(boxHeight(trigger)).toBe(44);
+    const other = globals.locale === "en" ? "uk" : "en";
     await userEvent.click(trigger);
-    await userEvent.click(await screen.findByRole("option", { name: t.en }));
-    await expect(setLocale).toHaveBeenCalledWith("en");
+    await userEvent.click(
+      await screen.findByRole("option", { name: t[other] }),
+    );
+    await expect(setLocale).toHaveBeenCalledWith(other);
+    // The a11y check runs after play; let the list finish closing so its focus guards are gone.
+    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
   },
 };
+
+export const Russian: Story = { ...Default, globals: { locale: "ru" } };
+
+export const English: Story = { ...Default, globals: { locale: "en" } };
 
 export const LabelFocusesSelect: Story = {
   play: async ({ canvas, userEvent, globals }) => {

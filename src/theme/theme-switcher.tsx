@@ -20,7 +20,9 @@ export function ThemeSwitcher({ theme }: { theme: Theme }) {
 
   return (
     <div className="flex items-center gap-3">
-      <span id={labelId}>{t("label")}</span>
+      <span id={labelId} className="text-sm font-medium select-none">
+        {t("label")}
+      </span>
       <ToggleGroup
         aria-labelledby={labelId}
         value={[shown]}
