@@ -1,4 +1,5 @@
 import { UnrecognizedActionError } from "next/dist/client/components/unrecognized-action-error";
+import { redirect } from "next/navigation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ActionToast } from "./toast";
 import { unexpectedToast, withUnexpectedToast } from "./with-unexpected-toast";
@@ -41,10 +42,6 @@ describe("withUnexpectedToast", () => {
   });
 
   it("lets Next.js redirects through", async () => {
-    const { redirect } =
-      await vi.importActual<typeof import("next/navigation")>(
-        "next/navigation",
-      );
     let redirectError: unknown;
     try {
       redirect("/app");

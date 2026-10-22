@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { cookieSet, redirectError } from "@/test/server-mocks";
+import { redirectTarget } from "@/test/redirect";
+import { cookieSet } from "@/test/server-mocks";
 import { decideAuthorization } from "./oauth-actions";
 
 const oauth = { approveAuthorization: vi.fn(), denyAuthorization: vi.fn() };
@@ -33,9 +34,9 @@ describe("decideAuthorization", () => {
       data: { redirect_url: "https://client.example/cb" },
       error: null,
     });
-    await expect(decideAuthorization({}, decision("deny"))).rejects.toThrow(
-      redirectError("https://client.example/cb"),
-    );
+    await expect(
+      redirectTarget(decideAuthorization({}, decision("deny"))),
+    ).resolves.toBe("https://client.example/cb");
     expect(oauth.denyAuthorization).toHaveBeenCalledWith("abc", {
       skipBrowserRedirect: true,
     });

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { cookieSet, redirectError } from "@/test/server-mocks";
+import { redirectTarget } from "@/test/redirect";
+import { cookieSet } from "@/test/server-mocks";
 import { flashCookie } from "@/toasts/toast";
 import { signIn, signOut } from "./actions";
 
@@ -82,11 +83,13 @@ describe("signIn", () => {
 
   it("flashes signedIn and redirects after a valid code", async () => {
     await expect(
-      signIn(
-        { step: "code", email },
-        form({ intent: "verify", email, code: "123456", next: "/app" }),
+      redirectTarget(
+        signIn(
+          { step: "code", email },
+          form({ intent: "verify", email, code: "123456", next: "/app" }),
+        ),
       ),
-    ).rejects.toThrow(redirectError("/app"));
+    ).resolves.toBe("/app");
     expect(auth.verifyOtp).toHaveBeenCalledWith({
       email,
       token: "123456",
@@ -102,7 +105,7 @@ describe("signIn", () => {
 
 describe("signOut", () => {
   it("flashes signedOut and redirects home", async () => {
-    await expect(signOut()).rejects.toThrow(redirectError("/"));
+    await expect(redirectTarget(signOut())).resolves.toBe("/");
     expect(auth.signOut).toHaveBeenCalled();
     expect(cookieSet).toHaveBeenCalledWith(
       flashCookie,
