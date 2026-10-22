@@ -60,13 +60,13 @@ select throws_ok(
 set local role anon;
 
 select results_eq(
-  $$ select id from public.services $$,
+  $$ select id from public.services where master_id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b') $$,
   $$ values ('00000000-0000-0000-0000-0000000000a1'::uuid) $$,
   'visitors see active services of published masters only'
 );
 
 select results_eq(
-  $$ select id from public.service_categories $$,
+  $$ select id from public.service_categories where master_id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b') $$,
   $$ values ('00000000-0000-0000-0000-0000000000c1'::uuid) $$,
   'visitors see categories of published masters only'
 );
@@ -75,7 +75,7 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000000b", "role": "authenticated"}', true);
 
 select results_eq(
-  $$ select id from public.services order by id $$,
+  $$ select id from public.services where master_id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b') order by id $$,
   $$ values ('00000000-0000-0000-0000-0000000000a1'::uuid), ('00000000-0000-0000-0000-0000000000b1'::uuid) $$,
   'a master sees all own services and the public ones of others'
 );
@@ -146,7 +146,7 @@ update public.masters set published_at = null where id = '00000000-0000-0000-000
 set local role anon;
 
 select is_empty(
-  $$ select id from public.services $$,
+  $$ select id from public.services where master_id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b') $$,
   'unpublishing hides the master''s services again'
 );
 
