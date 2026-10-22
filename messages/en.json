@@ -57,5 +57,25 @@
     "rateLimited": "Too many attempts. Wait a minute and try again.",
     "unexpected": "Something went wrong. Please try again.",
     "decisionFailed": "Could not save your decision. Please try again."
+  },
+  "Landing": {
+    "languages": "Page language",
+    "book": "Book",
+    "servicesTitle": "<accent>Services</accent>",
+    "otherServices": "Other",
+    "bookService": "Book “{service}”",
+    "priceFrom": "from {price}",
+    "online": "Online",
+    "atClient": "At your place",
+    "bookingTitle": "Choose a <accent>service</accent>",
+    "noServices": "The master has not added services yet.",
+    "madeWith": "Made with <link>Slotly</link>",
+    "metaTitle": "{name} — book online",
+    "metaDescription": "{name}: {specialties}. Choose a service and a time online.",
+    "metaDescriptionPlain": "{name}: choose a service and a time online.",
+    "notFoundTitle": "Page <accent>not found</accent>",
+    "notFoundText": "The master may have changed the address or not published the page yet.",
+    "notFoundHome": "Go to Slotly",
+    "unpublished": "This page is not published yet: only you can see it."
   }
 }

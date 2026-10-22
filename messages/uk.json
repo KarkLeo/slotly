@@ -57,5 +57,25 @@
     "rateLimited": "Забагато спроб. Зачекайте хвилину й спробуйте знову.",
     "unexpected": "Щось пішло не так. Спробуйте ще раз.",
     "decisionFailed": "Не вдалося зберегти рішення. Спробуйте ще раз."
+  },
+  "Landing": {
+    "languages": "Мова сторінки",
+    "book": "Записатися",
+    "servicesTitle": "<accent>Послуги</accent>",
+    "otherServices": "Інше",
+    "bookService": "Записатися на «{service}»",
+    "priceFrom": "від {price}",
+    "online": "Онлайн",
+    "atClient": "Виїзд до клієнта",
+    "bookingTitle": "Оберіть <accent>послугу</accent>",
+    "noServices": "Майстер ще не додав послуги.",
+    "madeWith": "Зроблено на <link>Slotly</link>",
+    "metaTitle": "{name} — онлайн-запис",
+    "metaDescription": "{name}: {specialties}. Оберіть послугу й час онлайн.",
+    "metaDescriptionPlain": "{name}: оберіть послугу й час онлайн.",
+    "notFoundTitle": "Сторінку <accent>не знайдено</accent>",
+    "notFoundText": "Можливо, майстер змінив адресу або ще не опублікував сторінку.",
+    "notFoundHome": "На головну Slotly",
+    "unpublished": "Сторінку ще не опубліковано: її бачите тільки ви."
   }
 }

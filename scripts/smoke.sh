@@ -95,6 +95,39 @@ request GET /.well-known/oauth-protected-resource/api/mcp
 expect "GET protected resource metadata status" 200 "$status"
 expect "GET protected resource metadata resource" "$site_url/api/mcp" "$(json_field "$body" resource)"
 
+html_lang() {
+  grep -o '<html[^>]*>' <<<"$body" | head -n1 | sed -nE 's/.* lang="([^"]*)".*/\1/p'
+}
+
+request GET /no-such-master-here
+expect "GET unknown landing status" 404 "$status"
+
+request GET /pricing/en
+expect "GET reserved path status" 404 "$status"
+
+# Seed data has this master; set SMOKE_LANDING_SLUG= to skip against a database without it.
+landing_slug=${SMOKE_LANDING_SLUG-olena-nails}
+if [[ -n $landing_slug ]]; then
+  request GET "/$landing_slug"
+  expect "GET landing status" 200 "$status"
+  expect "GET landing language" uk "$(html_lang)"
+
+  request GET "/$landing_slug/en"
+  expect "GET landing in English status" 200 "$status"
+  expect "GET landing in English language" en "$(html_lang)"
+
+  request GET "/$landing_slug/uk?service=abc"
+  expect "GET landing primary language prefix status" 307 "$status"
+  expect "GET landing primary language prefix location" "/$landing_slug?service=abc" "$location"
+
+  request GET "/$landing_slug/ru"
+  expect "GET landing in a language the master has not enabled" 404 "$status"
+
+  request GET "/$(tr "[:lower:]" "[:upper:]" <<<"$landing_slug")"
+  expect "GET landing in upper case status" 307 "$status"
+  expect "GET landing in upper case location" "/$landing_slug" "$location"
+fi
+
 if ((failures > 0)); then
   echo "$failures check(s) failed"
   exit 1
