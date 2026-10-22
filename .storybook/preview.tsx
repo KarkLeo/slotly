@@ -4,6 +4,9 @@ import type { Preview } from "@storybook/nextjs-vite";
 import { NextIntlClientProvider } from "next-intl";
 import { sb } from "storybook/test";
 import en from "../messages/en.json";
+import enErrors from "../messages/errors/en.json";
+import ruErrors from "../messages/errors/ru.json";
+import ukErrors from "../messages/errors/uk.json";
 import ru from "../messages/ru.json";
 import uk from "../messages/uk.json";
 import { fontVariables } from "../src/app/fonts";
@@ -14,7 +17,11 @@ sb.mock(import("../src/auth/actions.ts"));
 sb.mock(import("../src/auth/oauth-actions.ts"));
 sb.mock(import("../src/i18n/actions.ts"));
 
-const messages = { uk, ru, en };
+const messages = {
+  uk: { ...uk, Errors: ukErrors },
+  ru: { ...ru, Errors: ruErrors },
+  en: { ...en, Errors: enErrors },
+};
 
 const defaultTheme =
   import.meta.env.VITE_STORY_THEME === "dark" ? "dark" : "light";

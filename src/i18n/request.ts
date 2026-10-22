@@ -6,6 +6,7 @@ import {
   negotiateLocale,
   type Locale,
 } from "./locales";
+import { loadMessages } from "./messages";
 
 async function resolveLocale(): Promise<Locale> {
   const fromCookie = (await cookies()).get(localeCookie)?.value;
@@ -17,6 +18,6 @@ export default getRequestConfig(async () => {
   const locale = await resolveLocale();
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default,
+    messages: await loadMessages(locale),
   };
 });
