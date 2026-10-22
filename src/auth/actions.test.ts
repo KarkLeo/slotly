@@ -104,6 +104,13 @@ describe("signIn", () => {
 });
 
 describe("signOut", () => {
+  it("keeps the user signed in and fails when Supabase cannot sign out", async () => {
+    const failure = new Error("network");
+    auth.signOut.mockResolvedValue({ error: failure });
+    await expect(signOut()).rejects.toBe(failure);
+    expect(cookieSet).not.toHaveBeenCalled();
+  });
+
   it("flashes signedOut and redirects home", async () => {
     await expect(redirectTarget(signOut())).resolves.toBe("/");
     expect(auth.signOut).toHaveBeenCalled();
