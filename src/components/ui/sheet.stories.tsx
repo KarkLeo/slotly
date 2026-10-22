@@ -142,6 +142,11 @@ export const TallContent: Story = {
       settle();
       expect(sheet.getAnimations()).toHaveLength(0);
     });
+    // The sticky close button takes no room: the header starts at the top edge.
+    await expect(
+      sheet.querySelector("[data-slot=sheet-header]")!.getBoundingClientRect()
+        .top - sheet.getBoundingClientRect().top,
+    ).toBe(0);
     const closeTop = close.getBoundingClientRect().top;
     // Scrolling is ignored until the opening transition has laid the sheet out, so retry it.
     await waitFor(() => {

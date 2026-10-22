@@ -123,6 +123,12 @@ export const TallContent: Story = {
     await expect(dialog.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
     const keep = within(dialog).getByRole("button", { name: "Keep" });
     const close = within(dialog).getByRole("button", { name: uk.UI.close });
+    // The sticky close button takes no room: the title starts right at the popup's padding.
+    settle();
+    await expect(
+      within(dialog).getByRole("heading").getBoundingClientRect().top -
+        dialog.getBoundingClientRect().top,
+    ).toBe(parseFloat(getComputedStyle(dialog).paddingTop));
     const closeTop = close.getBoundingClientRect().top;
     // Scrolling is ignored until the opening transition has laid the dialog out, so retry it.
     await waitFor(() => {
