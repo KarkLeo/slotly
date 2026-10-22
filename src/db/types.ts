@@ -51,7 +51,140 @@ export type Database = {
   };
   public: {
     Tables: {
-      [_ in never]: never;
+      masters: {
+        Row: {
+          created_at: string;
+          currency: string;
+          id: string;
+          locales: Database["public"]["Enums"]["locale"][];
+          name: string;
+          primary_locale: Database["public"]["Enums"]["locale"];
+          published_at: string | null;
+          slug: string;
+          timezone: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          currency?: string;
+          id: string;
+          locales?: Database["public"]["Enums"]["locale"][];
+          name: string;
+          primary_locale?: Database["public"]["Enums"]["locale"];
+          published_at?: string | null;
+          slug: string;
+          timezone?: string;
+        };
+        Update: {
+          created_at?: string;
+          currency?: string;
+          id?: string;
+          locales?: Database["public"]["Enums"]["locale"][];
+          name?: string;
+          primary_locale?: Database["public"]["Enums"]["locale"];
+          published_at?: string | null;
+          slug?: string;
+          timezone?: string;
+        };
+        Relationships: [];
+      };
+      service_categories: {
+        Row: {
+          created_at: string;
+          id: string;
+          master_id: string;
+          name: NonNullable<Json>;
+          position: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          master_id: string;
+          name: NonNullable<Json>;
+          position?: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          master_id?: string;
+          name?: NonNullable<Json>;
+          position?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "service_categories_master_id_fkey";
+            columns: ["master_id"];
+            isOneToOne: false;
+            referencedRelation: "masters";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      services: {
+        Row: {
+          archived_at: string | null;
+          buffer_minutes: number;
+          category_id: string | null;
+          created_at: string;
+          description: NonNullable<Json>;
+          duration_minutes: number;
+          format: Database["public"]["Enums"]["service_format"];
+          id: string;
+          master_id: string;
+          name: NonNullable<Json>;
+          position: number;
+          price: number | null;
+          price_kind: Database["public"]["Enums"]["price_kind"];
+        };
+        ComputedFields: never;
+        Insert: {
+          archived_at?: string | null;
+          buffer_minutes?: number;
+          category_id?: string | null;
+          created_at?: string;
+          description?: NonNullable<Json>;
+          duration_minutes: number;
+          format?: Database["public"]["Enums"]["service_format"];
+          id?: string;
+          master_id: string;
+          name: NonNullable<Json>;
+          position?: number;
+          price?: number | null;
+          price_kind?: Database["public"]["Enums"]["price_kind"];
+        };
+        Update: {
+          archived_at?: string | null;
+          buffer_minutes?: number;
+          category_id?: string | null;
+          created_at?: string;
+          description?: NonNullable<Json>;
+          duration_minutes?: number;
+          format?: Database["public"]["Enums"]["service_format"];
+          id?: string;
+          master_id?: string;
+          name?: NonNullable<Json>;
+          position?: number;
+          price?: number | null;
+          price_kind?: Database["public"]["Enums"]["price_kind"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "services_master_id_category_id_fkey";
+            columns: ["master_id", "category_id"];
+            isOneToOne: false;
+            referencedRelation: "service_categories";
+            referencedColumns: ["master_id", "id"];
+          },
+          {
+            foreignKeyName: "services_master_id_fkey";
+            columns: ["master_id"];
+            isOneToOne: false;
+            referencedRelation: "masters";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -60,7 +193,9 @@ export type Database = {
       health: { Args: Record<PropertyKey, never>; Returns: string };
     };
     Enums: {
-      [_ in never]: never;
+      locale: "uk" | "ru" | "en";
+      price_kind: "fixed" | "from" | "none";
+      service_format: "on_site" | "online" | "at_client";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -193,6 +328,10 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      locale: ["uk", "ru", "en"],
+      price_kind: ["fixed", "from", "none"],
+      service_format: ["on_site", "online", "at_client"],
+    },
   },
 } as const;

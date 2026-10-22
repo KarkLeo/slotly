@@ -33,10 +33,10 @@ select is_empty(
     select p.oid::regprocedure::text
     from pg_proc p
     join pg_namespace n on n.oid = p.pronamespace
-    where n.nspname = 'public'
+    where n.nspname in ('public', 'private')
       and has_function_privilege('agent', p.oid, 'execute')
   $$,
-  'agent cannot execute functions in public'
+  'agent cannot execute functions in public or private'
 );
 
 select is_empty(
@@ -44,11 +44,11 @@ select is_empty(
     select c.relname
     from pg_class c
     join pg_namespace n on n.oid = c.relnamespace
-    where n.nspname = 'public'
+    where n.nspname in ('public', 'private')
       and c.relkind in ('r', 'p', 'v', 'm', 'f')
       and has_table_privilege('agent', c.oid, 'select, insert, update, delete')
   $$,
-  'agent has no privileges on tables in public'
+  'agent has no privileges on tables in public or private'
 );
 
 create table public.agent_probe (id int primary key);
