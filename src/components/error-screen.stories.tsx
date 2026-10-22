@@ -1,24 +1,23 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn } from "storybook/test";
-import en from "../../messages/en.json";
-import ru from "../../messages/ru.json";
-import uk from "../../messages/uk.json";
+import en from "../../messages/errors/en.json";
+import ru from "../../messages/errors/ru.json";
+import uk from "../../messages/errors/uk.json";
 import { ErrorScreen } from "./error-screen";
 
 const dictionaries = { uk, ru, en };
 
 function texts(locale: unknown) {
-  return dictionaries[locale === "ru" || locale === "en" ? locale : "uk"]
-    .Errors;
+  return dictionaries[locale === "ru" || locale === "en" ? locale : "uk"];
 }
 
 const meta = {
   title: "App/ErrorScreen",
   component: ErrorScreen,
   args: {
-    title: uk.Errors.title,
-    description: uk.Errors.description,
-    retryLabel: uk.Errors.retry,
+    title: uk.title,
+    description: uk.description,
+    retryLabel: uk.retry,
     onRetry: fn(),
   },
   render: (args, { globals }) => {

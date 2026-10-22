@@ -87,7 +87,9 @@ export async function signIn(
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  // Supabase clears the local session even when revoking it on the server fails, so the user is signed out either way.
+  if (error) console.error(error);
   await setFlash({ type: "success", key: "signedOut" });
   redirect("/");
 }
