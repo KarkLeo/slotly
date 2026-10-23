@@ -26,9 +26,9 @@ export function DateStrip({
   }, [selected]);
 
   return (
-    <fieldset className="-mx-4 min-w-0">
+    <fieldset className="min-w-0">
       <legend className="sr-only">{t("dates")}</legend>
-      <div ref={strip} className="flex gap-1.5 overflow-x-auto px-4 pb-2">
+      <div ref={strip} className="flex gap-1.5 overflow-x-auto pb-2">
         {dates.map(({ date, available }, index) => {
           const label = dayLabel(date, locale);
           const showMonth = index === 0 || date.endsWith("-01");
@@ -40,7 +40,7 @@ export function DateStrip({
               >
                 {showMonth ? label.month : ""}
               </span>
-              <label className="flex min-h-15 w-12 cursor-pointer flex-col items-center justify-center rounded-xl bg-card transition-colors has-checked:bg-primary has-checked:text-primary-foreground has-disabled:cursor-default has-disabled:bg-transparent has-disabled:text-muted-foreground has-disabled:line-through has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background">
+              <label className="relative flex min-h-15 w-12 cursor-pointer flex-col items-center justify-center rounded-xl bg-card transition-colors has-checked:bg-primary has-checked:text-primary-foreground has-disabled:cursor-default has-disabled:bg-transparent has-disabled:text-muted-foreground has-disabled:line-through has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background">
                 <input
                   type="radio"
                   name="date"

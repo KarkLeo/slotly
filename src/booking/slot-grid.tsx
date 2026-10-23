@@ -28,7 +28,7 @@ export function SlotGrid({
             {group.slots.map((slot) => (
               <label
                 key={slot.value}
-                className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-border font-semibold transition-colors hover:bg-muted has-checked:border-primary has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background"
+                className="relative flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-border font-semibold transition-colors hover:bg-muted has-checked:border-primary has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background"
               >
                 <input
                   type="radio"

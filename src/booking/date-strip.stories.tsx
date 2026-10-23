@@ -19,7 +19,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  play: async ({ canvas, args, userEvent }) => {
+  play: async ({ canvas, canvasElement, args, userEvent }) => {
+    const page = canvasElement.ownerDocument.documentElement;
+    // Only the strip scrolls sideways, never the page around it.
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth);
+
     const radios = canvas.getAllByRole("radio");
     await expect(radios).toHaveLength(14);
     await expect(radios[4]).toBeDisabled();

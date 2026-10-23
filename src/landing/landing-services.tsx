@@ -90,7 +90,7 @@ export function LandingServices({
           {services.map((service) => (
             <label
               key={service.id}
-              className="flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:bg-muted has-checked:border-primary has-checked:bg-card has-checked:ring-1 has-checked:ring-primary has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background"
+              className="relative flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:bg-muted has-checked:border-primary has-checked:bg-card has-checked:ring-1 has-checked:ring-primary has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background"
             >
               <input
                 type="radio"
