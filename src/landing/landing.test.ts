@@ -10,6 +10,8 @@ describe("toLanding", () => {
       primary_locale: "uk",
       locales: ["uk", "en"],
       currency: "UAH",
+      timezone: "Europe/Kyiv",
+      horizon_days: 30,
       published_at: "2026-10-23T00:00:00Z",
       service_categories: [{ id: "c", position: 0, name: { uk: "Манікюр" } }],
       services: [
@@ -47,6 +49,8 @@ describe("toLanding", () => {
       primaryLocale: "uk",
       locales: ["uk", "en"],
       currency: "UAH",
+      timeZone: "Europe/Kyiv",
+      horizonDays: 30,
       published: true,
       categories: [{ id: "c", position: 0, name: { uk: "Манікюр" } }],
       services: [

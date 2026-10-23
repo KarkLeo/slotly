@@ -9,6 +9,8 @@ const landing: Landing = {
   primaryLocale: "uk",
   locales: ["uk", "en"],
   currency: "UAH",
+  timeZone: "Europe/Kyiv",
+  horizonDays: 30,
   published: true,
   categories: [
     { id: "c", position: 0, name: { uk: "Манікюр", en: "Manicure" } },
@@ -45,6 +47,7 @@ describe("toLandingView", () => {
 
     expect(view.name).toBe("Олена Мельник");
     expect(view.initials).toBe("ОМ");
+    expect([view.timeZone, view.horizonDays]).toEqual(["Europe/Kyiv", 30]);
     expect(view.specialties).toEqual(["Manicure"]);
     expect(view.languages).toEqual([
       {

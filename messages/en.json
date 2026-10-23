@@ -76,6 +76,32 @@
     "notFoundTitle": "Page <accent>not found</accent>",
     "notFoundText": "The master may have changed the address or not published the page yet.",
     "notFoundHome": "Go to Slotly",
-    "unpublished": "This page is not published yet: only you can see it."
+    "unpublished": "This page is not published yet: only you can see it.",
+    "next": "Next",
+    "contactTitle": "What is your <accent>name?</accent>",
+    "back": "Back",
+    "name": "Name",
+    "email": "Email",
+    "address": "Address for the visit",
+    "sendCode": "Send a code to my email",
+    "nameRequired": "Enter your name.",
+    "emailInvalid": "Enter an email, for example name@example.com.",
+    "addressRequired": "Enter the address for the visit."
+  },
+  "SlotPicker": {
+    "chooseDate": "Choose a <accent>date</accent>",
+    "chooseTime": "Choose a <accent>time</accent>",
+    "dates": "Date",
+    "nearest": "Nearest free time:",
+    "pickDate": "Choose a date to see free times.",
+    "morning": "Morning",
+    "day": "Afternoon",
+    "evening": "Evening",
+    "noSlotsTitle": "No free time <accent>yet</accent>",
+    "noSlotsText": "Every spot is taken. Check back later: a time may free up.",
+    "loadError": "Could not load free times.",
+    "retry": "Try again",
+    "timeZone": "{zone}",
+    "loading": "Loading free times…"
   }
 }

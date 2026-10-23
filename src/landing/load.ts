@@ -11,7 +11,7 @@ export const getLanding = cache(
     const { data, error } = await supabase
       .from("masters")
       .select(
-        "id, slug, name, primary_locale, locales, currency, published_at, service_categories (id, position, name), services (id, category_id, position, name, description, duration_minutes, price_kind, price, format, archived_at)",
+        "id, slug, name, primary_locale, locales, currency, timezone, horizon_days, published_at, service_categories (id, position, name), services (id, category_id, position, name, description, duration_minutes, price_kind, price, format, archived_at)",
       )
       .eq("slug", slug)
       .maybeSingle();

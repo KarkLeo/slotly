@@ -16,6 +16,7 @@ import "../src/app/globals.css";
 sb.mock(import("../src/auth/actions.ts"));
 sb.mock(import("../src/auth/oauth-actions.ts"));
 sb.mock(import("../src/i18n/actions.ts"));
+sb.mock(import("../src/landing/booking-api.ts"));
 sb.mock(import("../src/theme/actions.ts"));
 
 const messages = {
