@@ -37,6 +37,7 @@
     "next-intl": "^4.14.9",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "react-email": "6.11.3",
     "react-hook-form": "^7.90.0",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",

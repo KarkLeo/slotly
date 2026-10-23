@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import enEmails from "../../messages/emails/en.json";
+import ruEmails from "../../messages/emails/ru.json";
+import ukEmails from "../../messages/emails/uk.json";
 import en from "../../messages/en.json";
 import enErrors from "../../messages/errors/en.json";
 import ruErrors from "../../messages/errors/ru.json";
@@ -25,6 +28,12 @@ describe("message dictionaries", () => {
     const reference = keyPaths(enErrors).sort();
     expect(keyPaths(ukErrors).sort()).toEqual(reference);
     expect(keyPaths(ruErrors).sort()).toEqual(reference);
+  });
+
+  it("share the same email keys across locales", () => {
+    const reference = keyPaths(enEmails).sort();
+    expect(keyPaths(ukEmails).sort()).toEqual(reference);
+    expect(keyPaths(ruEmails).sort()).toEqual(reference);
   });
 
   it("give next-intl the error screen texts as the Errors section", async () => {

@@ -60,6 +60,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Generate the Send Email Hook secret
+        run: echo "SEND_EMAIL_HOOK_SECRET=v1,whsec_$(openssl rand -base64 32)" >> .env
       - name: Start Supabase
         run: pnpm exec supabase start -x studio,realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor
       - run: pnpm db:reset

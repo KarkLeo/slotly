@@ -493,6 +493,23 @@ export type Database = {
           hold_until: string;
         }[];
       };
+      booking_email_details: {
+        Args: { appointment_id: string; email: string };
+        Returns: {
+          address: string;
+          currency: string;
+          ends_at: string;
+          hold_until: string;
+          locale: Database["public"]["Enums"]["locale"];
+          master_name: string;
+          price: number;
+          price_kind: Database["public"]["Enums"]["price_kind"];
+          primary_locale: Database["public"]["Enums"]["locale"];
+          service_name: Json;
+          starts_at: string;
+          time_zone: string;
+        }[];
+      };
       cancel_appointment: {
         Args: { appointment_id: string; comment?: string };
         Returns: undefined;
