@@ -88,5 +88,10 @@ export function useAvailability({
     retrySlots: () => {
       if (selectedDate) loadSlots(selectedDate, selectedSlot);
     },
+    // After a booking the free dates and the nearest time change too; the old ones stay shown until the new arrive.
+    refresh: () => {
+      setAttempt((value) => value + 1);
+      if (selectedDate) loadSlots(selectedDate, selectedSlot);
+    },
   };
 }

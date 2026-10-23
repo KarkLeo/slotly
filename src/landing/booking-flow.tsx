@@ -104,9 +104,9 @@ export function BookingFlow({
     setScreen({ kind: "contact" });
   }
 
-  function closeBooking({ reloadSlots }: { reloadSlots: boolean }) {
+  function closeBooking({ refresh }: { refresh: boolean }) {
     window.history.back();
-    if (reloadSlots) availability.retrySlots();
+    if (refresh) availability.refresh();
   }
 
   async function run<T>(
@@ -160,7 +160,7 @@ export function BookingFlow({
         } else if (result.status === "slotTaken") {
           held.current = null;
           setTaken(slot);
-          closeBooking({ reloadSlots: true });
+          closeBooking({ refresh: true });
         } else if (result.status === "limitReached") {
           held.current = null;
           setScreen({ kind: "contact", limitReached: true });
@@ -395,8 +395,7 @@ export function BookingFlow({
             screen.kind === "code"
               ? setScreen({ kind: "contact" })
               : closeBooking({
-                  reloadSlots:
-                    screen.kind === "done" || screen.kind === "expired",
+                  refresh: screen.kind === "done" || screen.kind === "expired",
                 })
           }
         >
@@ -428,13 +427,13 @@ export function BookingFlow({
               cancelUntil={
                 deadline && slotDateTimeLabel(deadline, timeZone, locale)
               }
-              onClose={() => closeBooking({ reloadSlots: true })}
+              onClose={() => closeBooking({ refresh: true })}
             />
           )}
           {screen.kind === "expired" && (
             <BookingExpired
               when={bookingWhen}
-              onRestart={() => closeBooking({ reloadSlots: true })}
+              onRestart={() => closeBooking({ refresh: true })}
             />
           )}
           {screen.kind === "failed" && values && (

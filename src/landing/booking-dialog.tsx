@@ -34,6 +34,8 @@ export function BookingDialog({
     element.showModal();
     // Chrome closes the dialog itself on a repeated Escape or back gesture; that still means going back one step.
     const reopen = () => {
+      // The close event arrives later; a dialog already shown again closed on our own call, not the browser's.
+      if (element.open) return;
       element.showModal();
       goBack();
     };

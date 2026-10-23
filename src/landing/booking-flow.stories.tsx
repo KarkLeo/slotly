@@ -422,6 +422,11 @@ export const SlotTaken: Story = {
     const banner = await canvas.findByRole("alert");
     await expect(banner).toHaveTextContent(time(futureSlot(2, 7)));
     await expect(banner).toHaveTextContent(time(futureSlot(2, 9)));
+    await waitFor(() =>
+      expect(
+        canvas.getByRole("button", { name: new RegExp(t.SlotPicker.nearest) }),
+      ).toHaveTextContent(time(futureSlot(2, 9))),
+    );
     await expect(
       canvas.getByRole("button", { name: t.Landing.next }),
     ).toBeDisabled();
@@ -472,6 +477,24 @@ export const SameEmailAgain: Story = {
         level: 1,
         name: plain(t.codeTitle),
       }),
+    ).toBeVisible();
+  },
+};
+
+export const StaleCloseEvent: Story = {
+  play: async (context) => {
+    const { canvas, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await canvas.findByRole("heading", { level: 1, name: plain(t.codeTitle) });
+    // A close queued before the dialog was shown again, as React's dev double mount does.
+    const dialog = canvas.getByRole("dialog") as HTMLDialogElement;
+    dialog.close();
+    dialog.showModal();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await expect(
+      canvas.getByRole("heading", { level: 1, name: plain(t.codeTitle) }),
     ).toBeVisible();
   },
 };
