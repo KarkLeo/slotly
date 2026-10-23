@@ -1,6 +1,6 @@
 begin;
 
-select plan(39);
+select plan(43);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'olena@example.com'),
@@ -259,6 +259,12 @@ select throws_ok(
   'visitors cannot free someone else''s appointment'
 );
 
+select throws_ok(
+  $$ select public.get_available_slots('00000000-0000-0000-0000-0000000000a1', current_date, current_date, null, null, true) $$,
+  'P0001', 'booking_rules_not_ignorable',
+  'only the master ignores the minimum notice and the horizon'
+);
+
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000000c", "role": "authenticated"}', true);
@@ -292,9 +298,36 @@ select results_eq(
   'days with free slots are listed in the master''s time zone'
 );
 
+create temporary table visitor_slots as
+select s from public.get_available_slots('00000000-0000-0000-0000-0000000000a1',
+  (now() at time zone 'Europe/Kyiv')::date, (now() at time zone 'Europe/Kyiv')::date + 1) as s;
+
 reset role;
+grant select on visitor_slots to authenticated;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}', true);
+
+select results_eq(
+  $$ select public.get_available_slots('00000000-0000-0000-0000-0000000000a1',
+       (now() at time zone 'Europe/Kyiv')::date, (now() at time zone 'Europe/Kyiv')::date + 1) $$,
+  $$ select s from visitor_slots $$,
+  'a master on own landing sees the slots a visitor sees'
+);
+
+select ok(
+  (select count(*) from public.get_available_slots('00000000-0000-0000-0000-0000000000a1',
+     (now() at time zone 'Europe/Kyiv')::date, (now() at time zone 'Europe/Kyiv')::date + 1, null, null, true))
+  > (select count(*) from visitor_slots),
+  'a master ignores the minimum notice when asked to'
+);
+
+select results_eq(
+  $$ select public.get_available_days('00000000-0000-0000-0000-0000000000a1',
+       (now() at time zone 'Europe/Kyiv')::date + 1, (now() at time zone 'Europe/Kyiv')::date + 40, null, null, true) $$,
+  $$ select d::date from generate_series((now() at time zone 'Europe/Kyiv')::date + 1, (now() at time zone 'Europe/Kyiv')::date + 40, '1 day') as d
+     where d::date <> (now() at time zone 'Europe/Kyiv')::date + 2 $$,
+  'a master ignores the horizon in days when asked to'
+);
 
 select ok(
   (select count(*) > 0 from public.get_available_slots('00000000-0000-0000-0000-0000000000a2',

@@ -532,6 +532,7 @@ export type Database = {
           day_to: string;
           duration_minutes?: number;
           ignore_appointment_id?: string;
+          ignore_booking_rules?: boolean;
           service_id: string;
         };
         Returns: string[];
@@ -542,6 +543,7 @@ export type Database = {
           day_to: string;
           duration_minutes?: number;
           ignore_appointment_id?: string;
+          ignore_booking_rules?: boolean;
           service_id: string;
         };
         Returns: string[];
