@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { accent } from "./text";
+import { accent } from "@/components/accent";
 
 export function LandingNotFound() {
   const t = useTranslations("Landing");

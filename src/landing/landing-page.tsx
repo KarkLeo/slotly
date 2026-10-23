@@ -71,6 +71,8 @@ export function LandingPage({
           <LandingServices
             groups={view.groups}
             services={view.services}
+            timeZone={view.timeZone}
+            horizonDays={view.horizonDays}
             initialServiceId={initialServiceId}
           />
         ) : (

@@ -76,6 +76,32 @@
     "notFoundTitle": "Сторінку <accent>не знайдено</accent>",
     "notFoundText": "Можливо, майстер змінив адресу або ще не опублікував сторінку.",
     "notFoundHome": "На головну Slotly",
-    "unpublished": "Сторінку ще не опубліковано: її бачите тільки ви."
+    "unpublished": "Сторінку ще не опубліковано: її бачите тільки ви.",
+    "next": "Далі",
+    "contactTitle": "Як вас <accent>звати?</accent>",
+    "back": "Назад",
+    "name": "Ім’я",
+    "email": "Email",
+    "address": "Адреса для виїзду",
+    "sendCode": "Надіслати код на email",
+    "nameRequired": "Вкажіть ім’я.",
+    "emailInvalid": "Вкажіть email, наприклад name@example.com.",
+    "addressRequired": "Вкажіть адресу для виїзду."
+  },
+  "SlotPicker": {
+    "chooseDate": "Оберіть <accent>дату</accent>",
+    "chooseTime": "Оберіть <accent>час</accent>",
+    "dates": "Дата",
+    "nearest": "Найближчий вільний час:",
+    "pickDate": "Оберіть дату, щоб побачити вільний час.",
+    "morning": "Ранок",
+    "day": "День",
+    "evening": "Вечір",
+    "noSlotsTitle": "Вільного часу поки <accent>немає</accent>",
+    "noSlotsText": "Усі місця зайняті. Загляньте пізніше: час може звільнитися.",
+    "loadError": "Не вдалося завантажити вільний час.",
+    "retry": "Спробувати ще раз",
+    "timeZone": "{zone}",
+    "loading": "Завантажуємо вільний час…"
   }
 }

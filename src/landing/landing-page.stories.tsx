@@ -21,6 +21,8 @@ const olena: Landing = {
   primaryLocale: "uk",
   locales: ["uk", "en"],
   currency: "UAH",
+  timeZone: "Europe/Kyiv",
+  horizonDays: 30,
   published: true,
   categories: [
     {

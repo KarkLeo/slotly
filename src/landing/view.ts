@@ -18,6 +18,8 @@ export type LandingView = {
   name: string;
   initials: string;
   published: boolean;
+  timeZone: string;
+  horizonDays: number;
   specialties: string[];
   languages: { locale: Locale; name: string; href: string; current: boolean }[];
   groups: {
@@ -60,6 +62,8 @@ export function toLandingView(landing: Landing, locale: Locale): LandingView {
     name: landing.name,
     initials: initials(landing.name),
     published: landing.published,
+    timeZone: landing.timeZone,
+    horizonDays: landing.horizonDays,
     specialties: groups.flatMap((group) => (group.title ? [group.title] : [])),
     languages:
       landing.locales.length > 1

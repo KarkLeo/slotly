@@ -4,15 +4,19 @@ import { useTranslations } from "next-intl";
 import { useState, type MouseEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { accent, Price } from "./text";
+import { accent } from "@/components/accent";
+import { BookingFlow } from "./booking-flow";
+import { Price } from "./text";
 import type { LandingView, ServiceView } from "./view";
 
 // The services list and the booking picker share one selection, mirrored in ?service= so a link can preselect it.
 export function LandingServices({
   groups,
   services,
+  timeZone,
+  horizonDays,
   initialServiceId,
-}: Pick<LandingView, "groups" | "services"> & {
+}: Pick<LandingView, "groups" | "services" | "timeZone" | "horizonDays"> & {
   initialServiceId: string | null;
 }) {
   const t = useTranslations("Landing");
@@ -35,6 +39,8 @@ export function LandingServices({
     document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" });
   }
 
+  const selectedService =
+    services.find((service) => service.id === selected) ?? null;
   const showGroupTitles = groups.length > 1 || groups[0]?.title !== null;
 
   return (
@@ -84,7 +90,7 @@ export function LandingServices({
           {services.map((service) => (
             <label
               key={service.id}
-              className="flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:bg-muted has-checked:border-primary has-checked:bg-card has-checked:ring-1 has-checked:ring-primary has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background"
+              className="relative flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:bg-muted has-checked:border-primary has-checked:bg-card has-checked:ring-1 has-checked:ring-primary has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-background"
             >
               <input
                 type="radio"
@@ -106,6 +112,14 @@ export function LandingServices({
             </label>
           ))}
         </fieldset>
+        {selectedService && (
+          <BookingFlow
+            key={selectedService.id}
+            service={selectedService}
+            timeZone={timeZone}
+            horizonDays={horizonDays}
+          />
+        )}
       </section>
     </>
   );

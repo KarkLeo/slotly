@@ -23,7 +23,10 @@ export default async function LandingLayout({
   const lang = await getLocale();
 
   return (
-    <html lang={lang} className={cn(fontVariables, "h-full antialiased")}>
+    <html
+      lang={lang}
+      className={cn(fontVariables, "h-full scroll-pb-24 antialiased")}
+    >
       <body className="flex min-h-full flex-col bg-background">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>

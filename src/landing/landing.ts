@@ -10,6 +10,8 @@ export type Landing = {
   primaryLocale: Locale;
   locales: Locale[];
   currency: string;
+  timeZone: string;
+  horizonDays: number;
   published: boolean;
   categories: Category[];
   services: Service[];
@@ -24,6 +26,8 @@ type MasterRow = Pick<
   | "primary_locale"
   | "locales"
   | "currency"
+  | "timezone"
+  | "horizon_days"
   | "published_at"
 > & {
   service_categories: Pick<
@@ -53,6 +57,8 @@ export function toLanding(row: MasterRow): Landing {
     primaryLocale: row.primary_locale,
     locales: row.locales,
     currency: row.currency,
+    timeZone: row.timezone,
+    horizonDays: row.horizon_days,
     published: row.published_at !== null,
     categories: row.service_categories.map((category) => ({
       id: category.id,
