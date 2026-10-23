@@ -11,10 +11,10 @@ const eslintConfig = defineConfig([
   ...storybook.configs["flat/recommended"],
   prettier,
   {
-    // globals.css and supabase/templates/ define raw colors by design and are not JavaScript.
+    // globals.css defines raw colors by design and is not JavaScript.
     files: ["src/**/*.{ts,tsx}", ".storybook/**/*.{ts,tsx}"],
-    // OG images render outside the CSS pipeline and need literal colors.
-    ignores: ["**/opengraph-image.tsx"],
+    // OG images and emails render outside the CSS pipeline and need literal colors.
+    ignores: ["**/opengraph-image.tsx", "src/emails/styles.ts"],
     plugins: { slotly: { rules: { "no-raw-color": noRawColor } } },
     rules: { "slotly/no-raw-color": "error" },
   },

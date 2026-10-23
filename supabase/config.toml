@@ -224,7 +224,7 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
@@ -243,14 +243,6 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
-
-[auth.email.template.magic_link]
-subject = "{{ $l := \"uk\" }}{{ with .Data }}{{ with .locale }}{{ $l = printf \"%v\" . }}{{ end }}{{ end }}{{ $prefix := printf \"%s/auth/confirm?booking=\" .SiteURL }}{{ if and (ge (len .RedirectTo) (len $prefix)) (eq (slice .RedirectTo 0 (len $prefix)) $prefix) }}{{ if eq $l \"ru\" }}Подтвердите запись в Slotly{{ else if eq $l \"en\" }}Confirm your booking on Slotly{{ else }}Підтвердіть запис у Slotly{{ end }}{{ else if eq $l \"ru\" }}Вход в Slotly{{ else if eq $l \"en\" }}Sign in to Slotly{{ else }}Вхід у Slotly{{ end }}"
-content_path = "./supabase/templates/magic_link.html"
-
-[auth.email.template.confirmation]
-subject = "{{ $l := \"uk\" }}{{ with .Data }}{{ with .locale }}{{ $l = printf \"%v\" . }}{{ end }}{{ end }}{{ if eq $l \"ru\" }}Подтвердите email в Slotly{{ else if eq $l \"en\" }}Confirm your email for Slotly{{ else }}Підтвердіть email у Slotly{{ end }}"
-content_path = "./supabase/templates/confirmation.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
@@ -293,6 +285,12 @@ max_frequency = "5s"
 [auth.hook.custom_access_token]
 enabled = true
 uri = "pg-functions://postgres/private/custom_access_token"
+
+# Auth emails are rendered and sent by the app; SEND_EMAIL_HOOK_SECRET comes from the project root .env.
+[auth.hook.send_email]
+enabled = true
+uri = "http://host.docker.internal:3000/api/auth/send-email"
+secrets = "env(SEND_EMAIL_HOOK_SECRET)"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
 [auth.sms.twilio]

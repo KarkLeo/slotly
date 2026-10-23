@@ -51,9 +51,12 @@ Requires Node 24, pnpm and Docker.
 ```sh
 pnpm install
 cp .env.example .env.local
+echo "SEND_EMAIL_HOOK_SECRET=v1,whsec_$(openssl rand -base64 32)" > .env
 pnpm db:start        # local Supabase in Docker
 pnpm dev             # http://localhost:3000
 ```
+
+Supabase Auth hands its emails to the app's Send Email Hook on port 3000, signed with the secret from `.env`; the app delivers them to Mailpit at http://127.0.0.1:54324.
 
 Checks: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm db:test`.
 

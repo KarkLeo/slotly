@@ -30,12 +30,14 @@ function kyiv(day: string, time: string): string {
   return instant.toISOString();
 }
 
-// Every date is free except Sundays; each free date offers the times above, never in the past.
+// Every date is free except Sundays and a today whose times have all passed; each free date offers the times above, never in the past.
 export const fetchAvailableDays = fn<typeof api.fetchAvailableDays>(
   async (_serviceId, from, to) => {
     const days: string[] = [];
     for (let day = from; day <= to; day = addDays(day, 1)) {
-      if (new Date(`${day}T12:00:00Z`).getUTCDay() !== 0) days.push(day);
+      const sunday = new Date(`${day}T12:00:00Z`).getUTCDay() === 0;
+      const over = new Date(kyiv(day, times[times.length - 1])) <= new Date();
+      if (!sunday && !over) days.push(day);
     }
     return days;
   },
