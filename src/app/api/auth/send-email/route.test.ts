@@ -128,7 +128,7 @@ describe("POST /api/auth/send-email", () => {
   });
 
   it("refuses an email over budget in a way Auth passes on as 429", async () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     takeRateLimit.mockResolvedValue(false);
     const response = await POST(hookRequest(withIp(body, "203.0.113.5")));
     expect(response.status).toBe(200);
@@ -136,6 +136,10 @@ describe("POST /api/auth/send-email", () => {
       error: { http_code: 429, message: "Email rate limit exceeded" },
     });
     expect(sendEmail).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith("Email budget exceeded", {
+      bucket: "email:ip",
+      ip: "203.0.113.5",
+    });
   });
 
   it("spends the new user budget on a link naming a booking that does not exist", async () => {
@@ -146,10 +150,43 @@ describe("POST /api/auth/send-email", () => {
         '"redirect_to":"https://slotly.example/auth/confirm?booking=6f1c1d36-3f0b-4f43-9d55-3c3a3b9e8a10"',
       );
     await POST(hookRequest(forged));
+    expect(loadBookingDetails).toHaveBeenCalledWith(
+      "6f1c1d36-3f0b-4f43-9d55-3c3a3b9e8a10",
+      "mark@example.com",
+    );
     expect(takeRateLimit).toHaveBeenCalledWith(
       "email:signup:203.0.113.5",
       3,
       3600,
+    );
+  });
+
+  it("does not spend the new user budget on a booking that exists", async () => {
+    loadBookingDetails.mockResolvedValue({
+      master: "Olena",
+      service: { uk: "Манікюр" },
+      primaryLocale: "uk",
+      locale: "uk",
+      startsAt: "2030-01-10T10:00:00Z",
+      endsAt: "2030-01-10T11:00:00Z",
+      timeZone: "Europe/Kyiv",
+      priceKind: "none",
+      price: null,
+      currency: "UAH",
+      address: null,
+      holdUntil: "2030-01-09T10:15:00Z",
+    });
+    const booking = withIp(body, "203.0.113.5")
+      .replace('"magiclink"', '"signup"')
+      .replace(
+        '"redirect_to":"https://slotly.example"',
+        '"redirect_to":"https://slotly.example/auth/confirm?booking=6f1c1d36-3f0b-4f43-9d55-3c3a3b9e8a10"',
+      );
+    await POST(hookRequest(booking));
+    expect(takeRateLimit).not.toHaveBeenCalledWith(
+      "email:signup:203.0.113.5",
+      expect.anything(),
+      expect.anything(),
     );
   });
 

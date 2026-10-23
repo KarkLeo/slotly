@@ -13,6 +13,8 @@ create table private.rate_limits (
   primary key (bucket, window_start)
 );
 
+create index rate_limits_window_start_idx on private.rate_limits (window_start);
+
 create function public.take_rate_limit(bucket text, max_hits integer, window_seconds integer)
 returns boolean
 language plpgsql

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AuthEmail } from "./auth-emails";
-import { withinEmailBudget } from "./email-budget";
+import { overEmailBudget } from "./email-budget";
 
 function counter() {
   const hits = new Map<string, number>();
@@ -24,7 +24,7 @@ async function sendMany(
 ) {
   const results = [];
   for (let i = 0; i < times; i++)
-    results.push(await withinEmailBudget([make(i)], ip, take));
+    results.push((await overEmailBudget([make(i)], ip, take)) === null);
   return results;
 }
 
@@ -43,7 +43,7 @@ describe("withinEmailBudget", () => {
 
   it("counts the address regardless of case", async () => {
     const take = counter();
-    await withinEmailBudget([email("signIn", "Anna@Example.com")], null, take);
+    await overEmailBudget([email("signIn", "Anna@Example.com")], null, take);
     expect(take).toHaveBeenCalledWith("email:to:anna@example.com", 5, 3600);
   });
 
@@ -74,7 +74,7 @@ describe("withinEmailBudget", () => {
 
   it("does not spend the new user budget on sign-ins", async () => {
     const take = counter();
-    await withinEmailBudget([email("signIn")], "203.0.113.5", take);
+    await overEmailBudget([email("signIn")], "203.0.113.5", take);
     expect(take).not.toHaveBeenCalledWith(
       "email:signup:203.0.113.5",
       expect.anything(),
@@ -82,9 +82,30 @@ describe("withinEmailBudget", () => {
     );
   });
 
+  it("names the budget that refused", async () => {
+    const take = vi.fn(
+      async (bucket: string) => !bucket.startsWith("email:ip:"),
+    );
+    await expect(
+      overEmailBudget([email("signIn")], "203.0.113.5", take),
+    ).resolves.toBe("email:ip");
+  });
+
+  it("does not spend the address budget once the IP is over its own", async () => {
+    const take = vi.fn(
+      async (bucket: string) => !bucket.startsWith("email:ip:"),
+    );
+    await overEmailBudget([email("signIn")], "203.0.113.5", take);
+    expect(take).not.toHaveBeenCalledWith(
+      "email:to:anna@example.com",
+      expect.anything(),
+      expect.anything(),
+    );
+  });
+
   it("counts only the address without an IP", async () => {
     const take = counter();
-    await withinEmailBudget([email("signUp")], null, take);
+    await overEmailBudget([email("signUp")], null, take);
     expect(take.mock.calls.map(([bucket]) => bucket)).toEqual([
       "email:to:anna@example.com",
     ]);

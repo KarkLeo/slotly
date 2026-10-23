@@ -1,6 +1,6 @@
 begin;
 
-select plan(19);
+select plan(20);
 
 create function pg_temp.slot(hours integer)
 returns timestamptz
@@ -184,6 +184,8 @@ select results_eq(
 );
 
 select ok(public.take_rate_limit('other', 2, 3600), 'each bucket counts separately');
+
+select has_index('private', 'rate_limits', 'rate_limits_window_start_idx', 'old rate limit windows are found without a full scan');
 
 reset role;
 
