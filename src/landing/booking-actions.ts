@@ -116,7 +116,7 @@ export async function confirmBooking({
   });
   if (isWrongCode(verifyError?.code)) return { status: "invalidCode" };
   if (verifyError)
-    return { status: "failed", toast: otpFailureToast(verifyError.code) };
+    return { status: "failed", toast: otpFailureToast(verifyError) };
 
   const { data, error } = await supabase.rpc("claim_bookings", {
     appointment_ids: [appointmentId],
@@ -163,7 +163,5 @@ async function sendCode(
     data: { locale },
     emailRedirectTo: `${siteUrl()}/auth/confirm?booking=${appointmentId}`,
   });
-  return error
-    ? { status: "failed", toast: otpFailureToast(error.code) }
-    : null;
+  return error ? { status: "failed", toast: otpFailureToast(error) } : null;
 }

@@ -54,7 +54,7 @@ export async function signIn(
       return {
         step: "code",
         email: email.data,
-        toast: otpFailureToast(error.code),
+        toast: otpFailureToast(error),
       };
 
     await setFlash({ type: "success", key: "signedIn" });
@@ -68,7 +68,7 @@ export async function signIn(
     return {
       step: "email",
       email: email.data,
-      toast: otpFailureToast(error.code),
+      toast: otpFailureToast(error),
     };
 
   return {

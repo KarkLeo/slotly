@@ -39,7 +39,10 @@ export async function POST(request: Request) {
     const ip = senderIp(payload);
     if (!(await withinEmailBudget(emails, ip, takeRateLimit))) {
       console.warn("Email budget exceeded", { ip });
-      return hookError(429, "Email rate limit exceeded");
+      // Auth passes the code in the body on to the caller only with status 200; a 429 status becomes a 500.
+      return Response.json({
+        error: { http_code: 429, message: "Email rate limit exceeded" },
+      });
     }
 
     await Promise.all(

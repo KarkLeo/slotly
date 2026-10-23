@@ -127,11 +127,11 @@ describe("POST /api/auth/send-email", () => {
     );
   });
 
-  it("refuses an email over budget and sends nothing", async () => {
+  it("refuses an email over budget in a way Auth passes on as 429", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     takeRateLimit.mockResolvedValue(false);
     const response = await POST(hookRequest(withIp(body, "203.0.113.5")));
-    expect(response.status).toBe(429);
+    expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       error: { http_code: 429, message: "Email rate limit exceeded" },
     });
