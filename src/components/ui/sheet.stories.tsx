@@ -146,8 +146,10 @@ export const TallContent: Story = {
     const header = sheet.querySelector("[data-slot=sheet-header]")!;
     const last = within(sheet).getByText("Line 60 of the booking details.");
     const close = within(sheet).getByRole("button", { name: uk.UI.close });
+    // The opening transition starts only once the starting style is dropped; until then there is no animation to wait for.
     await waitFor(() => {
       settle();
+      expect(sheet).not.toHaveAttribute("data-starting-style");
       expect(sheet.getAnimations()).toHaveLength(0);
     });
     await expect(
