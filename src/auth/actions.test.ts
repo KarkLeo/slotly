@@ -104,23 +104,14 @@ describe("signIn", () => {
     );
   });
 
-  it("confirms bookings made with the same email", async () => {
-    rpc.mockResolvedValue({
-      data: [{ appointment_id: "a", status: "confirmed" }],
-      error: null,
-    });
+  it("confirms no bookings on a plain sign-in", async () => {
     await redirectTarget(
       signIn(
         { step: "code", email },
         form({ intent: "verify", email, code: "123456" }),
       ),
     );
-    expect(rpc).toHaveBeenCalledWith("claim_bookings");
-    expect(cookieSet).toHaveBeenCalledWith(
-      flashCookie,
-      "success:bookingConfirmed",
-      expect.objectContaining({ path: "/" }),
-    );
+    expect(rpc).not.toHaveBeenCalled();
   });
 });
 

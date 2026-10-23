@@ -3,6 +3,7 @@
 import { isWrongCode, otpFailureToast } from "@/auth/otp-errors";
 import { createClient } from "@/db/server";
 import { isLocale } from "@/i18n/locales";
+import { siteUrl } from "@/lib/site-url";
 import type { ActionToast } from "@/toasts/toast";
 
 export type BookingRequest = {
@@ -13,6 +14,8 @@ export type BookingRequest = {
   address: string;
   locale: string;
   replaces?: string | null;
+  // A code sent to the same email less than a minute ago still works, and Auth refuses to send another.
+  reuseCode?: boolean;
 };
 
 type Failed = { status: "failed"; toast: ActionToast };
@@ -23,7 +26,7 @@ const unexpected: Failed = {
 };
 
 export type StartBookingResult =
-  | { status: "codeSent"; appointmentId: string; toast: ActionToast }
+  | { status: "codeSent"; appointmentId: string; toast?: ActionToast }
   | { status: "slotTaken" }
   | { status: "limitReached" }
   | Failed;
@@ -55,11 +58,12 @@ export async function startBooking(
   const appointmentId = data?.[0]?.appointment_id;
   if (error || !appointmentId) return unexpected;
 
-  const sent = await sendCode(request.email, request.locale);
-  if (sent) {
+  if (request.reuseCode) return { status: "codeSent", appointmentId };
+  const failed = await sendCode(request.email, request.locale, appointmentId);
+  if (failed) {
     // Nobody can confirm a booking whose code never left, so it must not keep the slot.
     await supabase.rpc("release_booking", { appointment_id: appointmentId });
-    return sent;
+    return failed;
   }
   return {
     status: "codeSent",
@@ -95,7 +99,9 @@ export async function confirmBooking({
   if (verified.error)
     return { status: "failed", toast: otpFailureToast(verified.error.code) };
 
-  const { data, error } = await supabase.rpc("claim_bookings");
+  const { data, error } = await supabase.rpc("claim_bookings", {
+    appointment_ids: [appointmentId],
+  });
   if (error) return unexpected;
   const booking = data.find((row) => row.appointment_id === appointmentId);
   if (!booking) return { status: "expired" };
@@ -111,26 +117,37 @@ export async function confirmBooking({
 }
 
 export async function resendCode({
+  appointmentId,
   email,
   locale,
 }: {
+  appointmentId: string;
   email: string;
   locale: string;
 }): Promise<{ status: "sent"; toast: ActionToast } | Failed> {
   if (!isLocale(locale)) return unexpected;
   return (
-    (await sendCode(email, locale)) ?? {
+    (await sendCode(email, locale, appointmentId)) ?? {
       status: "sent",
       toast: { type: "success", key: "codeSent" },
     }
   );
 }
 
-async function sendCode(email: string, locale: string): Promise<Failed | null> {
+// The link in the email names the booking, so opening it on any device confirms exactly that booking.
+async function sendCode(
+  email: string,
+  locale: string,
+  appointmentId: string,
+): Promise<Failed | null> {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: true, data: { locale } },
+    options: {
+      shouldCreateUser: true,
+      data: { locale },
+      emailRedirectTo: `${siteUrl()}/auth/confirm?booking=${appointmentId}`,
+    },
   });
   return error
     ? { status: "failed", toast: otpFailureToast(error.code) }

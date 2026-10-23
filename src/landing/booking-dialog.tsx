@@ -2,7 +2,7 @@
 
 import { ArrowLeftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { Price } from "./text";
@@ -26,11 +26,22 @@ export function BookingDialog({
 }) {
   const t = useTranslations("Landing");
   const dialog = useRef<HTMLDialogElement>(null);
+  const goBack = useEffectEvent(onBack);
 
   useEffect(() => {
     const element = dialog.current;
-    element?.showModal();
-    return () => element?.close();
+    if (!element) return;
+    element.showModal();
+    // Chrome closes the dialog itself on a repeated Escape or back gesture; that still means going back one step.
+    const reopen = () => {
+      element.showModal();
+      goBack();
+    };
+    element.addEventListener("close", reopen);
+    return () => {
+      element.removeEventListener("close", reopen);
+      element.close();
+    };
   }, []);
 
   // Each screen starts at its heading, so a screen reader announces where the client is.

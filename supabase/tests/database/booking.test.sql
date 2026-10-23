@@ -1,6 +1,6 @@
 begin;
 
-select plan(39);
+select plan(43);
 
 create function pg_temp.slot(hours integer)
 returns timestamptz
@@ -188,10 +188,9 @@ select lives_ok(
 
 reset role;
 
-select results_eq(
-  $$ select status::text, cancelled_by::text, hold_until from public.appointments where id = '00000000-0000-0000-0000-0000000000f2' $$,
-  $$ values ('cancelled', 'system', null::timestamptz) $$,
-  'the run-out pending appointment is cancelled by the system'
+select is_empty(
+  $$ select 1 from private.busy_times where appointment_id = '00000000-0000-0000-0000-0000000000f2' $$,
+  'the run-out pending appointment no longer takes its time'
 );
 
 -- Active bookings limit (Olena allows 2)
@@ -252,10 +251,17 @@ select results_eq(
 
 -- Claiming bookings after contact confirmation
 
+create temporary table client_bookings on commit drop as
+select ac.master_id, ac.appointment_id, ac.unconfirmed_email
+from public.appointment_clients ac
+where ac.unconfirmed_email in ('client@example.com', 'mark@example.com', 'anna@example.com');
+
+grant select on client_bookings to anon, authenticated;
+
 set local role anon;
 
 select throws_ok(
-  $$ select public.claim_bookings() $$,
+  $$ select public.claim_bookings('{}') $$,
   '42501', null,
   'visitors cannot claim bookings'
 );
@@ -271,7 +277,22 @@ select throws_ok(
 );
 
 create temporary table claimed on commit drop as
-select * from public.claim_bookings();
+select * from public.claim_bookings(array(
+  select appointment_id from client_bookings
+  where master_id = '00000000-0000-0000-0000-00000000000b'
+));
+
+select results_eq(
+  $$ select count(*)::integer from claimed $$,
+  $$ values (1) $$,
+  'only the listed bookings made with the user''s own email are claimed'
+);
+
+insert into claimed
+select * from public.claim_bookings(array(
+  select appointment_id from client_bookings
+  where master_id = '00000000-0000-0000-0000-00000000000a' or unconfirmed_email = 'mark@example.com'
+));
 
 reset role;
 
@@ -306,14 +327,14 @@ select is(
 select results_eq(
   $$ select count(*)::integer from public.appointment_clients where unconfirmed_email = 'mark@example.com' $$,
   $$ values (1) $$,
-  'bookings of other emails stay unclaimed'
+  'a listed booking of another email stays unclaimed'
 );
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000000c", "role": "authenticated"}', true);
 
 select is_empty(
-  $$ select * from public.claim_bookings() $$,
+  $$ select * from public.claim_bookings(array(select appointment_id from client_bookings)) $$,
   'claiming twice claims nothing'
 );
 
@@ -324,12 +345,12 @@ select ok(
 
 reset role;
 
--- A run-out hold is not claimed
+-- A run-out hold
 
 update public.appointments a
 set hold_until = now() - interval '1 second'
-from public.appointment_clients ac
-where ac.appointment_id = a.id and ac.unconfirmed_email = 'anna@example.com';
+from client_bookings b
+where b.appointment_id = a.id and b.unconfirmed_email = 'anna@example.com';
 
 insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-0000000000e1', 'anna@example.com', now());
@@ -338,11 +359,40 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-0000000000e1", "role": "authenticated"}', true);
 
 select is_empty(
-  $$ select * from public.claim_bookings() $$,
+  $$ select * from public.claim_bookings(array(select appointment_id from client_bookings)) $$,
   'a booking whose hold has run out is not claimed'
 );
 
 reset role;
+
+-- Other writes over run-out holds
+
+insert into public.appointments (id, master_id, service_id, during, status, hold_until, source, locale) values
+  ('00000000-0000-0000-0000-0000000000f5', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000a1',
+   tstzrange(pg_temp.slot(18), pg_temp.slot(19)), 'pending', now() - interval '1 minute', 'client', 'uk'),
+  ('00000000-0000-0000-0000-0000000000f6', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000a1',
+   tstzrange(pg_temp.slot(20), pg_temp.slot(21)), 'pending', now() - interval '1 minute', 'client', 'uk');
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}', true);
+
+select lives_ok(
+  $$ insert into public.blocks (master_id, during) values ('00000000-0000-0000-0000-00000000000a', tstzrange(pg_temp.slot(18), pg_temp.slot(19))) $$,
+  'a master can block time held by a run-out pending appointment'
+);
+
+select lives_ok(
+  $$ select public.reschedule_appointment('00000000-0000-0000-0000-0000000000f1', pg_temp.slot(20)) $$,
+  'a master can move an appointment onto time held by a run-out pending appointment'
+);
+
+reset role;
+
+select is_empty(
+  $$ select 1 from private.busy_times
+     where appointment_id in ('00000000-0000-0000-0000-0000000000f5', '00000000-0000-0000-0000-0000000000f6') $$,
+  'the run-out holds no longer take their time'
+);
 
 -- Privileges
 
@@ -353,15 +403,15 @@ select ok(
 );
 
 select ok(
-  not has_function_privilege('anon', 'public.claim_bookings()', 'execute')
-  and has_function_privilege('authenticated', 'public.claim_bookings()', 'execute'),
+  not has_function_privilege('anon', 'public.claim_bookings(uuid[])', 'execute')
+  and has_function_privilege('authenticated', 'public.claim_bookings(uuid[])', 'execute'),
   'only signed-in users may claim'
 );
 
 select ok(
-  not has_function_privilege('anon', 'private.expire_holds(uuid)', 'execute')
-  and not has_function_privilege('authenticated', 'private.expire_holds(uuid)', 'execute'),
-  'expiring holds is internal'
+  not has_function_privilege('anon', 'private.free_run_out_holds()', 'execute')
+  and not has_function_privilege('authenticated', 'private.free_run_out_holds()', 'execute'),
+  'freeing run-out holds is internal'
 );
 
 select * from finish();

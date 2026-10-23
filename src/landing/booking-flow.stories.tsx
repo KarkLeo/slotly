@@ -338,6 +338,7 @@ export const ChangeEmail: Story = {
         expect.objectContaining({
           email: "iryna.k@example.com",
           replaces: "appointment-1",
+          reuseCode: false,
         }),
       ),
     );
@@ -424,5 +425,53 @@ export const SlotTaken: Story = {
     await expect(
       canvas.getByRole("button", { name: t.Landing.next }),
     ).toBeDisabled();
+  },
+};
+
+export const BrowserClosesDialog: Story = {
+  play: async (context) => {
+    const { canvas, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await canvas.findByRole("heading", { level: 1, name: plain(t.codeTitle) });
+    const dialog = canvas.getByRole("dialog") as HTMLDialogElement;
+    dialog.close();
+    await expect(
+      await canvas.findByRole("heading", {
+        level: 1,
+        name: plain(t.contactTitle),
+      }),
+    ).toBeVisible();
+    await expect(dialog.open).toBe(true);
+  },
+};
+
+export const SameEmailAgain: Story = {
+  play: async (context) => {
+    const { canvas, userEvent, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await userEvent.click(
+      await canvas.findByRole("button", { name: t.changeEmail }),
+    );
+    await userEvent.click(
+      await canvas.findByRole("button", { name: t.sendCode }),
+    );
+    await waitFor(() =>
+      expect(startBooking).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          replaces: "appointment-1",
+          reuseCode: true,
+        }),
+      ),
+    );
+    await expect(
+      await canvas.findByRole("heading", {
+        level: 1,
+        name: plain(t.codeTitle),
+      }),
+    ).toBeVisible();
   },
 };

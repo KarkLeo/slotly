@@ -15,6 +15,7 @@ const toastKeys = {
   decisionFailed: true,
   bookingConfirmed: true,
   bookingRequested: true,
+  bookingExpired: true,
 } satisfies Record<ToastKey, true>;
 
 export function encodeFlash(toast: ActionToast): string {

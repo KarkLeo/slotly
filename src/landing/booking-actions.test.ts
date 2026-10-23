@@ -29,6 +29,7 @@ function rpcError(message: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("SITE_URL", "https://slotly.test");
   rpc.mockImplementation(async (name: string) =>
     name === "book_appointment" ? booked : { data: null, error: null },
   );
@@ -53,8 +54,20 @@ describe("startBooking", () => {
     });
     expect(auth.signInWithOtp).toHaveBeenCalledWith({
       email: "anna@example.com",
-      options: { shouldCreateUser: true, data: { locale: "en" } },
+      options: {
+        shouldCreateUser: true,
+        data: { locale: "en" },
+        emailRedirectTo:
+          "https://slotly.test/auth/confirm?booking=appointment-1",
+      },
     });
+  });
+
+  it("holds the slot without a new email while the last code is fresh", async () => {
+    await expect(
+      startBooking({ ...request, reuseCode: true }),
+    ).resolves.toEqual({ status: "codeSent", appointmentId: "appointment-1" });
+    expect(auth.signInWithOtp).not.toHaveBeenCalled();
   });
 
   it("passes the address of a home visit", async () => {
@@ -165,7 +178,9 @@ describe("confirmBooking", () => {
       token: "123456",
       type: "email",
     });
-    expect(rpc).toHaveBeenCalledWith("claim_bookings");
+    expect(rpc).toHaveBeenCalledWith("claim_bookings", {
+      appointment_ids: ["appointment-1"],
+    });
   });
 
   it("leaves the booking waiting for a master without auto-confirm", async () => {
@@ -195,14 +210,23 @@ describe("confirmBooking", () => {
 describe("resendCode", () => {
   it("sends a new code in the booking's language", async () => {
     await expect(
-      resendCode({ email: "anna@example.com", locale: "uk" }),
+      resendCode({
+        appointmentId: "appointment-1",
+        email: "anna@example.com",
+        locale: "uk",
+      }),
     ).resolves.toEqual({
       status: "sent",
       toast: { type: "success", key: "codeSent" },
     });
     expect(auth.signInWithOtp).toHaveBeenCalledWith({
       email: "anna@example.com",
-      options: { shouldCreateUser: true, data: { locale: "uk" } },
+      options: {
+        shouldCreateUser: true,
+        data: { locale: "uk" },
+        emailRedirectTo:
+          "https://slotly.test/auth/confirm?booking=appointment-1",
+      },
     });
   });
 
@@ -211,7 +235,11 @@ describe("resendCode", () => {
       error: { code: "over_email_send_rate_limit" },
     });
     await expect(
-      resendCode({ email: "anna@example.com", locale: "uk" }),
+      resendCode({
+        appointmentId: "appointment-1",
+        email: "anna@example.com",
+        locale: "uk",
+      }),
     ).resolves.toEqual({
       status: "failed",
       toast: { type: "error", key: "rateLimited" },

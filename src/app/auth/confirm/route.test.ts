@@ -61,32 +61,58 @@ describe("GET /auth/confirm", () => {
     );
   });
 
-  it("confirms the bookings made with the email of the link", async () => {
+  const booking = "8c7f2c1e-6a51-4c3b-9d0e-2f4a5b6c7d8e";
+
+  function bookingLink() {
+    auth.verifyOtp.mockResolvedValue({ error: null });
+    return new NextRequest(
+      `http://localhost/auth/confirm?token_hash=x&type=email&booking=${booking}`,
+    );
+  }
+
+  it("confirms the booking named in the link", async () => {
     rpc.mockResolvedValue({
-      data: [
-        { appointment_id: "a", status: "pending" },
-        { appointment_id: "b", status: "confirmed" },
-      ],
+      data: [{ appointment_id: booking, status: "confirmed" }],
       error: null,
     });
-    await expect(redirectTarget(GET(validLink()))).resolves.toBe("/app");
-    expect(rpc).toHaveBeenCalledWith("claim_bookings");
+    await expect(redirectTarget(GET(bookingLink()))).resolves.toBe("/app");
+    expect(rpc).toHaveBeenCalledWith("claim_bookings", {
+      appointment_ids: [booking],
+    });
     flashed("success:bookingConfirmed");
   });
 
-  it("reports bookings that wait for the master", async () => {
+  it("reports a booking that waits for the master", async () => {
     rpc.mockResolvedValue({
-      data: [{ appointment_id: "a", status: "pending" }],
+      data: [{ appointment_id: booking, status: "pending" }],
       error: null,
     });
-    await redirectTarget(GET(validLink()));
+    await redirectTarget(GET(bookingLink()));
     flashed("success:bookingRequested");
   });
 
-  it("still signs in when the bookings cannot be claimed", async () => {
+  it("reports a booking whose time is no longer held", async () => {
+    await redirectTarget(GET(bookingLink()));
+    flashed("error:bookingExpired");
+  });
+
+  it("still signs in when the booking cannot be claimed", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
+    await redirectTarget(GET(bookingLink()));
+    flashed("error:bookingExpired");
+  });
+
+  it("confirms nothing for a plain sign-in link or a malformed booking", async () => {
     await redirectTarget(GET(validLink()));
-    flashed("success:signedIn");
+    auth.verifyOtp.mockResolvedValue({ error: null });
+    await redirectTarget(
+      GET(
+        new NextRequest(
+          "http://localhost/auth/confirm?token_hash=x&type=email&booking=nope",
+        ),
+      ),
+    );
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

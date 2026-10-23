@@ -58,7 +58,8 @@
     "unexpected": "Something went wrong. Please try again.",
     "decisionFailed": "Could not save your decision. Please try again.",
     "bookingConfirmed": "You're booked.",
-    "bookingRequested": "Request sent to the master."
+    "bookingRequested": "Request sent to the master.",
+    "bookingExpired": "The time to confirm the booking has run out. Please book again."
   },
   "Landing": {
     "languages": "Page language",

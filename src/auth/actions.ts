@@ -6,7 +6,6 @@ import { z } from "zod";
 import { createClient } from "@/db/server";
 import { setFlash } from "@/toasts/flash";
 import type { ActionToast } from "@/toasts/toast";
-import { claimBookings } from "./claim-bookings";
 import { safeNextPath } from "./next-path";
 import { isWrongCode, otpFailureToast } from "./otp-errors";
 
@@ -59,7 +58,7 @@ export async function signIn(
         toast: otpFailureToast(error.code),
       };
 
-    await setFlash(await claimBookings(supabase));
+    await setFlash({ type: "success", key: "signedIn" });
     redirect(safeNextPath(formData.get("next")));
   }
 

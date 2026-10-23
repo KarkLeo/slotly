@@ -88,7 +88,11 @@ export function CodeStep({
         </Button>
       </form>
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" disabled={wait > 0} onClick={onResend}>
+        <Button
+          variant="outline"
+          disabled={wait > 0 || pending}
+          onClick={onResend}
+        >
           {wait > 0
             ? t("resendIn", {
                 time: `${Math.floor(wait / 60)}:${String(wait % 60).padStart(2, "0")}`,

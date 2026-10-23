@@ -88,17 +88,29 @@ as $$
   order by c.starts;
 $$;
 
--- Expiring holds on schedule belongs to a job; booking frees the master's run-out holds itself so they never block it.
-create function private.expire_holds(master_id uuid)
-returns void
-language sql
+-- Cancelling run-out holds belongs to a scheduled job; until it runs, new busy time takes over the time they no longer hold.
+create function private.free_run_out_holds()
+returns trigger
+language plpgsql
 security definer
 set search_path = ''
 as $$
-  update public.appointments a
-  set status = 'cancelled', hold_until = null, cancelled_by = 'system'
-  where a.master_id = expire_holds.master_id and a.status = 'pending' and a.hold_until <= now();
+begin
+  delete from private.busy_times b
+  using public.appointments a
+  where a.id = b.appointment_id
+    and b.master_id = new.master_id
+    and b.during && new.during
+    and a.status = 'pending'
+    and a.hold_until <= now()
+    and a.id is distinct from new.appointment_id;
+  return new;
+end;
 $$;
+
+create trigger busy_times_free_run_out_holds
+  before insert on private.busy_times
+  for each row execute function private.free_run_out_holds();
 
 create function public.book_appointment(
   service_id uuid,
@@ -146,7 +158,6 @@ begin
 
   -- Counting active bookings and then inserting would race without a lock per contact.
   perform pg_advisory_xact_lock(hashtextextended('booking:' || s.master_id || ':' || client_email, 0));
-  perform private.expire_holds(s.master_id);
 
   select c.user_id into client_user
   from public.contacts c
@@ -225,8 +236,8 @@ as $$
     );
 $$;
 
--- Confirming an email signs the user in and confirms every booking made with it that still holds its time.
-create function public.claim_bookings()
+-- Confirming the email of a booking confirms it while it still holds its time; a sign-in alone confirms nothing.
+create function public.claim_bookings(appointment_ids uuid[])
 returns table (appointment_id uuid, status public.appointment_status, hold_until timestamptz)
 language plpgsql
 security definer
@@ -250,7 +261,10 @@ begin
     from public.appointment_clients ac
     join public.appointments a on a.id = ac.appointment_id
     join public.masters m on m.id = ac.master_id
-    where ac.unconfirmed_email = my_email and a.status = 'pending' and a.hold_until > now()
+    where ac.appointment_id = any (claim_bookings.appointment_ids)
+      and ac.unconfirmed_email = my_email
+      and a.status = 'pending'
+      and a.hold_until > now()
     order by lower(a.during)
     for update of ac, a
   loop
@@ -279,10 +293,10 @@ end;
 $$;
 
 revoke execute on function
-  private.expire_holds(uuid),
+  private.free_run_out_holds(),
   public.book_appointment(uuid, timestamptz, text, text, public.locale, text),
   public.release_booking(uuid),
-  public.claim_bookings()
+  public.claim_bookings(uuid[])
 from public, anon, authenticated;
 
 grant execute on function
@@ -290,4 +304,4 @@ grant execute on function
   public.release_booking(uuid)
 to anon, authenticated;
 
-grant execute on function public.claim_bookings() to authenticated;
+grant execute on function public.claim_bookings(uuid[]) to authenticated;

@@ -2,6 +2,11 @@
 {{ $title := "Вхід у Slotly" }}{{ $intro := "Натисніть кнопку, щоб увійти, або введіть код:" }}{{ $button := "Увійти" }}{{ $note := "Посилання і код дійсні 1 годину. Якщо ви не запитували вхід, просто проігноруйте цей лист." }}
 {{ if eq $l "ru" }}{{ $title = "Вход в Slotly" }}{{ $intro = "Нажмите кнопку, чтобы войти, или введите код:" }}{{ $button = "Войти" }}{{ $note = "Ссылка и код действуют 1 час. Если вы не запрашивали вход, просто проигнорируйте это письмо." }}{{ end }}
 {{ if eq $l "en" }}{{ $title = "Sign in to Slotly" }}{{ $intro = "Click the button to sign in, or enter the code:" }}{{ $button = "Sign in" }}{{ $note = "The link and code are valid for 1 hour. If you did not request this, you can ignore this email." }}{{ end }}
+{{ $prefix := printf "%s/auth/confirm?booking=" .SiteURL }}{{ $booking := and (ge (len .RedirectTo) (len $prefix)) (eq (slice .RedirectTo 0 (len $prefix)) $prefix) }}
+{{ $link := printf "%s/auth/confirm?token_hash=%s&type=email" .SiteURL .TokenHash }}
+{{ if $booking }}{{ $link = printf "%s&token_hash=%s&type=email" .RedirectTo .TokenHash }}{{ $title = "Підтвердіть запис" }}{{ $intro = "Натисніть кнопку, щоб підтвердити запис, або введіть код на сторінці запису:" }}{{ $button = "Підтвердити запис" }}{{ $note = "Ми тримаємо обраний час 15 хвилин. Якщо ви не записувалися, просто проігноруйте цей лист." }}
+{{ if eq $l "ru" }}{{ $title = "Подтвердите запись" }}{{ $intro = "Нажмите кнопку, чтобы подтвердить запись, или введите код на странице записи:" }}{{ $button = "Подтвердить запись" }}{{ $note = "Мы держим выбранное время 15 минут. Если вы не записывались, просто проигнорируйте это письмо." }}{{ end }}
+{{ if eq $l "en" }}{{ $title = "Confirm your booking" }}{{ $intro = "Click the button to confirm your booking, or enter the code on the booking page:" }}{{ $button = "Confirm booking" }}{{ $note = "We are holding the chosen time for 15 minutes. If you did not book, you can ignore this email." }}{{ end }}{{ end }}
 <!doctype html>
 <html lang="{{ $l }}">
   <body style="margin:0;padding:24px;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b">
@@ -14,7 +19,7 @@
             <tr><td style="font-size:15px;line-height:22px;padding-bottom:24px">{{ $intro }}</td></tr>
             <tr>
               <td style="padding-bottom:24px">
-                <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email" style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;padding:12px 24px;border-radius:8px">{{ $button }}</a>
+                <a href="{{ $link }}" style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;padding:12px 24px;border-radius:8px">{{ $button }}</a>
               </td>
             </tr>
             <tr><td style="font-size:32px;font-weight:bold;letter-spacing:6px;font-family:'Courier New',monospace;padding-bottom:24px">{{ .Token }}</td></tr>

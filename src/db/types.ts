@@ -498,7 +498,7 @@ export type Database = {
         Returns: undefined;
       };
       claim_bookings: {
-        Args: Record<PropertyKey, never>;
+        Args: { appointment_ids: string[] };
         Returns: {
           appointment_id: string;
           hold_until: string;

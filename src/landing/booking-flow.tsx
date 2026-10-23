@@ -81,6 +81,7 @@ export function BookingFlow({
   const [taken, setTaken] = useState<string | null>(null);
   // The booking this browser holds, released when the client sends the form again.
   const held = useRef<string | null>(null);
+  const lastCode = useRef<{ email: string; resendAt: number } | null>(null);
   const next = useRef<HTMLButtonElement>(null);
   const open = screen !== null;
   useActionToast(toast);
@@ -108,13 +109,17 @@ export function BookingFlow({
     if (reloadSlots) availability.retrySlots();
   }
 
-  async function run<T>(action: () => Promise<T>, handle: (result: T) => void) {
+  async function run<T>(
+    action: () => Promise<T>,
+    handle: (result: T) => void,
+    { failScreen = true } = {},
+  ) {
     setPending(true);
     try {
       handle(await action());
     } catch (error) {
       setToast(unexpectedToast(error));
-      setScreen({ kind: "failed" });
+      if (failScreen) setScreen({ kind: "failed" });
     } finally {
       setPending(false);
     }
@@ -123,6 +128,11 @@ export function BookingFlow({
   function submitContact(contact: ContactValues) {
     if (!slot) return;
     setValues(contact);
+    const fresh =
+      lastCode.current?.email === contact.email &&
+      Date.now() < lastCode.current.resendAt
+        ? lastCode.current
+        : null;
     void run(
       () =>
         startBooking({
@@ -131,16 +141,21 @@ export function BookingFlow({
           ...contact,
           locale,
           replaces: held.current,
+          reuseCode: fresh !== null,
         }),
       (result) => {
         if (result.status === "codeSent") {
           held.current = result.appointmentId;
-          setToast(result.toast);
+          lastCode.current = fresh ?? {
+            email: contact.email,
+            resendAt: Date.now() + resendDelay,
+          };
+          if (result.toast) setToast(result.toast);
           setScreen({
             kind: "code",
             appointmentId: result.appointmentId,
             email: contact.email,
-            resendAt: Date.now() + resendDelay,
+            resendAt: lastCode.current.resendAt,
           });
         } else if (result.status === "slotTaken") {
           held.current = null;
@@ -192,17 +207,27 @@ export function BookingFlow({
     if (screen?.kind !== "code") return;
     const current = screen;
     void run(
-      () => resendCode({ email: current.email, locale }),
+      () =>
+        resendCode({
+          appointmentId: current.appointmentId,
+          email: current.email,
+          locale,
+        }),
       (result) => {
         setToast(result.toast);
         if (result.status === "sent") {
+          lastCode.current = {
+            email: current.email,
+            resendAt: Date.now() + resendDelay,
+          };
           setScreen({
             ...current,
             invalid: false,
-            resendAt: Date.now() + resendDelay,
+            resendAt: lastCode.current.resendAt,
           });
         }
       },
+      { failScreen: false },
     );
   }
 

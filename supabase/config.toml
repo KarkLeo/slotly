@@ -245,7 +245,7 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 [auth.email.template.magic_link]
-subject = "{{ $l := \"uk\" }}{{ with .Data }}{{ with .locale }}{{ $l = printf \"%v\" . }}{{ end }}{{ end }}{{ if eq $l \"ru\" }}Вход в Slotly{{ else if eq $l \"en\" }}Sign in to Slotly{{ else }}Вхід у Slotly{{ end }}"
+subject = "{{ $l := \"uk\" }}{{ with .Data }}{{ with .locale }}{{ $l = printf \"%v\" . }}{{ end }}{{ end }}{{ $prefix := printf \"%s/auth/confirm?booking=\" .SiteURL }}{{ if and (ge (len .RedirectTo) (len $prefix)) (eq (slice .RedirectTo 0 (len $prefix)) $prefix) }}{{ if eq $l \"ru\" }}Подтвердите запись в Slotly{{ else if eq $l \"en\" }}Confirm your booking on Slotly{{ else }}Підтвердіть запис у Slotly{{ end }}{{ else if eq $l \"ru\" }}Вход в Slotly{{ else if eq $l \"en\" }}Sign in to Slotly{{ else }}Вхід у Slotly{{ end }}"
 content_path = "./supabase/templates/magic_link.html"
 
 [auth.email.template.confirmation]
