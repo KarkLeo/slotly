@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 import { claimBooking } from "@/auth/claim-bookings";
 import { safeNextPath } from "@/auth/next-path";
+import { verifyOtp } from "@/auth/otp";
 import { createClient } from "@/db/server";
 import { setFlash } from "@/toasts/flash";
 
@@ -17,10 +18,7 @@ export async function GET(request: NextRequest) {
 
   if (tokenHash && type && allowedTypes.has(type)) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.verifyOtp({
-      token_hash: tokenHash,
-      type,
-    });
+    const error = await verifyOtp(supabase, { token_hash: tokenHash, type });
     if (!error) {
       const booking = searchParams.get("booking");
       await setFlash(

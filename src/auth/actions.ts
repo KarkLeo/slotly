@@ -7,6 +7,7 @@ import { createClient } from "@/db/server";
 import { setFlash } from "@/toasts/flash";
 import type { ActionToast } from "@/toasts/toast";
 import { safeNextPath } from "./next-path";
+import { sendOtp, verifyOtp } from "./otp";
 import { isWrongCode, otpFailureToast } from "./otp-errors";
 
 export type SignInState =
@@ -35,8 +36,6 @@ export async function signIn(
   if (!email.success)
     return { step: "email", email: typed, error: "invalidEmail" };
 
-  const supabase = await createClient();
-
   if (formData.get("intent") === "verify") {
     const code = codeSchema.safeParse(
       String(formData.get("code") ?? "").trim(),
@@ -44,7 +43,7 @@ export async function signIn(
     if (!code.success)
       return { step: "code", email: email.data, error: "invalidCode" };
 
-    const { error } = await supabase.auth.verifyOtp({
+    const error = await verifyOtp(await createClient(), {
       email: email.data,
       token: code.data,
       type: "email",
@@ -62,9 +61,8 @@ export async function signIn(
     redirect(safeNextPath(formData.get("next")));
   }
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email: email.data,
-    options: { shouldCreateUser: true, data: { locale: await getLocale() } },
+  const error = await sendOtp(email.data, {
+    data: { locale: await getLocale() },
   });
   if (error)
     return {

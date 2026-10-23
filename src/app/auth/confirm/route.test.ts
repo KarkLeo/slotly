@@ -5,10 +5,11 @@ import { cookieSet } from "@/test/server-mocks";
 import { flashCookie } from "@/toasts/toast";
 import { GET } from "./route";
 
-const auth = { verifyOtp: vi.fn() };
+const { verifyOtp } = vi.hoisted(() => ({ verifyOtp: vi.fn() }));
 const rpc = vi.fn();
 
-vi.mock("@/db/server", () => ({ createClient: async () => ({ auth, rpc }) }));
+vi.mock("@/db/server", () => ({ createClient: async () => ({ rpc }) }));
+vi.mock("@/auth/otp", () => ({ verifyOtp }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -16,7 +17,7 @@ beforeEach(() => {
 });
 
 function validLink() {
-  auth.verifyOtp.mockResolvedValue({ error: null });
+  verifyOtp.mockResolvedValue(null);
   return new NextRequest(
     "http://localhost/auth/confirm?token_hash=x&type=email",
   );
@@ -32,7 +33,7 @@ function flashed(value: string) {
 
 describe("GET /auth/confirm", () => {
   it("flashes linkExpired and sends the user to login", async () => {
-    auth.verifyOtp.mockResolvedValue({ error: { code: "otp_expired" } });
+    verifyOtp.mockResolvedValue({ code: "otp_expired" });
     const request = new NextRequest(
       "http://localhost/auth/confirm?token_hash=x&type=email",
     );
@@ -45,12 +46,12 @@ describe("GET /auth/confirm", () => {
   });
 
   it("flashes signedIn after a valid link", async () => {
-    auth.verifyOtp.mockResolvedValue({ error: null });
+    verifyOtp.mockResolvedValue(null);
     const request = new NextRequest(
       "http://localhost/auth/confirm?token_hash=x&type=email&next=/app",
     );
     await expect(redirectTarget(GET(request))).resolves.toBe("/app");
-    expect(auth.verifyOtp).toHaveBeenCalledWith({
+    expect(verifyOtp).toHaveBeenCalledWith(expect.anything(), {
       token_hash: "x",
       type: "email",
     });
@@ -64,7 +65,7 @@ describe("GET /auth/confirm", () => {
   const booking = "8c7f2c1e-6a51-4c3b-9d0e-2f4a5b6c7d8e";
 
   function bookingLink() {
-    auth.verifyOtp.mockResolvedValue({ error: null });
+    verifyOtp.mockResolvedValue(null);
     return new NextRequest(
       `http://localhost/auth/confirm?token_hash=x&type=email&booking=${booking}`,
     );
@@ -105,7 +106,7 @@ describe("GET /auth/confirm", () => {
 
   it("confirms nothing for a plain sign-in link or a malformed booking", async () => {
     await redirectTarget(GET(validLink()));
-    auth.verifyOtp.mockResolvedValue({ error: null });
+    verifyOtp.mockResolvedValue(null);
     await redirectTarget(
       GET(
         new NextRequest(
