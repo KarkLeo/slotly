@@ -10,7 +10,7 @@ as $$
   select date_trunc('hour', now()) + interval '1 day' + make_interval(hours => hours);
 $$;
 
-grant execute on function pg_temp.slot(integer) to anon, authenticated;
+grant execute on function pg_temp.slot(integer) to anon, authenticated, service_role;
 
 insert into auth.users (id, email, email_confirmed_at) values
   ('00000000-0000-0000-0000-00000000000a', 'olena@example.com', now()),
@@ -64,6 +64,9 @@ select ok(
   'a pending appointment whose hold has run out does not take its slot'
 );
 
+reset role;
+set local role service_role;
+
 create temporary table booked on commit drop as
 select * from public.book_appointment(
   '00000000-0000-0000-0000-0000000000b1', pg_temp.slot(2), '  Mark  ', ' Mark@Example.com ', 'en'
@@ -92,7 +95,7 @@ select results_eq(
   'the booking keeps the typed name and the email until the contact is confirmed'
 );
 
-set local role anon;
+set local role service_role;
 
 select throws_ok(
   $$ select public.book_appointment('00000000-0000-0000-0000-0000000000b1', pg_temp.slot(2), 'Anna', 'anna@example.com', 'uk') $$,
@@ -179,7 +182,7 @@ select results_eq(
 
 -- A run-out hold
 
-set local role anon;
+set local role service_role;
 
 select lives_ok(
   $$ select public.book_appointment('00000000-0000-0000-0000-0000000000a1', pg_temp.slot(6), 'Anna', 'anna2@example.com', 'uk') $$,
@@ -195,7 +198,7 @@ select is_empty(
 
 -- Active bookings limit (Olena allows 2)
 
-set local role anon;
+set local role service_role;
 
 select lives_ok(
   $$ select public.book_appointment('00000000-0000-0000-0000-0000000000a1', pg_temp.slot(12), 'Iryna', 'CLIENT@example.com', 'uk') $$,
@@ -222,7 +225,7 @@ select * from public.book_appointment(
 
 select lives_ok(
   $$ select public.release_booking((select appointment_id from released)) $$,
-  'a visitor can release the booking they just made'
+  'the server can release a booking it just made'
 );
 
 select lives_ok(
@@ -399,12 +402,16 @@ select is_empty(
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000000b", "role": "authenticated"}', true);
 
+create temporary table nearest on commit drop as
+select min(s) as starts_at from public.get_available_slots('00000000-0000-0000-0000-0000000000b1',
+  (now() at time zone 'Europe/Kyiv')::date, (now() at time zone 'Europe/Kyiv')::date + 1) as s;
+
+reset role;
+grant select on nearest to service_role;
+set local role service_role;
+
 select lives_ok(
-  $$ select public.book_appointment(
-       '00000000-0000-0000-0000-0000000000b1',
-       (select min(s) from public.get_available_slots('00000000-0000-0000-0000-0000000000b1',
-          (now() at time zone 'Europe/Kyiv')::date, (now() at time zone 'Europe/Kyiv')::date + 1) as s),
-       'Daryna', 'daryna@example.com', 'uk') $$,
+  $$ select public.book_appointment('00000000-0000-0000-0000-0000000000b1', (select starts_at from nearest), 'Daryna', 'daryna@example.com', 'uk') $$,
   'a master books the nearest slot shown on own landing'
 );
 
@@ -413,9 +420,8 @@ reset role;
 -- Privileges
 
 select ok(
-  has_function_privilege('anon', 'public.book_appointment(uuid, timestamptz, text, text, public.locale, text)', 'execute')
-  and has_function_privilege('anon', 'public.release_booking(uuid)', 'execute'),
-  'visitors may book and release'
+  not exists (select 1 from pg_proc where proname = 'book_appointment' and pronargs = 6),
+  'the booking function without the client IP is gone'
 );
 
 select ok(
