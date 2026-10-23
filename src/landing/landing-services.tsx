@@ -15,8 +15,12 @@ export function LandingServices({
   services,
   timeZone,
   horizonDays,
+  cancelDeadlineMinutes,
   initialServiceId,
-}: Pick<LandingView, "groups" | "services" | "timeZone" | "horizonDays"> & {
+}: Pick<
+  LandingView,
+  "groups" | "services" | "timeZone" | "horizonDays" | "cancelDeadlineMinutes"
+> & {
   initialServiceId: string | null;
 }) {
   const t = useTranslations("Landing");
@@ -118,6 +122,7 @@ export function LandingServices({
             service={selectedService}
             timeZone={timeZone}
             horizonDays={horizonDays}
+            cancelDeadlineMinutes={cancelDeadlineMinutes}
           />
         )}
       </section>

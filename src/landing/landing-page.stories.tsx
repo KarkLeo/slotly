@@ -23,6 +23,7 @@ const olena: Landing = {
   currency: "UAH",
   timeZone: "Europe/Kyiv",
   horizonDays: 30,
+  cancelDeadlineMinutes: 720,
   published: true,
   categories: [
     {

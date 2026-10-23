@@ -96,6 +96,36 @@ export function slotDateTimeLabel(
   }).format(new Date(slot));
 }
 
+export function slotTimeLabel(
+  slot: string,
+  timeZone: string,
+  locale: Locale,
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(slot));
+}
+
+export function nearbySlots(slots: string[], taken: string): string[] {
+  const at = new Date(taken).getTime();
+  const before = slots.filter((slot) => new Date(slot).getTime() < at).at(-1);
+  const after = slots.find((slot) => new Date(slot).getTime() > at);
+  return [before, after].filter((slot) => slot !== undefined);
+}
+
+export function cancelDeadline(
+  slot: string,
+  deadlineMinutes: number,
+  now: Date,
+): string | null {
+  const deadline = new Date(
+    new Date(slot).getTime() - deadlineMinutes * 60_000,
+  );
+  return deadline > now ? deadline.toISOString() : null;
+}
+
 export function zoneLabel(timeZone: string, locale: Locale): string {
   return (
     new Intl.DateTimeFormat(locale, { timeZone, timeZoneName: "longGeneric" })
