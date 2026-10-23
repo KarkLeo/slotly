@@ -1,6 +1,6 @@
 begin;
 
-select plan(43);
+select plan(44);
 
 create function pg_temp.slot(hours integer)
 returns timestamptz
@@ -393,6 +393,22 @@ select is_empty(
      where appointment_id in ('00000000-0000-0000-0000-0000000000f5', '00000000-0000-0000-0000-0000000000f6') $$,
   'the run-out holds no longer take their time'
 );
+
+-- A master booking on own landing
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-00000000000b", "role": "authenticated"}', true);
+
+select lives_ok(
+  $$ select public.book_appointment(
+       '00000000-0000-0000-0000-0000000000b1',
+       (select min(s) from public.get_available_slots('00000000-0000-0000-0000-0000000000b1',
+          (now() at time zone 'Europe/Kyiv')::date, (now() at time zone 'Europe/Kyiv')::date + 1) as s),
+       'Daryna', 'daryna@example.com', 'uk') $$,
+  'a master books the nearest slot shown on own landing'
+);
+
+reset role;
 
 -- Privileges
 
