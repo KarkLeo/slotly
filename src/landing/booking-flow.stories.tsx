@@ -3,7 +3,9 @@ import { expect, mocked, waitFor, within } from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
+import { slotTimeLabel } from "@/booking/dates";
 import { isLocale } from "@/i18n/locales";
+import { confirmBooking, startBooking } from "./booking-actions";
 import { fetchAvailableDays, fetchAvailableSlots } from "./booking-api";
 import { BookingFlow } from "./booking-flow";
 
@@ -37,6 +39,7 @@ const meta = {
     },
     timeZone: "Europe/Kyiv",
     horizonDays: 30,
+    cancelDeadlineMinutes: 720,
   },
 } satisfies Meta<typeof BookingFlow>;
 
@@ -198,5 +201,300 @@ export const NearestTaken: Story = {
     await expect(
       canvas.getByRole("button", { name: t.Landing.next }),
     ).toBeDisabled();
+  },
+};
+
+type Play = NonNullable<Story["play"]>;
+type Context = Parameters<Play>[0];
+
+async function openBooking({ canvas, userEvent, globals }: Context) {
+  const t = texts(globals.locale);
+  await userEvent.click(
+    await canvas.findByRole("button", {
+      name: new RegExp(t.SlotPicker.nearest),
+    }),
+  );
+  const next = canvas.getByRole("button", { name: t.Landing.next });
+  await waitFor(() => expect(next).toBeEnabled());
+  await userEvent.click(next);
+  await canvas.findByRole("heading", {
+    level: 1,
+    name: plain(t.Landing.contactTitle),
+  });
+}
+
+async function sendContact({ canvas, userEvent, globals }: Context) {
+  const t = texts(globals.locale).Landing;
+  await userEvent.type(canvas.getByLabelText(t.name), "Ірина");
+  await userEvent.type(canvas.getByLabelText(t.email), "iryna@example.com");
+  await userEvent.click(canvas.getByRole("button", { name: t.sendCode }));
+}
+
+async function enterCode({ canvas, userEvent, globals }: Context) {
+  const t = texts(globals.locale).Landing;
+  await userEvent.type(await canvas.findByLabelText(t.code), "123456");
+  await userEvent.click(canvas.getByRole("button", { name: t.confirm }));
+}
+
+export const BookAndConfirm: Story = {
+  play: async (context) => {
+    const { canvas, userEvent, globals } = context;
+    const t = texts(globals.locale);
+    await openBooking(context);
+    await sendContact(context);
+    await expect(
+      await canvas.findByRole("heading", {
+        level: 1,
+        name: plain(t.Landing.codeTitle),
+      }),
+    ).toHaveFocus();
+    await expect(startBooking).toHaveBeenCalledWith(
+      expect.objectContaining({
+        serviceId: "gel",
+        name: "Ірина",
+        email: "iryna@example.com",
+        address: "",
+        locale: isLocale(globals.locale) ? globals.locale : "uk",
+        replaces: null,
+      }),
+    );
+    const sent = await canvas.findByText(t.Toasts.codeSent);
+    await waitFor(() => expect(sent).toBeVisible());
+
+    await enterCode(context);
+    await expect(
+      await canvas.findByRole("heading", {
+        level: 1,
+        name: plain(t.Landing.doneTitle),
+      }),
+    ).toHaveFocus();
+    await expect(confirmBooking).toHaveBeenCalledWith({
+      appointmentId: "appointment-1",
+      email: "iryna@example.com",
+      code: "123456",
+    });
+
+    await userEvent.click(
+      canvas.getByRole("button", { name: t.Landing.close }),
+    );
+    await waitFor(() =>
+      expect(canvas.queryByRole("heading", { level: 1 })).toBeNull(),
+    );
+  },
+};
+
+export const BookAndConfirmEnglish: Story = {
+  ...BookAndConfirm,
+  globals: { locale: "en" },
+};
+
+export const AwaitingMaster: Story = {
+  beforeEach: () => {
+    mocked(confirmBooking).mockResolvedValueOnce({
+      status: "awaitingMaster",
+      toast: { type: "success", key: "bookingRequested" },
+    });
+  },
+  play: async (context) => {
+    const t = texts(context.globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await enterCode(context);
+    await expect(
+      await context.canvas.findByText(t.awaitingMaster),
+    ).toBeVisible();
+  },
+};
+
+export const WrongCode: Story = {
+  beforeEach: () => {
+    mocked(confirmBooking).mockResolvedValueOnce({ status: "invalidCode" });
+  },
+  play: async (context) => {
+    const t = texts(context.globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await enterCode(context);
+    await expect(await context.canvas.findByText(t.codeInvalid)).toBeVisible();
+  },
+};
+
+export const ChangeEmail: Story = {
+  play: async (context) => {
+    const { canvas, userEvent, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await userEvent.click(
+      await canvas.findByRole("button", { name: t.changeEmail }),
+    );
+    const email = await canvas.findByLabelText(t.email);
+    await expect(email).toHaveValue("iryna@example.com");
+    await userEvent.clear(email);
+    await userEvent.type(email, "iryna.k@example.com");
+    await userEvent.click(canvas.getByRole("button", { name: t.sendCode }));
+    await waitFor(() =>
+      expect(startBooking).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          email: "iryna.k@example.com",
+          replaces: "appointment-1",
+          reuseCode: false,
+        }),
+      ),
+    );
+  },
+};
+
+export const LimitReached: Story = {
+  beforeEach: () => {
+    mocked(startBooking).mockResolvedValueOnce({ status: "limitReached" });
+  },
+  play: async (context) => {
+    await openBooking(context);
+    await sendContact(context);
+    await expect(await context.canvas.findByRole("alert")).toHaveTextContent(
+      texts(context.globals.locale).Landing.limitReached,
+    );
+  },
+};
+
+export const Expired: Story = {
+  beforeEach: () => {
+    mocked(confirmBooking).mockResolvedValueOnce({ status: "expired" });
+  },
+  play: async (context) => {
+    const { canvas, userEvent, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await enterCode(context);
+    await userEvent.click(
+      await canvas.findByRole("button", { name: t.chooseAgain }),
+    );
+    await waitFor(() =>
+      expect(canvas.queryByRole("heading", { level: 1 })).toBeNull(),
+    );
+  },
+};
+
+export const FailedThenRetry: Story = {
+  beforeEach: () => {
+    mocked(startBooking).mockRejectedValueOnce(new Error("offline"));
+  },
+  play: async (context) => {
+    const { canvas, userEvent, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await userEvent.click(
+      await canvas.findByRole("button", { name: t.tryAgain }),
+    );
+    await expect(
+      await canvas.findByRole("heading", {
+        level: 1,
+        name: plain(t.codeTitle),
+      }),
+    ).toBeVisible();
+    await expect(startBooking).toHaveBeenCalledTimes(2);
+  },
+};
+
+export const SlotTaken: Story = {
+  beforeEach: () => {
+    const taken = futureSlot(2, 7);
+    const left = futureSlot(2, 9);
+    mocked(fetchAvailableSlots)
+      .mockResolvedValueOnce([taken, left])
+      .mockResolvedValueOnce([taken, left])
+      .mockResolvedValue([left]);
+    mocked(startBooking).mockResolvedValueOnce({ status: "slotTaken" });
+  },
+  play: async (context) => {
+    const { canvas, globals } = context;
+    const t = texts(globals.locale);
+    await openBooking(context);
+    await sendContact(context);
+    await waitFor(() =>
+      expect(canvas.queryByRole("heading", { level: 1 })).toBeNull(),
+    );
+    const locale = isLocale(globals.locale) ? globals.locale : "uk";
+    const time = (slot: string) => slotTimeLabel(slot, "Europe/Kyiv", locale);
+    const banner = await canvas.findByRole("alert");
+    await expect(banner).toHaveTextContent(time(futureSlot(2, 7)));
+    await expect(banner).toHaveTextContent(time(futureSlot(2, 9)));
+    await waitFor(() =>
+      expect(
+        canvas.getByRole("button", { name: new RegExp(t.SlotPicker.nearest) }),
+      ).toHaveTextContent(time(futureSlot(2, 9))),
+    );
+    await expect(
+      canvas.getByRole("button", { name: t.Landing.next }),
+    ).toBeDisabled();
+  },
+};
+
+export const BrowserClosesDialog: Story = {
+  play: async (context) => {
+    const { canvas, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await canvas.findByRole("heading", { level: 1, name: plain(t.codeTitle) });
+    const dialog = canvas.getByRole("dialog") as HTMLDialogElement;
+    dialog.close();
+    await expect(
+      await canvas.findByRole("heading", {
+        level: 1,
+        name: plain(t.contactTitle),
+      }),
+    ).toBeVisible();
+    await expect(dialog.open).toBe(true);
+  },
+};
+
+export const SameEmailAgain: Story = {
+  play: async (context) => {
+    const { canvas, userEvent, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await userEvent.click(
+      await canvas.findByRole("button", { name: t.changeEmail }),
+    );
+    await userEvent.click(
+      await canvas.findByRole("button", { name: t.sendCode }),
+    );
+    await waitFor(() =>
+      expect(startBooking).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          replaces: "appointment-1",
+          reuseCode: true,
+        }),
+      ),
+    );
+    await expect(
+      await canvas.findByRole("heading", {
+        level: 1,
+        name: plain(t.codeTitle),
+      }),
+    ).toBeVisible();
+  },
+};
+
+export const StaleCloseEvent: Story = {
+  play: async (context) => {
+    const { canvas, globals } = context;
+    const t = texts(globals.locale).Landing;
+    await openBooking(context);
+    await sendContact(context);
+    await canvas.findByRole("heading", { level: 1, name: plain(t.codeTitle) });
+    // A close queued before the dialog was shown again, as React's dev double mount does.
+    const dialog = canvas.getByRole("dialog") as HTMLDialogElement;
+    dialog.close();
+    dialog.showModal();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await expect(
+      canvas.getByRole("heading", { level: 1, name: plain(t.codeTitle) }),
+    ).toBeVisible();
   },
 };

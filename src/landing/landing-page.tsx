@@ -73,6 +73,7 @@ export function LandingPage({
             services={view.services}
             timeZone={view.timeZone}
             horizonDays={view.horizonDays}
+            cancelDeadlineMinutes={view.cancelDeadlineMinutes}
             initialServiceId={initialServiceId}
           />
         ) : (

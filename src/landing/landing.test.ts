@@ -12,6 +12,7 @@ describe("toLanding", () => {
       currency: "UAH",
       timezone: "Europe/Kyiv",
       horizon_days: 30,
+      cancel_deadline_minutes: 720,
       published_at: "2026-10-23T00:00:00Z",
       service_categories: [{ id: "c", position: 0, name: { uk: "Манікюр" } }],
       services: [
@@ -51,6 +52,7 @@ describe("toLanding", () => {
       currency: "UAH",
       timeZone: "Europe/Kyiv",
       horizonDays: 30,
+      cancelDeadlineMinutes: 720,
       published: true,
       categories: [{ id: "c", position: 0, name: { uk: "Манікюр" } }],
       services: [

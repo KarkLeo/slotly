@@ -53,29 +53,35 @@ export type Database = {
     Tables: {
       appointment_clients: {
         Row: {
+          address: string | null;
           appointment_id: string;
-          client_card_id: string;
+          client_card_id: string | null;
           created_at: string;
           id: string;
           master_id: string;
           name: string;
+          unconfirmed_email: string | null;
         };
         ComputedFields: never;
         Insert: {
+          address?: string | null;
           appointment_id: string;
-          client_card_id: string;
+          client_card_id?: string | null;
           created_at?: string;
           id?: string;
           master_id: string;
           name: string;
+          unconfirmed_email?: string | null;
         };
         Update: {
+          address?: string | null;
           appointment_id?: string;
-          client_card_id?: string;
+          client_card_id?: string | null;
           created_at?: string;
           id?: string;
           master_id?: string;
           name?: string;
+          unconfirmed_email?: string | null;
         };
         Relationships: [
           {
@@ -473,9 +479,31 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      book_appointment: {
+        Args: {
+          address?: string;
+          email: string;
+          locale: Database["public"]["Enums"]["locale"];
+          name: string;
+          service_id: string;
+          starts_at: string;
+        };
+        Returns: {
+          appointment_id: string;
+          hold_until: string;
+        }[];
+      };
       cancel_appointment: {
         Args: { appointment_id: string; comment?: string };
         Returns: undefined;
+      };
+      claim_bookings: {
+        Args: { appointment_ids: string[] };
+        Returns: {
+          appointment_id: string;
+          hold_until: string;
+          status: Database["public"]["Enums"]["appointment_status"];
+        }[];
       };
       confirm_appointment: {
         Args: { appointment_id: string };
@@ -502,6 +530,7 @@ export type Database = {
         Returns: string[];
       };
       health: { Args: Record<PropertyKey, never>; Returns: string };
+      release_booking: { Args: { appointment_id: string }; Returns: undefined };
       reschedule_appointment: {
         Args: { appointment_id: string; starts_at: string };
         Returns: undefined;

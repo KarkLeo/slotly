@@ -22,7 +22,6 @@ const meta = {
       price: { kind: "from", amount: "900 ₴" },
     },
     needsAddress: false,
-    onBack: fn(),
     onSubmit: fn(),
   },
 } satisfies Meta<typeof ContactStep>;
@@ -34,8 +33,6 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   play: async ({ canvas, args, userEvent, globals }) => {
     const t = texts(globals.locale);
-    await expect(canvas.getByRole("heading", { level: 1 })).toHaveFocus();
-
     await userEvent.click(canvas.getByRole("button", { name: t.sendCode }));
     await expect(canvas.getByText(t.nameRequired)).toBeVisible();
     await expect(canvas.getByText(t.emailInvalid)).toBeVisible();
@@ -49,13 +46,6 @@ export const Default: Story = {
       email: "iryna@example.com",
       address: "",
     });
-
-    await userEvent.click(canvas.getByRole("button", { name: t.back }));
-    await expect(args.onBack).toHaveBeenCalledTimes(1);
-    canvas
-      .getByRole("dialog")
-      .dispatchEvent(new Event("cancel", { cancelable: true }));
-    await expect(args.onBack).toHaveBeenCalledTimes(2);
   },
 };
 
@@ -91,5 +81,42 @@ export const NotConnected: Story = {
     await expect(
       canvas.getByRole("button", { name: texts(globals.locale).sendCode }),
     ).toBeDisabled();
+  },
+};
+
+export const Prefilled: Story = {
+  args: {
+    needsAddress: true,
+    defaultValues: {
+      name: "Ірина",
+      email: "iryna@example.com",
+      address: "Хрещатик, 1",
+    },
+  },
+  play: async ({ canvas, args, userEvent, globals }) => {
+    const t = texts(globals.locale);
+    await expect(canvas.getByLabelText(t.email)).toHaveValue(
+      "iryna@example.com",
+    );
+    await userEvent.click(canvas.getByRole("button", { name: t.sendCode }));
+    await expect(args.onSubmit).toHaveBeenCalledWith(args.defaultValues);
+  },
+};
+
+export const Sending: Story = {
+  args: { pending: true },
+  play: async ({ canvas, globals }) => {
+    await expect(
+      canvas.getByRole("button", { name: texts(globals.locale).sendCode }),
+    ).toBeDisabled();
+  },
+};
+
+export const LimitReached: Story = {
+  args: { limitReached: true },
+  play: async ({ canvas, globals }) => {
+    await expect(canvas.getByRole("alert")).toHaveTextContent(
+      texts(globals.locale).limitReached,
+    );
   },
 };

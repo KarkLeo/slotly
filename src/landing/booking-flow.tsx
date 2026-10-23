@@ -1,30 +1,59 @@
 "use client";
 
-import { ClockIcon } from "lucide-react";
+import { ClockIcon, TriangleAlertIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateStrip } from "@/booking/date-strip";
-import { groupSlots, slotDateTimeLabel, zoneLabel } from "@/booking/dates";
+import {
+  cancelDeadline,
+  groupSlots,
+  nearbySlots,
+  slotDateTimeLabel,
+  slotTimeLabel,
+  zoneLabel,
+} from "@/booking/dates";
 import { SlotGrid } from "@/booking/slot-grid";
 import { useAvailability } from "@/booking/use-availability";
 import { accent } from "@/components/accent";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { ActionToast } from "@/toasts/toast";
+import { useActionToast } from "@/toasts/use-action-toast";
+import { unexpectedToast } from "@/toasts/with-unexpected-toast";
+import { confirmBooking, resendCode, startBooking } from "./booking-actions";
 import { fetchAvailableDays, fetchAvailableSlots } from "./booking-api";
+import { BookingDialog } from "./booking-dialog";
+import { BookingDone, BookingExpired, BookingFailed } from "./booking-result";
+import { CodeStep } from "./code-step";
 import { ContactStep, type ContactValues } from "./contact-step";
 import { Price } from "./text";
 import type { ServiceView } from "./view";
+
+type Screen =
+  | { kind: "contact"; limitReached?: boolean }
+  | {
+      kind: "code";
+      appointmentId: string;
+      email: string;
+      resendAt: number;
+      invalid?: boolean;
+    }
+  | { kind: "done"; status: "confirmed" | "awaitingMaster" }
+  | { kind: "expired" }
+  | { kind: "failed" };
+
+const resendDelay = 60_000;
 
 export function BookingFlow({
   service,
   timeZone,
   horizonDays,
-  onContactSubmit,
+  cancelDeadlineMinutes,
 }: {
   service: ServiceView;
   timeZone: string;
   horizonDays: number;
-  onContactSubmit?: (values: ContactValues & { slot: string }) => void;
+  cancelDeadlineMinutes: number;
 }) {
   const t = useTranslations("SlotPicker");
   const tl = useTranslations("Landing");
@@ -44,27 +73,185 @@ export function BookingFlow({
     fetchSlots,
   });
   const { dates, nearest, selectedDate, slots, selectedSlot } = availability;
-  const [contact, setContact] = useState(false);
+  const [screen, setScreen] = useState<Screen | null>(null);
+  const [slot, setSlot] = useState<string | null>(null);
+  const [values, setValues] = useState<ContactValues>();
+  const [pending, setPending] = useState(false);
+  const [toast, setToast] = useState<ActionToast>();
+  const [taken, setTaken] = useState<string | null>(null);
+  // The booking this browser holds, released when the client sends the form again.
+  const held = useRef<string | null>(null);
+  const lastCode = useRef<{ email: string; resendAt: number } | null>(null);
   const next = useRef<HTMLButtonElement>(null);
+  const open = screen !== null;
+  useActionToast(toast);
 
-  // The contact step is a screen of its own: the phone's back gesture closes it instead of leaving the page.
+  // The booking steps are a screen of their own: the phone's back gesture closes them instead of leaving the page.
   useEffect(() => {
-    if (!contact) return;
+    if (!open) return;
     const close = () => {
-      setContact(false);
+      setScreen(null);
       requestAnimationFrame(() => next.current?.focus());
     };
     window.addEventListener("popstate", close);
     return () => window.removeEventListener("popstate", close);
-  }, [contact]);
+  }, [open]);
 
-  function openContact() {
+  function openBooking() {
     window.history.pushState(null, "", window.location.href);
-    setContact(true);
+    setSlot(selectedSlot);
+    setTaken(null);
+    setScreen({ kind: "contact" });
+  }
+
+  function closeBooking({ refresh }: { refresh: boolean }) {
+    window.history.back();
+    if (refresh) availability.refresh();
+  }
+
+  async function run<T>(
+    action: () => Promise<T>,
+    handle: (result: T) => void,
+    { failScreen = true } = {},
+  ) {
+    setPending(true);
+    try {
+      handle(await action());
+    } catch (error) {
+      setToast(unexpectedToast(error));
+      if (failScreen) setScreen({ kind: "failed" });
+    } finally {
+      setPending(false);
+    }
+  }
+
+  function submitContact(contact: ContactValues) {
+    if (!slot) return;
+    setValues(contact);
+    const fresh =
+      lastCode.current?.email === contact.email &&
+      Date.now() < lastCode.current.resendAt
+        ? lastCode.current
+        : null;
+    void run(
+      () =>
+        startBooking({
+          serviceId: service.id,
+          slot,
+          ...contact,
+          locale,
+          replaces: held.current,
+          reuseCode: fresh !== null,
+        }),
+      (result) => {
+        if (result.status === "codeSent") {
+          held.current = result.appointmentId;
+          lastCode.current = fresh ?? {
+            email: contact.email,
+            resendAt: Date.now() + resendDelay,
+          };
+          if (result.toast) setToast(result.toast);
+          setScreen({
+            kind: "code",
+            appointmentId: result.appointmentId,
+            email: contact.email,
+            resendAt: lastCode.current.resendAt,
+          });
+        } else if (result.status === "slotTaken") {
+          held.current = null;
+          setTaken(slot);
+          closeBooking({ refresh: true });
+        } else if (result.status === "limitReached") {
+          held.current = null;
+          setScreen({ kind: "contact", limitReached: true });
+        } else {
+          setToast(result.toast);
+          setScreen(
+            result.toast.key === "unexpected"
+              ? { kind: "failed" }
+              : { kind: "contact" },
+          );
+        }
+      },
+    );
+  }
+
+  function submitCode(code: string) {
+    if (screen?.kind !== "code") return;
+    const current = screen;
+    void run(
+      () =>
+        confirmBooking({
+          appointmentId: current.appointmentId,
+          email: current.email,
+          code,
+        }),
+      (result) => {
+        if (result.status === "invalidCode") {
+          setScreen({ ...current, invalid: true });
+        } else if (result.status === "expired") {
+          held.current = null;
+          setScreen({ kind: "expired" });
+        } else if (result.status === "failed") {
+          setToast(result.toast);
+        } else {
+          held.current = null;
+          setToast(result.toast);
+          setScreen({ kind: "done", status: result.status });
+        }
+      },
+    );
+  }
+
+  function resend() {
+    if (screen?.kind !== "code") return;
+    const current = screen;
+    void run(
+      () =>
+        resendCode({
+          appointmentId: current.appointmentId,
+          email: current.email,
+          locale,
+        }),
+      (result) => {
+        setToast(result.toast);
+        if (result.status === "sent") {
+          lastCode.current = {
+            email: current.email,
+            resendAt: Date.now() + resendDelay,
+          };
+          setScreen({
+            ...current,
+            invalid: false,
+            resendAt: lastCode.current.resendAt,
+          });
+        }
+      },
+      { failScreen: false },
+    );
+  }
+
+  function selectSlot(value: string) {
+    setTaken(null);
+    availability.selectSlot(value);
+  }
+
+  function selectDate(value: string) {
+    setTaken(null);
+    availability.selectDate(value);
   }
 
   const when = selectedSlot
     ? slotDateTimeLabel(selectedSlot, timeZone, locale)
+    : null;
+  const bookingWhen = slot ? slotDateTimeLabel(slot, timeZone, locale) : "";
+  const summary = {
+    service: service.name,
+    when: bookingWhen,
+    price: service.price,
+  };
+  const deadline = slot
+    ? cancelDeadline(slot, cancelDeadlineMinutes, new Date())
     : null;
   const noFreeTime =
     dates.status === "ready" && !dates.value.some((d) => d.available);
@@ -126,7 +313,7 @@ export function BookingFlow({
             <DateStrip
               dates={dates.value}
               selected={selectedDate}
-              onSelect={availability.selectDate}
+              onSelect={selectDate}
             />
           </section>
 
@@ -142,6 +329,14 @@ export function BookingFlow({
                 {t("timeZone", { zone: zoneLabel(timeZone, locale) })}
               </span>
             </div>
+            {taken && slots?.status === "ready" && (
+              <SlotTaken
+                time={slotTimeLabel(taken, timeZone, locale)}
+                nearby={nearbySlots(slots.value, taken).map((value) =>
+                  slotTimeLabel(value, timeZone, locale),
+                )}
+              />
+            )}
             {!slots && (
               <p className="text-sm text-muted-foreground">{t("pickDate")}</p>
             )}
@@ -160,7 +355,7 @@ export function BookingFlow({
               <SlotGrid
                 groups={groupSlots(slots.value, timeZone, locale)}
                 selected={selectedSlot}
-                onSelect={availability.selectSlot}
+                onSelect={selectSlot}
                 label={t.markup("chooseTime", { accent: (chunks) => chunks })}
               />
             )}
@@ -186,25 +381,93 @@ export function BookingFlow({
             ref={next}
             size="lg"
             disabled={!selectedSlot}
-            onClick={openContact}
+            onClick={openBooking}
           >
             {tl("next")}
           </Button>
         </div>
       </div>
 
-      {contact && selectedSlot && when && (
-        <ContactStep
-          summary={{ service: service.name, when, price: service.price }}
-          needsAddress={service.format === "at_client"}
-          onBack={() => window.history.back()}
-          onSubmit={
-            onContactSubmit &&
-            ((values) => onContactSubmit({ ...values, slot: selectedSlot }))
+      {screen && (
+        <BookingDialog
+          screen={screen.kind}
+          onBack={() =>
+            screen.kind === "code"
+              ? setScreen({ kind: "contact" })
+              : closeBooking({
+                  refresh: screen.kind === "done" || screen.kind === "expired",
+                })
           }
-        />
+        >
+          {screen.kind === "contact" && (
+            <ContactStep
+              summary={summary}
+              needsAddress={service.format === "at_client"}
+              defaultValues={values}
+              pending={pending}
+              limitReached={screen.limitReached}
+              onSubmit={submitContact}
+            />
+          )}
+          {screen.kind === "code" && (
+            <CodeStep
+              email={screen.email}
+              invalid={screen.invalid}
+              pending={pending}
+              resendAt={screen.resendAt}
+              onSubmit={submitCode}
+              onResend={resend}
+              onChangeEmail={() => setScreen({ kind: "contact" })}
+            />
+          )}
+          {screen.kind === "done" && (
+            <BookingDone
+              status={screen.status}
+              summary={summary}
+              cancelUntil={
+                deadline && slotDateTimeLabel(deadline, timeZone, locale)
+              }
+              onClose={() => closeBooking({ refresh: true })}
+            />
+          )}
+          {screen.kind === "expired" && (
+            <BookingExpired
+              when={bookingWhen}
+              onRestart={() => closeBooking({ refresh: true })}
+            />
+          )}
+          {screen.kind === "failed" && values && (
+            <BookingFailed
+              pending={pending}
+              onRetry={() => submitContact(values)}
+            />
+          )}
+        </BookingDialog>
       )}
     </>
+  );
+}
+
+function SlotTaken({ time, nearby }: { time: string; nearby: string[] }) {
+  const t = useTranslations("SlotPicker");
+  const locale = useLocale();
+  return (
+    <p role="alert" className="flex gap-2 rounded-xl bg-card p-3 text-sm">
+      <TriangleAlertIcon
+        aria-hidden
+        className="mt-0.5 size-4 shrink-0 text-warning"
+      />
+      <span>
+        {nearby.length > 0
+          ? t("slotTakenNearby", {
+              time,
+              nearby: new Intl.ListFormat(locale, {
+                type: "conjunction",
+              }).format(nearby),
+            })
+          : t("slotTaken", { time })}
+      </span>
+    </p>
   );
 }
 

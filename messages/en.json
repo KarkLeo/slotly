@@ -56,7 +56,10 @@
     "linkExpired": "The link has expired or was already used. Request a new one.",
     "rateLimited": "Too many attempts. Wait a minute and try again.",
     "unexpected": "Something went wrong. Please try again.",
-    "decisionFailed": "Could not save your decision. Please try again."
+    "decisionFailed": "Could not save your decision. Please try again.",
+    "bookingConfirmed": "You're booked.",
+    "bookingRequested": "Request sent to the master.",
+    "bookingExpired": "The time to confirm the booking has run out. Please book again."
   },
   "Landing": {
     "languages": "Page language",
@@ -86,7 +89,31 @@
     "sendCode": "Send a code to my email",
     "nameRequired": "Enter your name.",
     "emailInvalid": "Enter an email, for example name@example.com.",
-    "addressRequired": "Enter the address for the visit."
+    "addressRequired": "Enter the address for the visit.",
+    "holdNote": "We're holding this time for you for 15 minutes.",
+    "limitReached": "You already have the most active bookings this master allows. Cancel one of them to book again.",
+    "codeTitle": "Enter the <accent>code</accent>",
+    "codeText": "We sent 6 digits to <strong>{email}</strong>. The email may take up to a minute.",
+    "code": "Code from the email",
+    "codeFormat": "Enter the 6 digits from the email.",
+    "codeInvalid": "The code is wrong or has expired. Check the email or send a new one.",
+    "confirm": "Confirm booking",
+    "resendIn": "New code in {time}",
+    "resend": "Send a new code",
+    "changeEmail": "Change email",
+    "doneTitle": "You're <accent>booked</accent>",
+    "cancelUntil": "You can cancel or reschedule until {date}.",
+    "cancelClosed": "This booking can no longer be cancelled or rescheduled online.",
+    "requestedTitle": "Request <accent>sent</accent>",
+    "awaitingMaster": "Waiting for the master to confirm",
+    "awaitingText": "The master confirms bookings personally. The time is already held for you.",
+    "close": "Done",
+    "expiredTitle": "Time's <accent>up</accent>",
+    "expiredText": "We held {when} for 15 minutes, but no confirmation came. Pick a time again — we'll keep your name and email.",
+    "chooseAgain": "Pick a time again",
+    "failedTitle": "Couldn't <accent>book</accent>",
+    "failedText": "Something went wrong on our side. Try again — your time and details are kept.",
+    "tryAgain": "Try again"
   },
   "SlotPicker": {
     "chooseDate": "Choose a <accent>date</accent>",
@@ -102,6 +129,8 @@
     "loadError": "Could not load free times.",
     "retry": "Try again",
     "timeZone": "{zone}",
-    "loading": "Loading free times…"
+    "loading": "Loading free times…",
+    "slotTaken": "Someone just took {time}. Please pick another time.",
+    "slotTakenNearby": "Someone just took {time}. Please pick another time — free nearby: {nearby}."
   }
 }

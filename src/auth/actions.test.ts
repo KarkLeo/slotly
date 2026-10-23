@@ -9,8 +9,9 @@ const auth = {
   verifyOtp: vi.fn(),
   signOut: vi.fn(),
 };
+const rpc = vi.fn();
 
-vi.mock("@/db/server", () => ({ createClient: async () => ({ auth }) }));
+vi.mock("@/db/server", () => ({ createClient: async () => ({ auth, rpc }) }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "uk" }));
 
 const email = "anna@example.com";
@@ -26,6 +27,7 @@ beforeEach(() => {
   auth.signInWithOtp.mockResolvedValue({ error: null });
   auth.verifyOtp.mockResolvedValue({ error: null });
   auth.signOut.mockResolvedValue({ error: null });
+  rpc.mockResolvedValue({ data: [], error: null });
 });
 
 describe("signIn", () => {
@@ -100,6 +102,16 @@ describe("signIn", () => {
       "success:signedIn",
       expect.objectContaining({ path: "/" }),
     );
+  });
+
+  it("confirms no bookings on a plain sign-in", async () => {
+    await redirectTarget(
+      signIn(
+        { step: "code", email },
+        form({ intent: "verify", email, code: "123456" }),
+      ),
+    );
+    expect(rpc).not.toHaveBeenCalled();
   });
 });
 

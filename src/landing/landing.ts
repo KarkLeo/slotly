@@ -12,6 +12,7 @@ export type Landing = {
   currency: string;
   timeZone: string;
   horizonDays: number;
+  cancelDeadlineMinutes: number;
   published: boolean;
   categories: Category[];
   services: Service[];
@@ -28,6 +29,7 @@ type MasterRow = Pick<
   | "currency"
   | "timezone"
   | "horizon_days"
+  | "cancel_deadline_minutes"
   | "published_at"
 > & {
   service_categories: Pick<
@@ -59,6 +61,7 @@ export function toLanding(row: MasterRow): Landing {
     currency: row.currency,
     timeZone: row.timezone,
     horizonDays: row.horizon_days,
+    cancelDeadlineMinutes: row.cancel_deadline_minutes,
     published: row.published_at !== null,
     categories: row.service_categories.map((category) => ({
       id: category.id,

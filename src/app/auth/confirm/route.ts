@@ -1,11 +1,14 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
+import { claimBooking } from "@/auth/claim-bookings";
 import { safeNextPath } from "@/auth/next-path";
 import { createClient } from "@/db/server";
 import { setFlash } from "@/toasts/flash";
 
 const allowedTypes = new Set<EmailOtpType>(["email", "magiclink", "signup"]);
+
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -19,7 +22,12 @@ export async function GET(request: NextRequest) {
       type,
     });
     if (!error) {
-      await setFlash({ type: "success", key: "signedIn" });
+      const booking = searchParams.get("booking");
+      await setFlash(
+        booking && uuid.test(booking)
+          ? await claimBooking(supabase, booking)
+          : { type: "success", key: "signedIn" },
+      );
       redirect(safeNextPath(searchParams.get("next")));
     }
   }

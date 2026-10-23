@@ -3,10 +3,13 @@ import {
   addDays,
   dayLabel,
   dayRanges,
+  cancelDeadline,
   groupSlots,
   horizonDates,
   localDate,
+  nearbySlots,
   slotDateTimeLabel,
+  slotTimeLabel,
   zoneLabel,
 } from "./dates";
 
@@ -139,5 +142,49 @@ describe("labels", () => {
   it("names the master's time zone", () => {
     expect(zoneLabel("Europe/Kyiv", "uk")).toBe("за східноєвропейським часом");
     expect(zoneLabel("Europe/Kyiv", "en")).toBe("Eastern European Time");
+  });
+});
+
+describe("slotTimeLabel", () => {
+  it("shows the wall-clock time in the master's zone", () => {
+    expect(slotTimeLabel("2030-01-14T10:00:00Z", "Europe/Kyiv", "uk")).toBe(
+      "12:00",
+    );
+  });
+});
+
+describe("nearbySlots", () => {
+  const slots = [
+    "2030-01-14T08:00:00Z",
+    "2030-01-14T09:30:00Z",
+    "2030-01-14T11:00:00Z",
+  ];
+
+  it("offers the closest free slots before and after a taken one", () => {
+    expect(nearbySlots(slots, "2030-01-14T10:00:00Z")).toEqual([
+      "2030-01-14T09:30:00Z",
+      "2030-01-14T11:00:00Z",
+    ]);
+  });
+
+  it("offers one side when the other has nothing", () => {
+    expect(nearbySlots(slots, "2030-01-14T12:00:00Z")).toEqual([
+      "2030-01-14T11:00:00Z",
+    ]);
+    expect(nearbySlots([], "2030-01-14T12:00:00Z")).toEqual([]);
+  });
+});
+
+describe("cancelDeadline", () => {
+  const now = new Date("2030-01-14T00:00:00Z");
+
+  it("is the start minus the master's deadline", () => {
+    expect(cancelDeadline("2030-01-15T10:00:00Z", 720, now)).toBe(
+      "2030-01-14T22:00:00.000Z",
+    );
+  });
+
+  it("is gone when the deadline has already passed", () => {
+    expect(cancelDeadline("2030-01-14T10:00:00Z", 720, now)).toBeNull();
   });
 });
