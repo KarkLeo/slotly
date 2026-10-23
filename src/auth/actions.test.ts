@@ -9,8 +9,9 @@ const auth = {
   verifyOtp: vi.fn(),
   signOut: vi.fn(),
 };
+const rpc = vi.fn();
 
-vi.mock("@/db/server", () => ({ createClient: async () => ({ auth }) }));
+vi.mock("@/db/server", () => ({ createClient: async () => ({ auth, rpc }) }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "uk" }));
 
 const email = "anna@example.com";
@@ -26,6 +27,7 @@ beforeEach(() => {
   auth.signInWithOtp.mockResolvedValue({ error: null });
   auth.verifyOtp.mockResolvedValue({ error: null });
   auth.signOut.mockResolvedValue({ error: null });
+  rpc.mockResolvedValue({ data: [], error: null });
 });
 
 describe("signIn", () => {
@@ -98,6 +100,25 @@ describe("signIn", () => {
     expect(cookieSet).toHaveBeenCalledWith(
       flashCookie,
       "success:signedIn",
+      expect.objectContaining({ path: "/" }),
+    );
+  });
+
+  it("confirms bookings made with the same email", async () => {
+    rpc.mockResolvedValue({
+      data: [{ appointment_id: "a", status: "confirmed" }],
+      error: null,
+    });
+    await redirectTarget(
+      signIn(
+        { step: "code", email },
+        form({ intent: "verify", email, code: "123456" }),
+      ),
+    );
+    expect(rpc).toHaveBeenCalledWith("claim_bookings");
+    expect(cookieSet).toHaveBeenCalledWith(
+      flashCookie,
+      "success:bookingConfirmed",
       expect.objectContaining({ path: "/" }),
     );
   });

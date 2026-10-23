@@ -56,7 +56,9 @@
     "linkExpired": "The link has expired or was already used. Request a new one.",
     "rateLimited": "Too many attempts. Wait a minute and try again.",
     "unexpected": "Something went wrong. Please try again.",
-    "decisionFailed": "Could not save your decision. Please try again."
+    "decisionFailed": "Could not save your decision. Please try again.",
+    "bookingConfirmed": "You're booked.",
+    "bookingRequested": "Request sent to the master."
   },
   "Landing": {
     "languages": "Page language",

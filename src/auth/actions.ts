@@ -6,7 +6,9 @@ import { z } from "zod";
 import { createClient } from "@/db/server";
 import { setFlash } from "@/toasts/flash";
 import type { ActionToast } from "@/toasts/toast";
+import { claimBookings } from "./claim-bookings";
 import { safeNextPath } from "./next-path";
+import { isWrongCode, otpFailureToast } from "./otp-errors";
 
 export type SignInState =
   | {
@@ -24,12 +26,6 @@ export type SignInState =
 
 const emailSchema = z.email();
 const codeSchema = z.string().regex(/^\d{6}$/);
-
-function failureToast(code: string | undefined): ActionToast {
-  const rateLimited =
-    code === "over_email_send_rate_limit" || code === "over_request_rate_limit";
-  return { type: "error", key: rateLimited ? "rateLimited" : "unexpected" };
-}
 
 export async function signIn(
   _state: SignInState,
@@ -54,16 +50,16 @@ export async function signIn(
       token: code.data,
       type: "email",
     });
-    if (error?.code === "otp_expired" || error?.code === "otp_disabled")
+    if (isWrongCode(error?.code))
       return { step: "code", email: email.data, error: "invalidCode" };
     if (error)
       return {
         step: "code",
         email: email.data,
-        toast: failureToast(error.code),
+        toast: otpFailureToast(error.code),
       };
 
-    await setFlash({ type: "success", key: "signedIn" });
+    await setFlash(await claimBookings(supabase));
     redirect(safeNextPath(formData.get("next")));
   }
 
@@ -75,7 +71,7 @@ export async function signIn(
     return {
       step: "email",
       email: email.data,
-      toast: failureToast(error.code),
+      toast: otpFailureToast(error.code),
     };
 
   return {
