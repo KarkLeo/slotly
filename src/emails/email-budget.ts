@@ -8,8 +8,7 @@ type TakeRateLimit = (
 
 const hour = 3600;
 
-// Auth emails anyone who asks, so a bot asking for many codes must not use up the email quota of everyone else.
-// Returns the budget that refused, or null; the IP is checked first so a refused bot does not spend its victim's budget.
+// Returns the budget that refused, or null; the IP goes first so a bot over its budget does not spend its victim's.
 export async function overEmailBudget(
   emails: AuthEmail[],
   ip: string | null,
