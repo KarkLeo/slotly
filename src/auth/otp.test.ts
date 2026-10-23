@@ -3,10 +3,10 @@ import { requestHeaders } from "@/test/server-mocks";
 import { sendOtp, verifyOtp } from "./otp";
 
 const auth = { signInWithOtp: vi.fn(), verifyOtp: vi.fn() };
-const createAdminClient = vi.fn((_ip: string | null) => ({ auth }));
+const createAdminClient = vi.fn();
 
 vi.mock("@/db/admin", () => ({
-  createAdminClient: (ip: string | null) => createAdminClient(ip),
+  createAdminClient: (ip: string | null) => createAdminClient(ip) ?? { auth },
 }));
 
 const session = { access_token: "access", refresh_token: "refresh" };
