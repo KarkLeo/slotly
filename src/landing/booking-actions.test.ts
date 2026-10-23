@@ -1,11 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import "@/test/server-mocks";
+import { requestHeaders } from "@/test/server-mocks";
 import { confirmBooking, resendCode, startBooking } from "./booking-actions";
 
-const auth = { signInWithOtp: vi.fn(), verifyOtp: vi.fn() };
+const { sendOtp, verifyOtp, takeRateLimit } = vi.hoisted(() => ({
+  sendOtp: vi.fn(),
+  verifyOtp: vi.fn(),
+  takeRateLimit: vi.fn(),
+}));
 const rpc = vi.fn();
+const cookieClient = { rpc };
 
-vi.mock("@/db/server", () => ({ createClient: async () => ({ auth, rpc }) }));
+vi.mock("@/db/server", () => ({ createClient: async () => cookieClient }));
+vi.mock("@/db/admin", () => ({ createAdminClient: () => ({ rpc }) }));
+vi.mock("@/auth/otp", () => ({ sendOtp, verifyOtp }));
+vi.mock("@/db/rate-limit", () => ({ takeRateLimit }));
 
 const request = {
   serviceId: "service-1",
@@ -29,12 +37,15 @@ function rpcError(message: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   vi.stubEnv("SITE_URL", "https://slotly.test");
+  requestHeaders.set("x-forwarded-for", "203.0.113.5");
   rpc.mockImplementation(async (name: string) =>
     name === "book_appointment" ? booked : { data: null, error: null },
   );
-  auth.signInWithOtp.mockResolvedValue({ error: null });
-  auth.verifyOtp.mockResolvedValue({ error: null });
+  takeRateLimit.mockResolvedValue(true);
+  sendOtp.mockResolvedValue(null);
+  verifyOtp.mockResolvedValue(null);
 });
 
 describe("startBooking", () => {
@@ -51,23 +62,63 @@ describe("startBooking", () => {
       email: "anna@example.com",
       locale: "en",
       address: undefined,
+      client_ip: "203.0.113.5",
     });
-    expect(auth.signInWithOtp).toHaveBeenCalledWith({
-      email: "anna@example.com",
-      options: {
-        shouldCreateUser: true,
-        data: { locale: "en" },
-        emailRedirectTo:
-          "https://slotly.test/auth/confirm?booking=appointment-1",
-      },
+    expect(sendOtp).toHaveBeenCalledWith("anna@example.com", {
+      data: { locale: "en" },
+      emailRedirectTo: "https://slotly.test/auth/confirm?booking=appointment-1",
     });
+  });
+
+  it("counts every attempt from the client's IP", async () => {
+    await startBooking(request);
+    expect(takeRateLimit).toHaveBeenCalledWith("book:ip:203.0.113.5", 10, 3600);
+  });
+
+  it("refuses an IP that tried too often, before holding anything", async () => {
+    takeRateLimit.mockResolvedValue(false);
+    await expect(startBooking(request)).resolves.toEqual({
+      status: "failed",
+      toast: { type: "error", key: "rateLimited" },
+    });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("reports too many unconfirmed holds as a rate limit", async () => {
+    rpc.mockResolvedValue(rpcError("too_many_pending"));
+    await expect(startBooking(request)).resolves.toEqual({
+      status: "failed",
+      toast: { type: "error", key: "rateLimited" },
+    });
+    expect(sendOtp).not.toHaveBeenCalled();
+  });
+
+  it("refuses to book without the client's IP in production", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    requestHeaders.delete("x-forwarded-for");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(startBooking(request)).resolves.toEqual({
+      status: "failed",
+      toast: { type: "error", key: "unexpected" },
+    });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("books without an IP outside production", async () => {
+    requestHeaders.delete("x-forwarded-for");
+    await startBooking(request);
+    expect(takeRateLimit).not.toHaveBeenCalled();
+    expect(rpc).toHaveBeenCalledWith(
+      "book_appointment",
+      expect.objectContaining({ client_ip: undefined }),
+    );
   });
 
   it("holds the slot without a new email while the last code is fresh", async () => {
     await expect(
       startBooking({ ...request, reuseCode: true }),
     ).resolves.toEqual({ status: "codeSent", appointmentId: "appointment-1" });
-    expect(auth.signInWithOtp).not.toHaveBeenCalled();
+    expect(sendOtp).not.toHaveBeenCalled();
   });
 
   it("passes the address of a home visit", async () => {
@@ -91,7 +142,7 @@ describe("startBooking", () => {
     await expect(startBooking(request)).resolves.toEqual({
       status: "slotTaken",
     });
-    expect(auth.signInWithOtp).not.toHaveBeenCalled();
+    expect(sendOtp).not.toHaveBeenCalled();
   });
 
   it("reports the active bookings limit", async () => {
@@ -118,9 +169,7 @@ describe("startBooking", () => {
   });
 
   it("frees the slot when the code cannot be sent", async () => {
-    auth.signInWithOtp.mockResolvedValue({
-      error: { code: "over_email_send_rate_limit" },
-    });
+    sendOtp.mockResolvedValue({ code: "over_email_send_rate_limit" });
     await expect(startBooking(request)).resolves.toEqual({
       status: "failed",
       toast: { type: "error", key: "rateLimited" },
@@ -146,11 +195,11 @@ describe("confirmBooking", () => {
     await expect(
       confirmBooking({ ...confirm, code: "12345" }),
     ).resolves.toEqual({ status: "invalidCode" });
-    expect(auth.verifyOtp).not.toHaveBeenCalled();
+    expect(verifyOtp).not.toHaveBeenCalled();
   });
 
   it("keeps a wrong or expired code as a field error", async () => {
-    auth.verifyOtp.mockResolvedValue({ error: { code: "otp_expired" } });
+    verifyOtp.mockResolvedValue({ code: "otp_expired" });
     await expect(confirmBooking(confirm)).resolves.toEqual({
       status: "invalidCode",
     });
@@ -158,9 +207,7 @@ describe("confirmBooking", () => {
   });
 
   it("reports other Auth failures as a toast", async () => {
-    auth.verifyOtp.mockResolvedValue({
-      error: { code: "over_request_rate_limit" },
-    });
+    verifyOtp.mockResolvedValue({ code: "over_request_rate_limit" });
     await expect(confirmBooking(confirm)).resolves.toEqual({
       status: "failed",
       toast: { type: "error", key: "rateLimited" },
@@ -173,7 +220,7 @@ describe("confirmBooking", () => {
       status: "confirmed",
       toast: { type: "success", key: "bookingConfirmed" },
     });
-    expect(auth.verifyOtp).toHaveBeenCalledWith({
+    expect(verifyOtp).toHaveBeenCalledWith(cookieClient, {
       email: "anna@example.com",
       token: "123456",
       type: "email",
@@ -219,21 +266,14 @@ describe("resendCode", () => {
       status: "sent",
       toast: { type: "success", key: "codeSent" },
     });
-    expect(auth.signInWithOtp).toHaveBeenCalledWith({
-      email: "anna@example.com",
-      options: {
-        shouldCreateUser: true,
-        data: { locale: "uk" },
-        emailRedirectTo:
-          "https://slotly.test/auth/confirm?booking=appointment-1",
-      },
+    expect(sendOtp).toHaveBeenCalledWith("anna@example.com", {
+      data: { locale: "uk" },
+      emailRedirectTo: "https://slotly.test/auth/confirm?booking=appointment-1",
     });
   });
 
   it("reports a failed send as a toast", async () => {
-    auth.signInWithOtp.mockResolvedValue({
-      error: { code: "over_email_send_rate_limit" },
-    });
+    sendOtp.mockResolvedValue({ code: "over_email_send_rate_limit" });
     await expect(
       resendCode({
         appointmentId: "appointment-1",

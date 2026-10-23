@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 import { supabaseUrl } from "@/db/env";
-import { authEmails, type AuthEmail } from "@/emails/auth-emails";
+import { takeRateLimit } from "@/db/rate-limit";
+import { authEmails, senderIp, type AuthEmail } from "@/emails/auth-emails";
 import { loadBookingDetails } from "@/emails/booking-details";
+import { overEmailBudget } from "@/emails/email-budget";
 import { renderAuthEmail } from "@/emails/render";
 import { sendEmail } from "@/emails/send";
 import { verifyWebhook } from "@/emails/webhook";
@@ -33,6 +35,16 @@ export async function POST(request: Request) {
       loadBooking: loadBookingDetails,
     });
     if (!emails) return hookError(400, "Unsupported email");
+
+    const ip = senderIp(payload);
+    const bucket = await overEmailBudget(emails, ip, takeRateLimit);
+    if (bucket) {
+      console.warn("Email budget exceeded", { bucket, ip });
+      // Auth passes the code in the body on to the caller only with status 200; a 429 status becomes a 500.
+      return Response.json({
+        error: { http_code: 429, message: "Email rate limit exceeded" },
+      });
+    }
 
     await Promise.all(
       emails.map(async (email) =>

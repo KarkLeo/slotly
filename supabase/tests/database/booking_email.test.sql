@@ -31,7 +31,7 @@ insert into public.appointment_clients (appointment_id, master_id, client_card_i
   ('00000000-0000-0000-0000-0000000000e3', '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000ca', null, 'Iryna', 'Main St 2'),
   ('00000000-0000-0000-0000-0000000000e4', '00000000-0000-0000-0000-00000000000a', null, 'mark@example.com', 'Mark', 'Main St 1');
 
-set local role anon;
+set local role service_role;
 
 select results_eq(
   $$ select master_name, service_name, primary_locale::text, locale::text, starts_at, ends_at, time_zone,
@@ -77,13 +77,14 @@ select is_empty(
 reset role;
 
 select ok(
-  has_function_privilege('anon', 'public.booking_email_details(uuid, text)', 'execute'),
-  'the email hook reads details as anon'
+  has_function_privilege('service_role', 'public.booking_email_details(uuid, text)', 'execute'),
+  'the email hook reads details through the server'
 );
 
 select ok(
-  not has_function_privilege('authenticated', 'public.booking_email_details(uuid, text)', 'execute'),
-  'signed-in users do not need the details function'
+  not has_function_privilege('anon', 'public.booking_email_details(uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.booking_email_details(uuid, text)', 'execute'),
+  'visitors and users cannot read booking details'
 );
 
 select * from finish();

@@ -56,6 +56,7 @@ export type Database = {
           address: string | null;
           appointment_id: string;
           client_card_id: string | null;
+          client_ip: unknown;
           created_at: string;
           id: string;
           master_id: string;
@@ -67,6 +68,7 @@ export type Database = {
           address?: string | null;
           appointment_id: string;
           client_card_id?: string | null;
+          client_ip?: unknown;
           created_at?: string;
           id?: string;
           master_id: string;
@@ -77,6 +79,7 @@ export type Database = {
           address?: string | null;
           appointment_id?: string;
           client_card_id?: string | null;
+          client_ip?: unknown;
           created_at?: string;
           id?: string;
           master_id?: string;
@@ -482,6 +485,7 @@ export type Database = {
       book_appointment: {
         Args: {
           address?: string;
+          client_ip?: unknown;
           email: string;
           locale: Database["public"]["Enums"]["locale"];
           name: string;
@@ -557,6 +561,10 @@ export type Database = {
       set_no_show: {
         Args: { appointment_id: string; no_show: boolean };
         Returns: undefined;
+      };
+      take_rate_limit: {
+        Args: { bucket: string; max_hits: number; window_seconds: number };
+        Returns: boolean;
       };
     };
     Enums: {

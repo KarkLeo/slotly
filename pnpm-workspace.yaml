@@ -5,3 +5,6 @@ allowBuilds:
   sharp: false
   supabase: true
   unrs-resolver: false
+
+overrides:
+  ip-address: ">=10.7.4"

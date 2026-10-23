@@ -4,14 +4,15 @@ import { cookieSet } from "@/test/server-mocks";
 import { flashCookie } from "@/toasts/toast";
 import { signIn, signOut } from "./actions";
 
-const auth = {
-  signInWithOtp: vi.fn(),
+const auth = { signOut: vi.fn() };
+const { sendOtp, verifyOtp } = vi.hoisted(() => ({
+  sendOtp: vi.fn(),
   verifyOtp: vi.fn(),
-  signOut: vi.fn(),
-};
+}));
 const rpc = vi.fn();
 
 vi.mock("@/db/server", () => ({ createClient: async () => ({ auth, rpc }) }));
+vi.mock("@/auth/otp", () => ({ sendOtp, verifyOtp }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "uk" }));
 
 const email = "anna@example.com";
@@ -24,8 +25,8 @@ function form(fields: Record<string, string>) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  auth.signInWithOtp.mockResolvedValue({ error: null });
-  auth.verifyOtp.mockResolvedValue({ error: null });
+  sendOtp.mockResolvedValue(null);
+  verifyOtp.mockResolvedValue(null);
   auth.signOut.mockResolvedValue({ error: null });
   rpc.mockResolvedValue({ data: [], error: null });
 });
@@ -47,16 +48,11 @@ describe("signIn", () => {
       email,
       toast: { type: "success", key: "codeSent" },
     });
-    expect(auth.signInWithOtp).toHaveBeenCalledWith({
-      email,
-      options: { shouldCreateUser: true, data: { locale: "uk" } },
-    });
+    expect(sendOtp).toHaveBeenCalledWith(email, { data: { locale: "uk" } });
   });
 
   it("reports a rate limit as a toast", async () => {
-    auth.signInWithOtp.mockResolvedValue({
-      error: { code: "over_email_send_rate_limit" },
-    });
+    sendOtp.mockResolvedValue({ code: "over_email_send_rate_limit" });
     await expect(signIn({ step: "email" }, form({ email }))).resolves.toEqual({
       step: "email",
       email,
@@ -65,7 +61,7 @@ describe("signIn", () => {
   });
 
   it("reports an unknown failure as an unexpected toast", async () => {
-    auth.signInWithOtp.mockResolvedValue({ error: { code: "boom" } });
+    sendOtp.mockResolvedValue({ code: "boom" });
     await expect(signIn({ step: "email" }, form({ email }))).resolves.toEqual({
       step: "email",
       email,
@@ -74,7 +70,7 @@ describe("signIn", () => {
   });
 
   it("keeps a wrong code as a field error", async () => {
-    auth.verifyOtp.mockResolvedValue({ error: { code: "otp_expired" } });
+    verifyOtp.mockResolvedValue({ code: "otp_expired" });
     await expect(
       signIn(
         { step: "code", email },
@@ -92,7 +88,7 @@ describe("signIn", () => {
         ),
       ),
     ).resolves.toBe("/app");
-    expect(auth.verifyOtp).toHaveBeenCalledWith({
+    expect(verifyOtp).toHaveBeenCalledWith(expect.anything(), {
       email,
       token: "123456",
       type: "email",

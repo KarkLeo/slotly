@@ -1,8 +1,12 @@
 "use server";
 
+import { sendOtp, verifyOtp } from "@/auth/otp";
 import { isWrongCode, otpFailureToast } from "@/auth/otp-errors";
+import { createAdminClient } from "@/db/admin";
+import { takeRateLimit } from "@/db/rate-limit";
 import { createClient } from "@/db/server";
 import { isLocale } from "@/i18n/locales";
+import { clientIp } from "@/lib/client-ip";
 import { siteUrl } from "@/lib/site-url";
 import type { ActionToast } from "@/toasts/toast";
 
@@ -25,6 +29,11 @@ const unexpected: Failed = {
   toast: { type: "error", key: "unexpected" },
 };
 
+const rateLimited: Failed = {
+  status: "failed",
+  toast: { type: "error", key: "rateLimited" },
+};
+
 export type StartBookingResult =
   | { status: "codeSent"; appointmentId: string; toast?: ActionToast }
   | { status: "slotTaken" }
@@ -35,7 +44,15 @@ export async function startBooking(
   request: BookingRequest,
 ): Promise<StartBookingResult> {
   if (!isLocale(request.locale)) return unexpected;
-  const supabase = await createClient();
+  const ip = await clientIp();
+  if (!ip && process.env.NODE_ENV === "production") {
+    // Without the client's IP the limits per IP would silently stop working.
+    console.error("Booking without a client IP from the proxy");
+    return unexpected;
+  }
+  if (ip && !(await takeRateLimit(`book:ip:${ip}`, 10, 3600)))
+    return rateLimited;
+  const supabase = createAdminClient();
 
   if (request.replaces) {
     const { error } = await supabase.rpc("release_booking", {
@@ -51,10 +68,12 @@ export async function startBooking(
     email: request.email,
     locale: request.locale,
     address: request.address || undefined,
+    client_ip: ip ?? undefined,
   });
   if (error?.message === "slot_unavailable") return { status: "slotTaken" };
   if (error?.message === "booking_limit_reached")
     return { status: "limitReached" };
+  if (error?.message === "too_many_pending") return rateLimited;
   const appointmentId = data?.[0]?.appointment_id;
   if (error || !appointmentId) return unexpected;
 
@@ -90,14 +109,14 @@ export async function confirmBooking({
   if (!/^\d{6}$/.test(code)) return { status: "invalidCode" };
   const supabase = await createClient();
 
-  const verified = await supabase.auth.verifyOtp({
+  const verifyError = await verifyOtp(supabase, {
     email,
     token: code,
     type: "email",
   });
-  if (isWrongCode(verified.error?.code)) return { status: "invalidCode" };
-  if (verified.error)
-    return { status: "failed", toast: otpFailureToast(verified.error.code) };
+  if (isWrongCode(verifyError?.code)) return { status: "invalidCode" };
+  if (verifyError)
+    return { status: "failed", toast: otpFailureToast(verifyError) };
 
   const { data, error } = await supabase.rpc("claim_bookings", {
     appointment_ids: [appointmentId],
@@ -140,16 +159,9 @@ async function sendCode(
   locale: string,
   appointmentId: string,
 ): Promise<Failed | null> {
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      shouldCreateUser: true,
-      data: { locale },
-      emailRedirectTo: `${siteUrl()}/auth/confirm?booking=${appointmentId}`,
-    },
+  const error = await sendOtp(email, {
+    data: { locale },
+    emailRedirectTo: `${siteUrl()}/auth/confirm?booking=${appointmentId}`,
   });
-  return error
-    ? { status: "failed", toast: otpFailureToast(error.code) }
-    : null;
+  return error ? { status: "failed", toast: otpFailureToast(error) } : null;
 }
