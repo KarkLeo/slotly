@@ -2,12 +2,14 @@ import { createHmac, randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
-const { sendEmail, loadBookingDetails } = vi.hoisted(() => ({
+const { sendEmail, loadBookingDetails, takeRateLimit } = vi.hoisted(() => ({
   sendEmail: vi.fn(),
   loadBookingDetails: vi.fn(),
+  takeRateLimit: vi.fn(),
 }));
 
 vi.mock("@/emails/send", () => ({ sendEmail }));
+vi.mock("@/db/rate-limit", () => ({ takeRateLimit }));
 vi.mock("@/emails/booking-details", () => ({ loadBookingDetails }));
 vi.mock("@/db/env", () => ({ supabaseUrl: "https://db.example" }));
 
@@ -26,6 +28,13 @@ const body = JSON.stringify({
     site_url: "https://slotly.example",
   },
 });
+
+function withIp(content: string, ip: string) {
+  return JSON.stringify({
+    ...JSON.parse(content),
+    metadata: { ip_address: ip },
+  });
+}
 
 function hookRequest(
   content: string,
@@ -51,6 +60,7 @@ beforeEach(() => {
   vi.stubEnv("SITE_URL", "https://slotly.example");
   sendEmail.mockResolvedValue(undefined);
   loadBookingDetails.mockResolvedValue(null);
+  takeRateLimit.mockResolvedValue(true);
 });
 
 afterEach(() => {
@@ -105,6 +115,42 @@ describe("POST /api/auth/send-email", () => {
     const [email] = sendEmail.mock.calls[0];
     expect(email.subject).toBe("Підтвердіть запис у Slotly");
     expect(email.html).toContain("Olena");
+  });
+
+  it("counts emails by the IP that asked Auth for them", async () => {
+    const fromIp = withIp(body, "203.0.113.5");
+    await POST(hookRequest(fromIp));
+    expect(takeRateLimit).toHaveBeenCalledWith(
+      "email:ip:203.0.113.5",
+      20,
+      3600,
+    );
+  });
+
+  it("refuses an email over budget and sends nothing", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    takeRateLimit.mockResolvedValue(false);
+    const response = await POST(hookRequest(withIp(body, "203.0.113.5")));
+    expect(response.status).toBe(429);
+    await expect(response.json()).resolves.toEqual({
+      error: { http_code: 429, message: "Email rate limit exceeded" },
+    });
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("spends the new user budget on a link naming a booking that does not exist", async () => {
+    const forged = withIp(body, "203.0.113.5")
+      .replace('"magiclink"', '"signup"')
+      .replace(
+        '"redirect_to":"https://slotly.example"',
+        '"redirect_to":"https://slotly.example/auth/confirm?booking=6f1c1d36-3f0b-4f43-9d55-3c3a3b9e8a10"',
+      );
+    await POST(hookRequest(forged));
+    expect(takeRateLimit).toHaveBeenCalledWith(
+      "email:signup:203.0.113.5",
+      3,
+      3600,
+    );
   });
 
   it("sends both email change confirmations", async () => {

@@ -43,6 +43,16 @@ const payloadSchema = z.object({
   }),
 });
 
+const metadataSchema = z.object({
+  metadata: z.object({ ip_address: z.ipv4().or(z.ipv6()) }),
+});
+
+// With Sb-Forwarded-For from our server, Auth reports the client's IP rather than the server's.
+export function senderIp(body: unknown): string | null {
+  const parsed = metadataSchema.safeParse(body);
+  return parsed.success ? parsed.data.metadata.ip_address : null;
+}
+
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Decides which emails a Supabase Auth Send Email Hook call should send; null means the app does not send this kind.

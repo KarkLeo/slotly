@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 import { supabaseUrl } from "@/db/env";
-import { authEmails, type AuthEmail } from "@/emails/auth-emails";
+import { takeRateLimit } from "@/db/rate-limit";
+import { authEmails, senderIp, type AuthEmail } from "@/emails/auth-emails";
 import { loadBookingDetails } from "@/emails/booking-details";
+import { withinEmailBudget } from "@/emails/email-budget";
 import { renderAuthEmail } from "@/emails/render";
 import { sendEmail } from "@/emails/send";
 import { verifyWebhook } from "@/emails/webhook";
@@ -33,6 +35,12 @@ export async function POST(request: Request) {
       loadBooking: loadBookingDetails,
     });
     if (!emails) return hookError(400, "Unsupported email");
+
+    const ip = senderIp(payload);
+    if (!(await withinEmailBudget(emails, ip, takeRateLimit))) {
+      console.warn("Email budget exceeded", { ip });
+      return hookError(429, "Email rate limit exceeded");
+    }
 
     await Promise.all(
       emails.map(async (email) =>
