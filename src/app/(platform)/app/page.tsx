@@ -1,9 +1,15 @@
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/auth/session";
 import { SignOutForm } from "@/auth/sign-out-form";
+import { isMaster } from "@/client-cabinet/load";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function CabinetPage() {
   const user = await requireUser();
+  // Until the master cabinet exists, only masters have anything here besides their own bookings.
+  if (!(await isMaster(user.id))) redirect("/app/bookings");
   const t = await getTranslations("Cabinet");
 
   return (
@@ -12,6 +18,12 @@ export default async function CabinetPage() {
       <p className="text-muted-foreground">
         {t("signedInAs", { email: user.email ?? "" })}
       </p>
+      <Link
+        href="/app/bookings"
+        className={buttonVariants({ variant: "outline" })}
+      >
+        {t("myBookings")}
+      </Link>
       <SignOutForm />
     </main>
   );

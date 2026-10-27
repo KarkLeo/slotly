@@ -81,18 +81,27 @@ export function LandingPage({
         )}
       </main>
 
-      <footer className="mt-auto px-4 pt-8 pb-6 text-center text-xs text-muted-foreground">
-        {t.rich("madeWith", {
-          link: (chunks) => (
-            <Link
-              href="/"
-              prefetch={false}
-              className="underline underline-offset-2"
-            >
-              {chunks}
-            </Link>
-          ),
-        })}
+      <footer className="mt-auto flex flex-col items-center gap-3 px-4 pt-8 pb-6 text-center text-xs text-muted-foreground">
+        <Link
+          href="/app/bookings"
+          prefetch={false}
+          className="text-sm font-semibold text-foreground underline underline-offset-2"
+        >
+          {t("myBookings")}
+        </Link>
+        <span>
+          {t.rich("madeWith", {
+            link: (chunks) => (
+              <Link
+                href="/"
+                prefetch={false}
+                className="underline underline-offset-2"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
+        </span>
       </footer>
     </div>
   );

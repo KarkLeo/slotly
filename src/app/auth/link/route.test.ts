@@ -43,7 +43,9 @@ function flashed(value: string) {
 
 describe("GET /auth/link", () => {
   it("signs in the link's user and opens the booking", async () => {
-    await expect(redirectTarget(GET(request))).resolves.toBe("/app");
+    await expect(redirectTarget(GET(request))).resolves.toBe(
+      "/app/bookings/a1",
+    );
     expect(verifyLinkToken).toHaveBeenCalledWith("t");
     expect(signInAs).toHaveBeenCalledWith(expect.anything(), owner);
     flashed("success:signedIn");
@@ -51,14 +53,18 @@ describe("GET /auth/link", () => {
 
   it("keeps the session of the same user", async () => {
     auth.getClaims.mockResolvedValue({ data: { claims: { sub: owner } } });
-    await expect(redirectTarget(GET(request))).resolves.toBe("/app");
+    await expect(redirectTarget(GET(request))).resolves.toBe(
+      "/app/bookings/a1",
+    );
     expect(signInAs).not.toHaveBeenCalled();
     expect(cookieSet).not.toHaveBeenCalled();
   });
 
   it("switches from another user to the link's user", async () => {
     auth.getClaims.mockResolvedValue({ data: { claims: { sub: "other" } } });
-    await expect(redirectTarget(GET(request))).resolves.toBe("/app");
+    await expect(redirectTarget(GET(request))).resolves.toBe(
+      "/app/bookings/a1",
+    );
     expect(auth.signOut).toHaveBeenCalledWith({ scope: "local" });
     expect(signInAs).toHaveBeenCalledWith(expect.anything(), owner);
   });

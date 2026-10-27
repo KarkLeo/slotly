@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { accent } from "@/components/accent";
 import { Button } from "@/components/ui/button";
@@ -84,7 +85,14 @@ export function ContactStep({
         )}
         {limitReached && (
           <p role="alert" className="rounded-xl bg-card p-4 text-sm">
-            {t("limitReached")}
+            {t("limitReached")}{" "}
+            <Link
+              href="/app/bookings"
+              prefetch={false}
+              className="font-semibold text-primary underline-offset-4 hover:underline dark:text-accent-foreground"
+            >
+              {t("myBookings")}
+            </Link>
           </p>
         )}
         <Button

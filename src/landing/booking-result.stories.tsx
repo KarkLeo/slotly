@@ -19,6 +19,7 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: {
     status: "confirmed",
+    bookingHref: "/app/bookings/appointment-1",
     summary: {
       service: "Манікюр з покриттям",
       when: "чт, 29 жовтня о 11:45",
@@ -45,6 +46,12 @@ export const Confirmed: Story = {
       ),
     ).toBeVisible();
     await expect(canvas.queryByText(t.awaitingMaster)).toBeNull();
+    await expect(
+      canvas.getByRole("link", { name: t.addToCalendar }),
+    ).toHaveAttribute("href", "/app/bookings/appointment-1/calendar");
+    await expect(
+      canvas.getByRole("link", { name: t.myBookings }),
+    ).toHaveAttribute("href", "/app/bookings");
     await userEvent.click(canvas.getByRole("button", { name: t.close }));
     await expect(args.onClose).toHaveBeenCalled();
   },

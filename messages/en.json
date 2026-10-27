@@ -31,7 +31,8 @@
   "Cabinet": {
     "title": "Dashboard",
     "signedInAs": "Signed in as {email}",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "myBookings": "My bookings"
   },
   "OAuthConsent": {
     "title": "Connect {client} to Slotly?",
@@ -59,7 +60,13 @@
     "decisionFailed": "Could not save your decision. Please try again.",
     "bookingConfirmed": "You're booked.",
     "bookingRequested": "Request sent to the master.",
-    "bookingExpired": "The time to confirm the booking has run out. Please book again."
+    "bookingExpired": "The time to confirm the booking has run out. Please book again.",
+    "bookingCancelled": "Booking cancelled. The master will be notified.",
+    "bookingRescheduled": "Booking moved. The master will be notified.",
+    "rescheduleRequested": "The new time has been sent to the master to confirm.",
+    "changeClosed": "This booking can no longer be cancelled or moved online.",
+    "bookingNotActive": "This booking is no longer active.",
+    "rescheduleClosed": "The master no longer takes bookings for this service, so it cannot be moved. You can cancel the booking."
   },
   "Landing": {
     "languages": "Page language",
@@ -113,7 +120,9 @@
     "chooseAgain": "Pick a time again",
     "failedTitle": "Couldn't <accent>book</accent>",
     "failedText": "Something went wrong on our side. Try again — your time and details are kept.",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "myBookings": "My bookings",
+    "addToCalendar": "Add to calendar"
   },
   "SlotPicker": {
     "chooseDate": "Choose a <accent>date</accent>",
@@ -132,5 +141,48 @@
     "loading": "Loading free times…",
     "slotTaken": "Someone just took {time}. Please pick another time.",
     "slotTakenNearby": "Someone just took {time}. Please pick another time — free nearby: {nearby}."
+  },
+  "MyBookings": {
+    "title": "My <accent>bookings</accent>",
+    "menu": "Menu",
+    "home": "Slotly — my bookings",
+    "upcoming": "Upcoming",
+    "history": "History",
+    "emptyTitle": "No bookings <accent>yet</accent>",
+    "emptyText": "When you book a master on Slotly, the booking will show up here, together with all the others.",
+    "emptyHistory": "No past bookings yet.",
+    "confirmed": "Confirmed",
+    "awaitingMaster": "Waiting for the master",
+    "awaitingMasterLong": "Waiting for the master to confirm",
+    "completed": "Done",
+    "cancelled": "Cancelled",
+    "lateHint": "can no longer be cancelled or moved",
+    "back": "Back",
+    "booking": "Booking",
+    "masterPage": "Master's page",
+    "online": "Online",
+    "address": "Address: {address}",
+    "waits": "The master confirms bookings personally and will reply by {date}. If they don't, the booking will be cancelled and we'll let you know.",
+    "changeUntil": "You can cancel or move it until {date}.",
+    "late": "It is now closer to the appointment than the master allows, so it can't be cancelled or moved here. If something has changed, contact the master.",
+    "rescheduleClosed": "The master no longer takes bookings for this service, so the booking can't be moved, only cancelled.",
+    "addToCalendar": "Add to calendar",
+    "bookAgain": "Book again",
+    "reschedule": "Move",
+    "cancel": "Cancel",
+    "cancelTitle": "Cancel the booking?",
+    "cancelText": "The master will be notified, and the time will be free for others.",
+    "comment": "Comment for the master",
+    "optional": "(optional)",
+    "commentPlaceholder": "For example: I'm ill, I'll book later",
+    "cancelConfirm": "Cancel booking",
+    "rescheduleTitle": "Move the booking",
+    "current": "Now:",
+    "needsApproval": "The master confirms bookings personally: the new time will wait for their reply, and the current one will be freed.",
+    "newTime": "New time",
+    "pickTime": "choose a date and time",
+    "notFoundTitle": "Booking <accent>not found</accent>",
+    "notFoundText": "It may no longer exist or belong to another user.",
+    "toList": "To my bookings"
   }
 }
