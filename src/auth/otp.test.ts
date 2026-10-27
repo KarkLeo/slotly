@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requestHeaders } from "@/test/server-mocks";
-import { sendOtp, verifyOtp } from "./otp";
+import { sendOtp, signInAs, verifyOtp } from "./otp";
 
-const auth = { signInWithOtp: vi.fn(), verifyOtp: vi.fn() };
+const admin = { getUserById: vi.fn(), generateLink: vi.fn() };
+const auth = { signInWithOtp: vi.fn(), verifyOtp: vi.fn(), admin };
 const createAdminClient = vi.fn();
 
 vi.mock("@/db/admin", () => ({
@@ -21,6 +22,14 @@ beforeEach(() => {
   auth.signInWithOtp.mockResolvedValue({ error: null });
   auth.verifyOtp.mockResolvedValue({ data: { session }, error: null });
   setSession.mockResolvedValue({ error: null });
+  admin.getUserById.mockResolvedValue({
+    data: { user: { id: "u1", email: "anna@example.com" } },
+    error: null,
+  });
+  admin.generateLink.mockResolvedValue({
+    data: { properties: { hashed_token: "hashed" } },
+    error: null,
+  });
 });
 
 describe("sendOtp", () => {
@@ -81,6 +90,54 @@ describe("verifyOtp", () => {
     setSession.mockResolvedValue({ error: { code: "session_not_found" } });
     await expect(verifyOtp(cookieClient, params)).resolves.toEqual({
       code: "session_not_found",
+    });
+  });
+});
+
+describe("signInAs", () => {
+  it("opens a session for the user on behalf of the client's IP without sending an email", async () => {
+    await expect(signInAs(cookieClient, "u1")).resolves.toBeNull();
+    expect(admin.getUserById).toHaveBeenCalledWith("u1");
+    expect(admin.generateLink).toHaveBeenCalledWith({
+      type: "magiclink",
+      email: "anna@example.com",
+    });
+    expect(createAdminClient).toHaveBeenCalledWith("203.0.113.5");
+    expect(auth.verifyOtp).toHaveBeenCalledWith({
+      token_hash: "hashed",
+      type: "magiclink",
+    });
+    expect(setSession).toHaveBeenCalledWith(session);
+  });
+
+  it("returns the error for a user that is gone", async () => {
+    admin.getUserById.mockResolvedValue({
+      data: { user: null },
+      error: { code: "user_not_found" },
+    });
+    await expect(signInAs(cookieClient, "u1")).resolves.toEqual({
+      code: "user_not_found",
+    });
+    expect(setSession).not.toHaveBeenCalled();
+  });
+
+  it("fails for a user without an email", async () => {
+    admin.getUserById.mockResolvedValue({
+      data: { user: { id: "u1", email: undefined } },
+      error: null,
+    });
+    await expect(signInAs(cookieClient, "u1")).resolves.not.toBeNull();
+    expect(admin.generateLink).not.toHaveBeenCalled();
+    expect(setSession).not.toHaveBeenCalled();
+  });
+
+  it("returns the error when no link can be made", async () => {
+    admin.generateLink.mockResolvedValue({
+      data: { properties: null },
+      error: { code: "validation_failed" },
+    });
+    await expect(signInAs(cookieClient, "u1")).resolves.toEqual({
+      code: "validation_failed",
     });
   });
 });
