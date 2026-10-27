@@ -78,6 +78,7 @@ as $$
   -- A hold whose contact was never confirmed is not a booking, and its email was typed by anyone.
   delete from public.appointments a
   where a.status = 'cancelled'
+    and a.source = 'client'
     and a.created_at < now() - interval '1 day'
     and exists (
       select 1 from public.appointment_clients ac
@@ -89,7 +90,11 @@ as $$
   where u.email_confirmed_at is null
     and u.phone_confirmed_at is null
     and u.last_sign_in_at is null
-    and u.created_at < now() - interval '1 day';
+    and u.created_at < now() - interval '1 day'
+    -- A code asked for again keeps the user until it runs out.
+    and coalesce(u.confirmation_sent_at, u.created_at) < now() - interval '1 day'
+    -- Deleting a master's user would cascade to the whole cabinet.
+    and not exists (select 1 from public.masters m where m.id = u.id);
 
   delete from cron.job_run_details d
   where d.end_time < now() - interval '7 days';

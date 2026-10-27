@@ -7,15 +7,18 @@ delete from vault.secrets where name in ('notifications_url', 'notifications_sec
 -- A database used by the dev server already has queued notifications.
 delete from private.notifications;
 
-insert into auth.users (id, email, email_confirmed_at, created_at) values
-  ('00000000-0000-0000-0000-00000000000a', 'olena@example.com', now(), now()),
-  ('00000000-0000-0000-0000-0000000000c1', 'mark@example.com', now(), now()),
-  ('00000000-0000-0000-0000-0000000000d1', 'gone@example.com', null, now() - interval '2 days'),
-  ('00000000-0000-0000-0000-0000000000d2', 'typing@example.com', null, now()),
-  ('00000000-0000-0000-0000-0000000000d3', 'early@example.com', now(), now() - interval '2 days');
+insert into auth.users (id, email, email_confirmed_at, created_at, confirmation_sent_at) values
+  ('00000000-0000-0000-0000-00000000000a', 'olena@example.com', now(), now(), null),
+  ('00000000-0000-0000-0000-0000000000c1', 'mark@example.com', now(), now(), null),
+  ('00000000-0000-0000-0000-0000000000d1', 'gone@example.com', null, now() - interval '2 days', now() - interval '2 days'),
+  ('00000000-0000-0000-0000-0000000000d2', 'typing@example.com', null, now(), now()),
+  ('00000000-0000-0000-0000-0000000000d3', 'early@example.com', now(), now() - interval '2 days', null),
+  ('00000000-0000-0000-0000-0000000000d4', 'again@example.com', null, now() - interval '2 days', now() - interval '1 hour'),
+  ('00000000-0000-0000-0000-0000000000d5', 'master@example.com', null, now() - interval '2 days', null);
 
 insert into public.masters (id, slug, name, published_at) values
-  ('00000000-0000-0000-0000-00000000000a', 'olena', 'Olena', now());
+  ('00000000-0000-0000-0000-00000000000a', 'olena', 'Olena', now()),
+  ('00000000-0000-0000-0000-0000000000d5', 'unconfirmed-master', 'Master', null);
 
 insert into public.services (id, master_id, name, duration_minutes, buffer_minutes, price_kind, format) values
   ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-00000000000a', '{"uk": "Манікюр"}', 60, 0, 'none', 'on_site');
@@ -35,7 +38,8 @@ create function pg_temp.add(
   hold timestamptz default null,
   confirmed timestamptz default now(),
   buffer integer default 0,
-  canceller public.canceller default null
+  canceller public.canceller default null,
+  source public.appointment_source default 'client'
 )
 returns void
 language plpgsql
@@ -51,7 +55,7 @@ begin
   values (
     '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000a1',
     tstzrange(starts, starts + interval '1 hour'), buffer, status, hold, case when card is not null then confirmed end,
-    'client', 'uk', canceller, created
+    source, 'uk', canceller, created
   )
   returning id into new_id;
   insert into public.appointment_clients (appointment_id, master_id, client_card_id, unconfirmed_email, client_ip, name)
@@ -77,6 +81,8 @@ select pg_temp.add('rescheduled', 'confirmed', 18, '00000000-0000-0000-0000-0000
 select pg_temp.add('moved_later', 'confirmed', 16, '00000000-0000-0000-0000-0000000000e1', now() - interval '5 days');
 select pg_temp.add('walk_in', 'confirmed', 14, '00000000-0000-0000-0000-0000000000e2', now() - interval '3 days');
 select pg_temp.add('old_hold', 'cancelled', -30, null, now() - interval '2 days', canceller => 'system');
+select pg_temp.add('old_manual', 'cancelled', -28, null, now() - interval '2 days', canceller => 'master',
+  source => 'manual');
 select pg_temp.add('old_cancelled', 'cancelled', -26, '00000000-0000-0000-0000-0000000000e1', now() - interval '2 days',
   canceller => 'master');
 
@@ -201,9 +207,11 @@ select is_empty(
   'a day-old hold whose contact was never confirmed is deleted with its email'
 );
 
-select isnt_empty(
-  $$ select 1 from public.appointments a join booked b on b.appointment_id = a.id where b.name = 'old_cancelled' $$,
-  'an old cancelled booking with a confirmed client stays'
+select results_eq(
+  $$ select b.name from public.appointments a join booked b on b.appointment_id = a.id
+     where b.name in ('old_cancelled', 'old_manual') order by 1 $$,
+  $$ values ('old_cancelled'), ('old_manual') $$,
+  'an old cancelled booking with a confirmed client or made by the master stays'
 );
 
 select isnt_empty(
@@ -213,10 +221,11 @@ select isnt_empty(
 
 select results_eq(
   $$ select email::text from auth.users where id in (
-       '00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-0000000000d2', '00000000-0000-0000-0000-0000000000d3'
+       '00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-0000000000d2', '00000000-0000-0000-0000-0000000000d3',
+       '00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000d5'
      ) order by email $$,
-  $$ values ('early@example.com'), ('typing@example.com') $$,
-  'a user who never entered their code is deleted after a day'
+  $$ values ('again@example.com'), ('early@example.com'), ('master@example.com'), ('typing@example.com') $$,
+  'a user who never entered their code is deleted a day after the last code, unless they are a master'
 );
 
 select results_eq(
