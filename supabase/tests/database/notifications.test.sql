@@ -1,6 +1,6 @@
 begin;
 
-select plan(23);
+select plan(24);
 
 create function pg_temp.slot(hours integer)
 returns timestamptz
@@ -198,6 +198,11 @@ select results_eq(
      where c.kind in ('confirmed', 'declined', 'rescheduled_by_master', 'cancelled_by_master') $$,
   $$ values ('client', 'uk', 'mark@example.com') $$,
   'a client is written in the language of the booking'
+);
+
+select ok(
+  (select bool_and(c.recipient_id = n.recipient_id) from claimed c join private.notifications n using (id)),
+  'a claimed notification names its recipient'
 );
 
 select results_eq(

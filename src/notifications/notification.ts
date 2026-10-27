@@ -30,6 +30,7 @@ export type Notification = {
   kind: NotificationKind;
   audience: Audience;
   locale: Locale;
+  recipientId: string;
   recipientEmail: string | null;
   previousStartsAt: string | null;
   appointment: {
@@ -64,6 +65,7 @@ export function notificationFromRow(row: NotificationRow): Notification {
     ) as NotificationKind,
     audience: row.audience as Audience,
     locale: row.locale,
+    recipientId: row.recipient_id,
     recipientEmail: row.recipient_email,
     previousStartsAt: data?.previousStartsAt ?? null,
     appointment: {

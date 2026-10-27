@@ -14,6 +14,7 @@ export function testNotification(
     kind,
     audience: masterKinds.includes(kind) ? "master" : "client",
     locale: "uk",
+    recipientId: "5eed0000-0000-4000-8000-000000000012",
     recipientEmail: "mark@example.com",
     previousStartsAt: null,
     ...overrides,

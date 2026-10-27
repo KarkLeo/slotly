@@ -547,6 +547,7 @@ export type Database = {
           price_kind: Database["public"]["Enums"]["price_kind"];
           primary_locale: Database["public"]["Enums"]["locale"];
           recipient_email: string;
+          recipient_id: string;
           service_name: Json;
           starts_at: string;
           status: Database["public"]["Enums"]["appointment_status"];

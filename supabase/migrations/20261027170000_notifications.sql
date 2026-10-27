@@ -124,6 +124,7 @@ returns table (
   data jsonb,
   audience text,
   locale public.locale,
+  recipient_id uuid,
   recipient_email text,
   appointment_id uuid,
   status public.appointment_status,
@@ -170,7 +171,7 @@ as $$
         then (u.raw_user_meta_data->>'locale')::public.locale
       else m.primary_locale
     end,
-    c.address, a.id, a.status, lower(a.during), upper(a.during), a.hold_until, m.timezone, m.name, m.slug,
+    l.recipient_id, c.address, a.id, a.status, lower(a.during), upper(a.during), a.hold_until, m.timezone, m.name, m.slug,
     sv.name, m.primary_locale, sv.price_kind, sv.price, m.currency, ac.address, cc.name, a.cancel_comment
   from locked l
   join public.appointments a on a.id = l.appointment_id
