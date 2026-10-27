@@ -198,6 +198,48 @@ describe("deliverDue", () => {
     expect(deliver).not.toHaveBeenCalled();
   });
 
+  it("does not spend the cap again when retrying", async () => {
+    queue = [[testNotification("confirmed", { attempts: 2 })]];
+    await expect(deliverDue(deps)).resolves.toMatchObject({ sent: 1 });
+    expect(deps.takeRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("spends no cap on a message it cannot build", async () => {
+    vi.stubEnv("NOTIFICATION_LINK_SECRET", "");
+    queue = [[testNotification("confirmed")]];
+    await expect(deliverDue(deps)).resolves.toMatchObject({ retried: 1 });
+    expect(deps.takeRateLimit).not.toHaveBeenCalled();
+    expect(deliver).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["the master already answered", { status: "confirmed" as const }],
+    [
+      "has run out",
+      { status: "pending" as const, holdUntil: "2026-11-02T11:00:00Z" },
+    ],
+  ])(
+    "skips a decision request for a booking that %s",
+    async (_, appointment) => {
+      queue = [[testNotification("decisionNeeded", {}, appointment)]];
+      await expect(deliverDue(deps)).resolves.toMatchObject({ skipped: 1 });
+      expect(deliver).not.toHaveBeenCalled();
+    },
+  );
+
+  it("delivers a decision request while the booking waits", async () => {
+    queue = [
+      [
+        testNotification(
+          "decisionNeeded",
+          {},
+          { status: "pending", holdUntil: "2026-11-02T20:00:00Z" },
+        ),
+      ],
+    ];
+    await expect(deliverDue(deps)).resolves.toMatchObject({ sent: 1 });
+  });
+
   it("keeps claiming batches until the queue is empty", async () => {
     queue = [
       [testNotification("confirmed"), testNotification("reminder")],

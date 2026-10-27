@@ -74,19 +74,6 @@ async function deliverOne(
     return skip("No longer relevant");
   const route = pickChannel(notification, deps.channels);
   if (!route) return skip("No channel reaches the recipient");
-  if (
-    route.channel.kind === "email" &&
-    !(await deps.takeRateLimit(
-      "notifications:email:day",
-      dailyEmailCap,
-      day / 1000,
-    ))
-  ) {
-    console.error("Daily notification email cap reached", {
-      notification: notification.id,
-    });
-    return skip("Daily email cap reached");
-  }
 
   try {
     const message = notificationMessage(
@@ -94,6 +81,21 @@ async function deliverOne(
       await links(notification),
       await translator(notification.locale),
     );
+    // A retry resends an email the provider may already count, so only the first attempt spends the cap.
+    if (
+      route.channel.kind === "email" &&
+      notification.attempts === 0 &&
+      !(await deps.takeRateLimit(
+        "notifications:email:day",
+        dailyEmailCap,
+        day / 1000,
+      ))
+    ) {
+      console.error("Daily notification email cap reached", {
+        notification: notification.id,
+      });
+      return skip("Daily email cap reached");
+    }
     await route.channel.deliver(message, notification, route.address);
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
@@ -105,10 +107,16 @@ async function deliverOne(
 }
 
 function stillRelevant(notification: Notification, now: number): boolean {
-  const startsAt = new Date(notification.appointment.startsAt).getTime();
+  const { status, startsAt, holdUntil } = notification.appointment;
   if (notification.kind === "reminder")
-    return notification.appointment.status === "confirmed" && startsAt > now;
-  return startsAt > now - day;
+    return status === "confirmed" && new Date(startsAt).getTime() > now;
+  if (notification.kind === "decisionNeeded")
+    return (
+      status === "pending" &&
+      holdUntil !== null &&
+      new Date(holdUntil).getTime() > now
+    );
+  return new Date(startsAt).getTime() > now - day;
 }
 
 async function links(notification: Notification): Promise<NotificationLinks> {

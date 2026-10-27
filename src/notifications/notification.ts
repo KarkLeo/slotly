@@ -33,6 +33,7 @@ export type Notification = {
   recipientId: string;
   recipientEmail: string | null;
   previousStartsAt: string | null;
+  attempts: number;
   appointment: {
     id: string;
     status: Database["public"]["Enums"]["appointment_status"];
@@ -68,6 +69,7 @@ export function notificationFromRow(row: NotificationRow): Notification {
     recipientId: row.recipient_id,
     recipientEmail: row.recipient_email,
     previousStartsAt: data?.previousStartsAt ?? null,
+    attempts: row.attempts,
     appointment: {
       id: row.appointment_id,
       status: row.status,

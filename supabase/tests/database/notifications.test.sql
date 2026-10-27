@@ -1,6 +1,6 @@
 begin;
 
-select plan(24);
+select plan(27);
 
 create function pg_temp.slot(hours integer)
 returns timestamptz
@@ -175,6 +175,14 @@ select is(
   'a cron job retries deliveries every minute'
 );
 
+delete from vault.secrets where name = 'notifications_url';
+select vault.create_secret('not a url', 'notifications_url');
+
+select lives_ok(
+  $$ select private.enqueue_notification('reminder', (select appointment_id from booked where name = 'zoya')) $$,
+  'a broken delivery request does not undo the event that queued the notification'
+);
+
 delete from private.notifications where kind = 'reminder';
 
 -- Claiming
@@ -212,6 +220,12 @@ select results_eq(
   $$ select c.cancel_comment, c.status::text, c.service_name from claimed c where c.kind = 'declined' $$,
   $$ values ('Захворіла', 'cancelled', '{"en": "Haircut"}'::jsonb) $$,
   'a claimed notification carries the appointment it is about'
+);
+
+select is(
+  (select array_agg(distinct attempts) from claimed),
+  array[0],
+  'a claimed notification says how many deliveries failed before'
 );
 
 select ok(
@@ -270,6 +284,16 @@ select results_eq(
   $$ values ('cancelled_by_master', 'skipped', null, null::timestamptz, 'Daily email cap reached'),
             ('declined', 'sent', 'email', now(), null) $$,
   'a sent notification records its channel, a skipped one its reason'
+);
+
+set local role service_role;
+select public.finish_notification((select id from finished where kind = 'declined'), 'retry', null, 'Late answer of a stale worker');
+reset role;
+
+select results_eq(
+  $$ select n.status, n.attempts, n.last_error from private.notifications n join finished f using (id) where f.kind = 'declined' $$,
+  $$ values ('sent', 0, null::text) $$,
+  'a late outcome does not reopen a finished notification'
 );
 
 -- Privileges

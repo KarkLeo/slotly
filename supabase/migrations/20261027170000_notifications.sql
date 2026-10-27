@@ -85,6 +85,9 @@ begin
     headers := jsonb_build_object('Authorization', 'Bearer ' || secret, 'Content-Type', 'application/json'),
     timeout_milliseconds := 30000
   );
+-- A booking must not fail because its notification could not be requested; the cron job retries.
+exception when others then
+  raise warning 'Notification delivery not requested: %', sqlerrm;
 end;
 $$;
 
@@ -122,6 +125,7 @@ returns table (
   id uuid,
   kind public.notification_kind,
   data jsonb,
+  attempts integer,
   audience text,
   locale public.locale,
   recipient_id uuid,
@@ -164,7 +168,7 @@ as $$
     where n.id = due.id
     returning n.*
   )
-  select l.id, l.kind, l.data, private.notification_audience(l.kind),
+  select l.id, l.kind, l.data, l.attempts, private.notification_audience(l.kind),
     case
       when private.notification_audience(l.kind) = 'client' then a.locale
       when u.raw_user_meta_data->>'locale' = any (enum_range(null::public.locale)::text[])
@@ -215,7 +219,8 @@ begin
     channel = finish_notification.channel,
     sent_at = case when outcome = 'sent' then now() end,
     last_error = finish_notification.error
-  where n.id = finish_notification.notification_id;
+  -- A worker whose lock ran out may answer after another one finished the notification.
+  where n.id = finish_notification.notification_id and n.status = 'pending';
 end;
 $$;
 

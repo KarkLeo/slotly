@@ -531,6 +531,7 @@ export type Database = {
         Returns: {
           address: string;
           appointment_id: string;
+          attempts: number;
           audience: string;
           cancel_comment: string;
           client_name: string;

@@ -17,6 +17,7 @@ export function testNotification(
     recipientId: "5eed0000-0000-4000-8000-000000000012",
     recipientEmail: "mark@example.com",
     previousStartsAt: null,
+    attempts: 0,
     ...overrides,
     appointment: {
       id: "a1",
