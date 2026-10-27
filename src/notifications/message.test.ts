@@ -146,6 +146,7 @@ describe("notificationMessage", () => {
       links,
       await translator("uk"),
     );
+    expect(message.note).toContain("2 листопада");
     expect(message.note).toContain("18:30");
   });
 
@@ -167,6 +168,7 @@ describe("notificationMessage", () => {
       links,
       t,
     );
+    expect(waiting.note).toContain("2 листопада");
     expect(waiting.note).toContain("18:30");
     expect(confirmed.note).toBeNull();
   });

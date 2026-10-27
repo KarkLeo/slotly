@@ -1,4 +1,4 @@
-import { slotTimeLabel, zoneLabel } from "@/booking/dates";
+import { slotDateTimeLabel, zoneLabel } from "@/booking/dates";
 import { bookingRows, whenLabel, type DetailRow } from "@/emails/booking-rows";
 import type { Translate } from "@/emails/translator";
 import type { Notification } from "./notification";
@@ -95,7 +95,7 @@ export function notificationMessage(
   const waitsUntil =
     appointment.status === "pending" && appointment.holdUntil
       ? {
-          time: slotTimeLabel(
+          time: slotDateTimeLabel(
             appointment.holdUntil,
             appointment.timeZone,
             locale,
