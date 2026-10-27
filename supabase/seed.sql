@@ -107,3 +107,7 @@ begin
     ('5eed0000-0000-4000-8000-0000000000e9', daryna, '5eed0000-0000-4000-8000-0000000000d4', 'Ірина');
 end;
 $$;
+
+-- Local-only values: the database asks the dev server to deliver notifications (NOTIFICATIONS_SECRET in .env).
+select vault.create_secret('http://host.docker.internal:3000/api/notifications/deliver', 'notifications_url');
+select vault.create_secret('local-notifications-secret', 'notifications_secret');
