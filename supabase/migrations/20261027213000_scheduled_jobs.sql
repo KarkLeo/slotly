@@ -56,7 +56,7 @@ begin
         select 1 from private.notifications n
         where n.appointment_id = a.id
           and private.notification_audience(n.kind) = 'client'
-          and n.created_at > lower(a.during) - interval '24 hours'
+          and n.created_at >= lower(a.during) - interval '24 hours'
       )
   loop
     perform private.enqueue_notification('reminder', due);
@@ -85,6 +85,16 @@ as $$
       where ac.appointment_id = a.id and ac.unconfirmed_email is not null
     );
 
+  delete from cron.job_run_details d
+  where d.end_time < now() - interval '7 days';
+$$;
+
+-- A job of its own, so a change in Auth's schema cannot stop the rest of the clean-up.
+create function private.delete_unconfirmed_users()
+returns void
+language sql
+set search_path = ''
+as $$
   -- Asking for a code creates the user; one who never entered it is left behind.
   delete from auth.users u
   where u.email_confirmed_at is null
@@ -95,19 +105,18 @@ as $$
     and coalesce(u.confirmation_sent_at, u.created_at) < now() - interval '1 day'
     -- Deleting a master's user would cascade to the whole cabinet.
     and not exists (select 1 from public.masters m where m.id = u.id);
-
-  delete from cron.job_run_details d
-  where d.end_time < now() - interval '7 days';
 $$;
 
 revoke execute on function
   private.expire_holds(),
   private.complete_appointments(),
   private.enqueue_reminders(),
-  private.clean_up()
+  private.clean_up(),
+  private.delete_unconfirmed_users()
 from public;
 
 select cron.schedule('expire-holds', '* * * * *', 'select private.expire_holds()');
 select cron.schedule('complete-appointments', '* * * * *', 'select private.complete_appointments()');
 select cron.schedule('enqueue-reminders', '*/15 * * * *', 'select private.enqueue_reminders()');
 select cron.schedule('clean-up', '0 3 * * *', 'select private.clean_up()');
+select cron.schedule('delete-unconfirmed-users', '10 3 * * *', 'select private.delete_unconfirmed_users()');

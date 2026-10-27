@@ -189,6 +189,7 @@ insert into cron.job_run_details (runid, jobid, command, status, start_time, end
   (-2, null, 'select ''recent''', 'succeeded', now() - interval '6 days', now() - interval '6 days');
 
 select private.clean_up();
+select private.delete_unconfirmed_users();
 
 select results_eq(
   $$ select n.data->>'case' from private.notifications n where n.data ? 'case' order by 1 $$,
@@ -238,9 +239,11 @@ select results_eq(
 
 select results_eq(
   $$ select jobname::text, schedule::text, command from cron.job
-     where jobname in ('expire-holds', 'complete-appointments', 'enqueue-reminders', 'clean-up') order by jobname $$,
+     where jobname in ('expire-holds', 'complete-appointments', 'enqueue-reminders', 'clean-up', 'delete-unconfirmed-users')
+     order by jobname $$,
   $$ values ('clean-up', '0 3 * * *', 'select private.clean_up()'),
             ('complete-appointments', '* * * * *', 'select private.complete_appointments()'),
+            ('delete-unconfirmed-users', '10 3 * * *', 'select private.delete_unconfirmed_users()'),
             ('enqueue-reminders', '*/15 * * * *', 'select private.enqueue_reminders()'),
             ('expire-holds', '* * * * *', 'select private.expire_holds()') $$,
   'cron runs each job on its schedule'
