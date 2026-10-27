@@ -5,49 +5,16 @@ import { notificationMessage } from "./message";
 import {
   masterKinds,
   notificationKinds,
-  type Notification,
   type NotificationKind,
 } from "./notification";
+import { testNotification } from "./test-notification";
 
 const links = {
   manage: "https://slotly.example/auth/link?token=t",
   bookAgain: "https://slotly.example/olena",
 };
 
-function notification(
-  kind: NotificationKind,
-  overrides: Partial<Notification> = {},
-  appointment: Partial<Notification["appointment"]> = {},
-): Notification {
-  return {
-    id: "n1",
-    kind,
-    audience: masterKinds.includes(kind) ? "master" : "client",
-    locale: "uk",
-    recipientEmail: "mark@example.com",
-    previousStartsAt: null,
-    ...overrides,
-    appointment: {
-      id: "a1",
-      status: "confirmed",
-      startsAt: "2026-11-03T12:00:00Z",
-      endsAt: "2026-11-03T13:00:00Z",
-      holdUntil: null,
-      timeZone: "Europe/Kyiv",
-      masterName: "Olena",
-      masterSlug: "olena",
-      service: { uk: "Манікюр", en: "Manicure" },
-      primaryLocale: "uk",
-      priceKind: "fixed",
-      price: 500,
-      currency: "UAH",
-      address: null,
-      clientName: "Mark Taylor",
-      cancelComment: null,
-      ...appointment,
-    },
-  };
-}
+const notification = testNotification;
 
 const bookAgainKinds: NotificationKind[] = [
   "declined",

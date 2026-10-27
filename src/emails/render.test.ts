@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { slotDateTimeLabel, slotTimeLabel, zoneLabel } from "@/booking/dates";
 import { formatDuration, formatMoney } from "@/landing/format";
 import type { AuthEmail, BookingDetails } from "./auth-emails";
-import { renderAuthEmail } from "./render";
+import { renderAuthEmail, renderNotificationEmail } from "./render";
 
 const booking: BookingDetails = {
   master: "Olena",
@@ -104,5 +104,37 @@ describe("renderAuthEmail", () => {
     expect(email.subject).toBe("Підтвердіть новий email у Slotly");
     expect(email.html).toContain("new@example.com");
     expect(email.html).not.toContain("Код:");
+  });
+});
+
+describe("renderNotificationEmail", () => {
+  it("shows the message with its comment and every action", async () => {
+    const email = await renderNotificationEmail(
+      {
+        subject: "Запис відхилено",
+        title: "Запис відхилено",
+        intro: "Майстер не може прийняти вас у цей час.",
+        details: [{ label: "Майстер", value: "Olena" }],
+        comment: { label: "Коментар майстра", text: "Хворію <b>" },
+        actions: [
+          {
+            label: "Записатися на інший час",
+            url: "https://slotly.example/olena",
+          },
+          { label: "Керувати записом", url: "https://slotly.example/l?t=1" },
+        ],
+        note: null,
+      },
+      "mark@example.com",
+      "uk",
+    );
+    expect(email.to).toBe("mark@example.com");
+    expect(email.subject).toBe("Запис відхилено");
+    expect(email.html).toContain('lang="uk"');
+    expect(email.html).toContain("Хворію &lt;b&gt;");
+    expect(email.html).toContain('href="https://slotly.example/olena"');
+    expect(email.html).toContain('href="https://slotly.example/l?t=1"');
+    expect(email.text).toContain("Коментар майстра");
+    expect(email.text).toContain("Керувати записом");
   });
 });

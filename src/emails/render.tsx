@@ -1,6 +1,8 @@
 import { render } from "react-email";
 import { slotTimeLabel, zoneLabel } from "@/booking/dates";
-import { AuthEmailLayout, type AuthEmailProps } from "./auth-email";
+import type { Locale } from "@/i18n/locales";
+import type { NotificationMessage } from "@/notifications/message";
+import { EmailLayout, type EmailLayoutProps } from "./email-layout";
 import type { AuthEmail } from "./auth-emails";
 import { bookingRows } from "./booking-rows";
 import { translator, type Translate } from "./translator";
@@ -17,9 +19,25 @@ export async function renderAuthEmail(
 ): Promise<RenderedEmail> {
   const t = await translator(email.locale);
   const { subject, ...props } = content(email, t);
-  const element = <AuthEmailLayout locale={email.locale} {...props} />;
+  const element = <EmailLayout locale={email.locale} {...props} />;
   return {
     to: email.to,
+    subject,
+    html: await render(element),
+    text: await render(element, { plainText: true }),
+  };
+}
+
+export async function renderNotificationEmail(
+  { subject, ...message }: NotificationMessage,
+  to: string,
+  locale: Locale,
+): Promise<RenderedEmail> {
+  const element = (
+    <EmailLayout locale={locale} preview={null} code={null} {...message} />
+  );
+  return {
+    to,
     subject,
     html: await render(element),
     text: await render(element, { plainText: true }),
@@ -29,7 +47,7 @@ export async function renderAuthEmail(
 function content(
   email: AuthEmail,
   t: Translate,
-): Omit<AuthEmailProps, "locale"> & { subject: string } {
+): Omit<EmailLayoutProps, "locale"> & { subject: string } {
   switch (email.kind) {
     case "signIn":
     case "signUp":
@@ -39,8 +57,8 @@ function content(
         title: t(`${email.kind}.title`),
         intro: t(`${email.kind}.intro`),
         details: [],
-        button: t(`${email.kind}.button`),
-        link: email.link,
+        comment: null,
+        actions: [{ label: t(`${email.kind}.button`), url: email.link }],
         code: email.code,
         note: t(`${email.kind}.note`),
       };
@@ -51,8 +69,8 @@ function content(
         title: t("booking.title"),
         intro: t("booking.intro"),
         details: bookingRows(email.booking, email.locale, t),
-        button: t("booking.button"),
-        link: email.link,
+        comment: null,
+        actions: [{ label: t("booking.button"), url: email.link }],
         code: email.code,
         note: t("booking.note", {
           time: slotTimeLabel(
@@ -71,8 +89,8 @@ function content(
         title: t(`${email.kind}.title`),
         intro: t(`${email.kind}.intro`, { email: email.newEmail }),
         details: [],
-        button: t(`${email.kind}.button`),
-        link: email.link,
+        comment: null,
+        actions: [{ label: t(`${email.kind}.button`), url: email.link }],
         code: null,
         note: t(`${email.kind}.note`),
       };

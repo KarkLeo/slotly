@@ -55,6 +55,17 @@ export const styles = {
     lineHeight: "22px",
     fontWeight: 600,
   },
+  comment: {
+    margin: "0 0 24px",
+    padding: "0 0 0 12px",
+    borderLeft: `3px solid ${color.border}`,
+  },
+  commentText: {
+    margin: 0,
+    fontSize: "15px",
+    lineHeight: "22px",
+    fontStyle: "italic",
+  },
   button: {
     display: "inline-block",
     padding: "12px 24px",
@@ -65,6 +76,8 @@ export const styles = {
     fontWeight: 700,
     textDecoration: "none",
   },
+  secondaryAction: { margin: "16px 0 0", fontSize: "15px", lineHeight: "22px" },
+  link: { color: color.primary, fontWeight: 700, textDecoration: "underline" },
   code: {
     margin: "24px 0",
     fontFamily: "'Courier New', monospace",

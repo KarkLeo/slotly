@@ -5,6 +5,7 @@ import {
   Head,
   Heading,
   Html,
+  Link,
   Preview,
   Section,
   Text,
@@ -12,29 +13,31 @@ import {
 import type { Locale } from "@/i18n/locales";
 import { styles } from "./styles";
 
-export type AuthEmailProps = {
+export type EmailLayoutProps = {
   locale: Locale;
   preview: string | null;
   title: string;
   intro: string;
   details: { label: string; value: string }[];
-  button: string;
-  link: string;
+  comment: { label: string; text: string } | null;
+  // The first action is the button, the rest are plain links under it.
+  actions: { label: string; url: string }[];
   code: string | null;
-  note: string;
+  note: string | null;
 };
 
-export function AuthEmailLayout({
+export function EmailLayout({
   locale,
   preview,
   title,
   intro,
   details,
-  button,
-  link,
+  comment,
+  actions,
   code,
   note,
-}: AuthEmailProps) {
+}: EmailLayoutProps) {
+  const [button, ...links] = actions;
   return (
     <Html lang={locale}>
       <Head>
@@ -58,11 +61,26 @@ export function AuthEmailLayout({
               ))}
             </Section>
           )}
-          <Button href={link} style={styles.button}>
-            {button}
-          </Button>
+          {comment && (
+            <Section style={styles.comment}>
+              <Text style={styles.label}>{comment.label}</Text>
+              <Text style={styles.commentText}>{comment.text}</Text>
+            </Section>
+          )}
+          {button && (
+            <Button href={button.url} style={styles.button}>
+              {button.label}
+            </Button>
+          )}
+          {links.map((link) => (
+            <Text key={link.url} style={styles.secondaryAction}>
+              <Link href={link.url} style={styles.link}>
+                {link.label}
+              </Link>
+            </Text>
+          ))}
           {code && <Text style={styles.code}>{code}</Text>}
-          <Text style={styles.note}>{note}</Text>
+          {note && <Text style={styles.note}>{note}</Text>}
         </Container>
       </Body>
     </Html>
