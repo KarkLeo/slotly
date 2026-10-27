@@ -21,6 +21,9 @@ grant execute on function pg_temp.slot(integer), pg_temp.act_as(uuid) to service
 
 -- Deliveries are requested only once Vault knows where to send them.
 delete from vault.secrets where name in ('notifications_url', 'notifications_secret');
+-- A database used by the dev server already has queued notifications and requests.
+delete from private.notifications;
+delete from net.http_request_queue;
 
 insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000000a', 'olena@example.com', now(), '{"locale": "ru"}'),
