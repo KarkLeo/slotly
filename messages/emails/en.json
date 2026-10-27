@@ -42,5 +42,66 @@
     "intro": "Your Slotly account asked to change its address to {email}. If this was you, click the button.",
     "button": "Confirm change",
     "note": "The link is valid for 1 hour. If this was not you, do nothing and your address stays the same."
+  },
+  "notifications": {
+    "manage": "Manage booking",
+    "bookAgain": "Book another time",
+    "openCabinet": "Open in your account",
+    "client": "Client",
+    "previously": "Previously",
+    "masterComment": "Comment from the master",
+    "clientComment": "Comment from the client",
+    "decisionNeeded": {
+      "subject": "New booking: {client}",
+      "title": "A new booking waits for your decision",
+      "intro": "You have a new booking. Confirm or decline it in your account.",
+      "note": "If you do not answer by {time} ({zone}), the booking is cancelled automatically."
+    },
+    "confirmed": {
+      "subject": "Your booking is confirmed",
+      "title": "Booking confirmed",
+      "intro": "The master confirmed your booking. See you!"
+    },
+    "declined": {
+      "subject": "Your booking was declined",
+      "title": "Booking declined",
+      "intro": "The master cannot see you at this time. You can pick another time on the master's page."
+    },
+    "cancelledByMaster": {
+      "subject": "Your booking was cancelled",
+      "title": "Booking cancelled",
+      "intro": "The master cancelled your booking. You can pick another time on the master's page."
+    },
+    "cancelledByClient": {
+      "subject": "Booking cancelled: {client}",
+      "title": "A client cancelled a booking",
+      "intro": "The client cancelled the booking, so this time is free again."
+    },
+    "rescheduledByMaster": {
+      "subject": "Your booking was moved",
+      "title": "Booking moved",
+      "intro": "The master moved your booking to another time."
+    },
+    "rescheduledByClient": {
+      "subject": "Booking moved: {client}",
+      "title": "A client moved a booking",
+      "intro": "The client moved the booking to another time.",
+      "note": "The new time waits for your decision until {time} ({zone})."
+    },
+    "masterDidNotRespond": {
+      "subject": "Your booking was cancelled",
+      "title": "The master did not respond in time",
+      "intro": "The master did not answer your booking in time, so it was cancelled. You can pick another time on the master's page."
+    },
+    "bookedByMaster": {
+      "subject": "You have a booking",
+      "title": "You have a booking",
+      "intro": "The master booked you in."
+    },
+    "reminder": {
+      "subject": "Reminder: your booking is tomorrow",
+      "title": "See you tomorrow",
+      "intro": "A reminder about your booking."
+    }
   }
 }

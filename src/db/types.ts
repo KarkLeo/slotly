@@ -526,8 +526,46 @@ export type Database = {
           status: Database["public"]["Enums"]["appointment_status"];
         }[];
       };
+      claim_due_notifications: {
+        Args: { max_count: number };
+        Returns: {
+          address: string;
+          appointment_id: string;
+          attempts: number;
+          audience: string;
+          cancel_comment: string;
+          client_name: string;
+          currency: string;
+          data: Json;
+          ends_at: string;
+          hold_until: string;
+          id: string;
+          kind: Database["public"]["Enums"]["notification_kind"];
+          locale: Database["public"]["Enums"]["locale"];
+          master_name: string;
+          master_slug: string;
+          price: number;
+          price_kind: Database["public"]["Enums"]["price_kind"];
+          primary_locale: Database["public"]["Enums"]["locale"];
+          recipient_email: string;
+          recipient_id: string;
+          service_name: Json;
+          starts_at: string;
+          status: Database["public"]["Enums"]["appointment_status"];
+          time_zone: string;
+        }[];
+      };
       confirm_appointment: {
         Args: { appointment_id: string };
+        Returns: undefined;
+      };
+      finish_notification: {
+        Args: {
+          channel?: Database["public"]["Enums"]["contact_channel"];
+          error?: string;
+          notification_id: string;
+          outcome: string;
+        };
         Returns: undefined;
       };
       get_available_days: {
@@ -574,6 +612,17 @@ export type Database = {
       canceller: "client" | "master" | "system";
       contact_channel: "email" | "telegram";
       locale: "uk" | "ru" | "en";
+      notification_kind:
+        | "decision_needed"
+        | "confirmed"
+        | "declined"
+        | "cancelled_by_master"
+        | "cancelled_by_client"
+        | "rescheduled_by_master"
+        | "rescheduled_by_client"
+        | "master_did_not_respond"
+        | "booked_by_master"
+        | "reminder";
       price_kind: "fixed" | "from" | "none";
       service_format: "on_site" | "online" | "at_client";
     };
@@ -720,6 +769,18 @@ export const Constants = {
       canceller: ["client", "master", "system"],
       contact_channel: ["email", "telegram"],
       locale: ["uk", "ru", "en"],
+      notification_kind: [
+        "decision_needed",
+        "confirmed",
+        "declined",
+        "cancelled_by_master",
+        "cancelled_by_client",
+        "rescheduled_by_master",
+        "rescheduled_by_client",
+        "master_did_not_respond",
+        "booked_by_master",
+        "reminder",
+      ],
       price_kind: ["fixed", "from", "none"],
       service_format: ["on_site", "online", "at_client"],
     },
