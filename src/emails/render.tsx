@@ -1,12 +1,9 @@
-import { createTranslator } from "next-intl";
 import { render } from "react-email";
-import { slotDateTimeLabel, slotTimeLabel, zoneLabel } from "@/booking/dates";
-import type { Locale } from "@/i18n/locales";
-import { formatDuration, formatMoney } from "@/landing/format";
-import { localize } from "@/landing/localize";
+import { slotTimeLabel, zoneLabel } from "@/booking/dates";
 import { AuthEmailLayout, type AuthEmailProps } from "./auth-email";
-import type { AuthEmail, BookingDetails } from "./auth-emails";
-import type messages from "../../messages/emails/en.json";
+import type { AuthEmail } from "./auth-emails";
+import { bookingRows } from "./booking-rows";
+import { translator, type Translate } from "./translator";
 
 export type RenderedEmail = {
   to: string;
@@ -14,15 +11,6 @@ export type RenderedEmail = {
   html: string;
   text: string;
 };
-
-type Translate = ReturnType<typeof createTranslator<typeof messages>>;
-
-async function translator(locale: Locale): Promise<Translate> {
-  const { default: dictionary } = (await import(
-    `../../messages/emails/${locale}.json`
-  )) as { default: typeof messages };
-  return createTranslator({ locale, messages: dictionary });
-}
 
 export async function renderAuthEmail(
   email: AuthEmail,
@@ -62,7 +50,7 @@ function content(
         preview: t("preview", { code: email.code }),
         title: t("booking.title"),
         intro: t("booking.intro"),
-        details: bookingDetails(email.booking, email.locale, t),
+        details: bookingRows(email.booking, email.locale, t),
         button: t("booking.button"),
         link: email.link,
         code: email.code,
@@ -89,48 +77,4 @@ function content(
         note: t(`${email.kind}.note`),
       };
   }
-}
-
-function bookingDetails(
-  booking: BookingDetails,
-  locale: Locale,
-  t: Translate,
-): AuthEmailProps["details"] {
-  const minutes =
-    (new Date(booking.endsAt).getTime() -
-      new Date(booking.startsAt).getTime()) /
-    60_000;
-  const price =
-    booking.price === null || booking.priceKind === "none"
-      ? null
-      : formatMoney(booking.price, booking.currency, locale);
-  return [
-    { label: t("booking.master"), value: booking.master },
-    {
-      label: t("booking.service"),
-      value: localize(booking.service, locale, booking.primaryLocale),
-    },
-    {
-      label: t("booking.when"),
-      value: t("booking.whenValue", {
-        date: slotDateTimeLabel(booking.startsAt, booking.timeZone, locale),
-        zone: zoneLabel(booking.timeZone, locale),
-      }),
-    },
-    { label: t("booking.duration"), value: formatDuration(minutes, locale) },
-    ...(price
-      ? [
-          {
-            label: t("booking.price"),
-            value:
-              booking.priceKind === "from"
-                ? t("booking.priceFrom", { price })
-                : price,
-          },
-        ]
-      : []),
-    ...(booking.address
-      ? [{ label: t("booking.address"), value: booking.address }]
-      : []),
-  ];
 }
