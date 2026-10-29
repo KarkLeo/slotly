@@ -29,10 +29,7 @@
     }
   },
   "Cabinet": {
-    "title": "Кабинет",
-    "signedInAs": "Вы вошли как {email}",
-    "signOut": "Выйти",
-    "myBookings": "Мои записи"
+    "signOut": "Выйти"
   },
   "OAuthConsent": {
     "title": "Подключить {client} к Slotly?",
@@ -148,6 +145,7 @@
   "MyBookings": {
     "title": "Мои <accent>записи</accent>",
     "menu": "Меню",
+    "masterCabinet": "Кабинет мастера",
     "home": "Slotly — мои записи",
     "upcoming": "Актуальные",
     "history": "История",

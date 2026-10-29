@@ -29,10 +29,7 @@
     }
   },
   "Cabinet": {
-    "title": "Dashboard",
-    "signedInAs": "Signed in as {email}",
-    "signOut": "Sign out",
-    "myBookings": "My bookings"
+    "signOut": "Sign out"
   },
   "OAuthConsent": {
     "title": "Connect {client} to Slotly?",
@@ -148,6 +145,7 @@
   "MyBookings": {
     "title": "My <accent>bookings</accent>",
     "menu": "Menu",
+    "masterCabinet": "Master cabinet",
     "home": "Slotly — my bookings",
     "upcoming": "Upcoming",
     "history": "History",
