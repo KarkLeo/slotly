@@ -189,6 +189,26 @@
     "toList": "To my bookings"
   },
   "MasterCabinet": {
-    "offline": "No connection. Changes are unavailable."
+    "offline": "No connection. Changes are unavailable.",
+    "navigation": "Cabinet sections",
+    "more": "More",
+    "back": "Back",
+    "clientRole": "My bookings as a client",
+    "add": {
+      "title": "Create",
+      "booking": "Book a client",
+      "block": "Block time"
+    },
+    "sections": {
+      "today": "Today",
+      "calendar": "Calendar",
+      "clients": "Clients",
+      "appointments": "Appointments",
+      "services": "Services",
+      "schedule": "Schedule",
+      "landing": "Landing",
+      "agents": "Agents",
+      "settings": "Settings"
+    }
   }
 }
