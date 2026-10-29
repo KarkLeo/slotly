@@ -187,5 +187,8 @@
     "notFoundTitle": "Booking <accent>not found</accent>",
     "notFoundText": "It may no longer exist or belong to another user.",
     "toList": "To my bookings"
+  },
+  "MasterCabinet": {
+    "offline": "No connection. Changes are unavailable."
   }
 }
