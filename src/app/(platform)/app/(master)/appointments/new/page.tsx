@@ -5,11 +5,5 @@ import { getTheme } from "@/theme/server";
 export default async function Page() {
   const [user, theme] = await Promise.all([requireMaster(), getTheme()]);
 
-  return (
-    <SectionStub
-      section="newBooking"
-      theme={theme}
-      email={user.email ?? null}
-    />
-  );
+  return <SectionStub section="newBooking" theme={theme} email={user.email} />;
 }

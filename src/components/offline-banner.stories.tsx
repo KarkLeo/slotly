@@ -37,7 +37,7 @@ export const Online: Story = {
     return restoreOnLine;
   },
   play: async ({ canvas }) => {
-    await expect(canvas.queryByRole("status")).toBeNull();
+    await expect(canvas.getByRole("status")).toBeEmptyDOMElement();
   },
 };
 
@@ -51,7 +51,9 @@ export const Offline: Story = {
     await expect(canvas.getByRole("status")).toHaveTextContent(t.offline);
     stubOnLine(true);
     window.dispatchEvent(new Event("online"));
-    await waitFor(() => expect(canvas.queryByRole("status")).toBeNull());
+    await waitFor(() =>
+      expect(canvas.getByRole("status")).toBeEmptyDOMElement(),
+    );
   },
 };
 

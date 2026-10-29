@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { SignOutForm } from "@/auth/sign-out-form";
+import { buttonVariants } from "@/components/ui/button";
 import { LocaleSwitcher } from "@/i18n/locale-switcher";
 import type { Theme } from "@/theme/theme";
 import { ThemeSwitcher } from "@/theme/theme-switcher";
@@ -22,7 +23,7 @@ export function AccountControls({
       <ThemeSwitcher theme={theme} />
       <Link
         href="/app/bookings"
-        className="rounded-lg text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+        className={buttonVariants({ variant: "outline" })}
       >
         {t("clientRole")}
       </Link>

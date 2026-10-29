@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import type { ReactNode } from "react";
 import { OfflineBanner } from "@/components/offline-banner";
 import { useOnline } from "@/lib/use-online";
@@ -24,7 +25,11 @@ export function MasterShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <OfflineBanner />
         <main
-          className={`flex flex-1 flex-col px-4 pt-4 lg:px-8 lg:pt-8 ${bottomBarSpace} ${online ? "" : "opacity-60"}`}
+          className={cn(
+            "flex flex-1 flex-col px-4 pt-4 lg:px-8 lg:pt-8",
+            bottomBarSpace,
+            !online && "opacity-60",
+          )}
         >
           {children}
         </main>

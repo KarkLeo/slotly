@@ -57,6 +57,10 @@ export const Phone: Story = {
   },
 };
 
+export const PhoneRussian: Story = { ...Phone, globals: { locale: "ru" } };
+
+export const PhoneEnglish: Story = { ...Phone, globals: { locale: "en" } };
+
 export const Desktop: Story = {
   globals: { viewport: { value: "desktop1280" } },
   play: async ({ canvas, canvasElement, globals }) => {
@@ -80,7 +84,14 @@ export const Offline: Story = {
   },
   play: async ({ canvas, globals }) => {
     const t = textsOf(globals.locale);
-    await expect(canvas.getByRole("status")).toHaveTextContent(t.offline);
+    const status = canvas.getByRole("status");
+    await expect(status).toHaveTextContent(t.offline);
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    await waitFor(() => {
+      const { top, bottom } = status.getBoundingClientRect();
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(bottom).toBeLessThanOrEqual(window.innerHeight);
+    });
     await waitFor(() =>
       expect(
         Number(getComputedStyle(canvas.getByRole("main")).opacity),

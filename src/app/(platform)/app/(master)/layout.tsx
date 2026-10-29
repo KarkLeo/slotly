@@ -6,7 +6,7 @@ export default async function MasterLayout({ children }: LayoutProps<"/app">) {
   const [user, theme] = await Promise.all([requireMaster(), getTheme()]);
 
   return (
-    <MasterShell theme={theme} email={user.email ?? null}>
+    <MasterShell theme={theme} email={user.email}>
       {children}
     </MasterShell>
   );

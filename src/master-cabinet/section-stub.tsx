@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  CalendarOffIcon,
-  CalendarPlusIcon,
-  type LucideIcon,
-} from "lucide-react";
+import { CalendarPlusIcon, LockIcon, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { accent } from "@/components/accent";
@@ -33,8 +29,7 @@ export function SectionStub({
   const t = useTranslations("MasterCabinet");
   const found = sections.find((s) => s.key === section);
   const Icon: LucideIcon =
-    found?.icon ??
-    (section === "newBlock" ? CalendarOffIcon : CalendarPlusIcon);
+    found?.icon ?? (section === "newBlock" ? LockIcon : CalendarPlusIcon);
   const title = found
     ? t(`sections.${found.key}`)
     : t(section === "newBlock" ? "add.block" : "add.booking");

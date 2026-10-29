@@ -6,10 +6,6 @@ export default async function Page() {
   const [user, theme] = await Promise.all([requireMaster(), getTheme()]);
 
   return (
-    <SectionStub
-      section="appointments"
-      theme={theme}
-      email={user.email ?? null}
-    />
+    <SectionStub section="appointments" theme={theme} email={user.email} />
   );
 }
