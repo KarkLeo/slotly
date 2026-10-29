@@ -15,6 +15,8 @@ import "../src/app/globals.css";
 
 sb.mock(import("../src/auth/actions.ts"));
 sb.mock(import("../src/auth/oauth-actions.ts"));
+sb.mock(import("../src/client-cabinet/actions.ts"));
+sb.mock(import("../src/client-cabinet/reschedule-api.ts"));
 sb.mock(import("../src/i18n/actions.ts"));
 sb.mock(import("../src/landing/booking-actions.ts"));
 sb.mock(import("../src/landing/booking-api.ts"));

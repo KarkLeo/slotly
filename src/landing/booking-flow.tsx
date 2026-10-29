@@ -1,22 +1,12 @@
 "use client";
 
-import { ClockIcon, TriangleAlertIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DateStrip } from "@/booking/date-strip";
-import {
-  cancelDeadline,
-  groupSlots,
-  nearbySlots,
-  slotDateTimeLabel,
-  slotTimeLabel,
-  zoneLabel,
-} from "@/booking/dates";
-import { SlotGrid } from "@/booking/slot-grid";
+import { cancelDeadline, slotDateTimeLabel } from "@/booking/dates";
+import { SlotPicker } from "@/booking/slot-picker";
 import { useAvailability } from "@/booking/use-availability";
-import { accent } from "@/components/accent";
+import { bookingPath } from "@/client-cabinet/view";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { ActionToast } from "@/toasts/toast";
 import { useActionToast } from "@/toasts/use-action-toast";
 import { unexpectedToast } from "@/toasts/with-unexpected-toast";
@@ -38,7 +28,11 @@ type Screen =
       resendAt: number;
       invalid?: boolean;
     }
-  | { kind: "done"; status: "confirmed" | "awaitingMaster" }
+  | {
+      kind: "done";
+      status: "confirmed" | "awaitingMaster";
+      appointmentId: string;
+    }
   | { kind: "expired" }
   | { kind: "failed" };
 
@@ -55,7 +49,6 @@ export function BookingFlow({
   horizonDays: number;
   cancelDeadlineMinutes: number;
 }) {
-  const t = useTranslations("SlotPicker");
   const tl = useTranslations("Landing");
   const locale = useLocale();
   const fetchDays = useCallback(
@@ -72,7 +65,7 @@ export function BookingFlow({
     fetchDays,
     fetchSlots,
   });
-  const { dates, nearest, selectedDate, slots, selectedSlot } = availability;
+  const { selectedSlot } = availability;
   const [screen, setScreen] = useState<Screen | null>(null);
   const [slot, setSlot] = useState<string | null>(null);
   const [values, setValues] = useState<ContactValues>();
@@ -197,7 +190,11 @@ export function BookingFlow({
         } else {
           held.current = null;
           setToast(result.toast);
-          setScreen({ kind: "done", status: result.status });
+          setScreen({
+            kind: "done",
+            status: result.status,
+            appointmentId: current.appointmentId,
+          });
         }
       },
     );
@@ -253,115 +250,16 @@ export function BookingFlow({
   const deadline = slot
     ? cancelDeadline(slot, cancelDeadlineMinutes, new Date())
     : null;
-  const noFreeTime =
-    dates.status === "ready" && !dates.value.some((d) => d.available);
 
   return (
     <>
-      {dates.status === "loading" && (
-        <div role="status" className="flex flex-col gap-3">
-          <span className="sr-only">{t("loading")}</span>
-          <Skeleton className="h-6 w-40" />
-          <div className="flex gap-1.5">
-            {Array.from({ length: 7 }, (_, i) => (
-              <Skeleton key={i} className="h-15 w-12 rounded-xl" />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {dates.status === "error" && (
-        <LoadError onRetry={availability.retryDates} />
-      )}
-
-      {noFreeTime && (
-        <div className="flex flex-col items-center gap-2 rounded-xl bg-card px-4 py-8 text-center">
-          <h3 className="text-xl font-extrabold tracking-[-0.02em]">
-            {t.rich("noSlotsTitle", { accent })}
-          </h3>
-          <p className="text-sm text-muted-foreground">{t("noSlotsText")}</p>
-        </div>
-      )}
-
-      {dates.status === "ready" && !noFreeTime && (
-        <>
-          <section aria-labelledby="date-title" className="flex flex-col gap-3">
-            <h3
-              id="date-title"
-              className="text-xl font-extrabold tracking-[-0.02em]"
-            >
-              {t.rich("chooseDate", { accent })}
-            </h3>
-            {nearest && (
-              <button
-                type="button"
-                onClick={availability.pickNearest}
-                className="flex min-h-11 items-center gap-2 rounded-xl border border-input px-3 py-2 text-left text-sm transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                <ClockIcon
-                  aria-hidden
-                  className="size-4 shrink-0 text-primary"
-                />
-                <span>
-                  <span className="text-muted-foreground">{t("nearest")}</span>{" "}
-                  <span className="font-semibold">
-                    {slotDateTimeLabel(nearest, timeZone, locale)}
-                  </span>
-                </span>
-              </button>
-            )}
-            <DateStrip
-              dates={dates.value}
-              selected={selectedDate}
-              onSelect={selectDate}
-            />
-          </section>
-
-          <section aria-labelledby="time-title" className="flex flex-col gap-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <h3
-                id="time-title"
-                className="text-xl font-extrabold tracking-[-0.02em]"
-              >
-                {t.rich("chooseTime", { accent })}
-              </h3>
-              <span className="text-sm text-muted-foreground">
-                {t("timeZone", { zone: zoneLabel(timeZone, locale) })}
-              </span>
-            </div>
-            {taken && slots?.status === "ready" && (
-              <SlotTaken
-                time={slotTimeLabel(taken, timeZone, locale)}
-                nearby={nearbySlots(slots.value, taken).map((value) =>
-                  slotTimeLabel(value, timeZone, locale),
-                )}
-              />
-            )}
-            {!slots && (
-              <p className="text-sm text-muted-foreground">{t("pickDate")}</p>
-            )}
-            {slots?.status === "loading" && (
-              <div role="status" className="grid grid-cols-4 gap-2">
-                <span className="sr-only">{t("loading")}</span>
-                {Array.from({ length: 8 }, (_, i) => (
-                  <Skeleton key={i} className="h-11 rounded-xl" />
-                ))}
-              </div>
-            )}
-            {slots?.status === "error" && (
-              <LoadError onRetry={availability.retrySlots} />
-            )}
-            {slots?.status === "ready" && (
-              <SlotGrid
-                groups={groupSlots(slots.value, timeZone, locale)}
-                selected={selectedSlot}
-                onSelect={selectSlot}
-                label={t.markup("chooseTime", { accent: (chunks) => chunks })}
-              />
-            )}
-          </section>
-        </>
-      )}
+      <SlotPicker
+        availability={availability}
+        timeZone={timeZone}
+        taken={taken}
+        onSelectDate={selectDate}
+        onSelectSlot={selectSlot}
+      />
 
       <div className="sticky bottom-0 -mx-4 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
         <div className="flex items-center gap-3">
@@ -423,6 +321,7 @@ export function BookingFlow({
           {screen.kind === "done" && (
             <BookingDone
               status={screen.status}
+              bookingHref={bookingPath(screen.appointmentId)}
               summary={summary}
               cancelUntil={
                 deadline && slotDateTimeLabel(deadline, timeZone, locale)
@@ -445,40 +344,5 @@ export function BookingFlow({
         </BookingDialog>
       )}
     </>
-  );
-}
-
-function SlotTaken({ time, nearby }: { time: string; nearby: string[] }) {
-  const t = useTranslations("SlotPicker");
-  const locale = useLocale();
-  return (
-    <p role="alert" className="flex gap-2 rounded-xl bg-card p-3 text-sm">
-      <TriangleAlertIcon
-        aria-hidden
-        className="mt-0.5 size-4 shrink-0 text-warning"
-      />
-      <span>
-        {nearby.length > 0
-          ? t("slotTakenNearby", {
-              time,
-              nearby: new Intl.ListFormat(locale, {
-                type: "conjunction",
-              }).format(nearby),
-            })
-          : t("slotTaken", { time })}
-      </span>
-    </p>
-  );
-}
-
-function LoadError({ onRetry }: { onRetry: () => void }) {
-  const t = useTranslations("SlotPicker");
-  return (
-    <div role="alert" className="flex flex-col items-start gap-2">
-      <p className="text-sm">{t("loadError")}</p>
-      <Button variant="outline" size="sm" onClick={onRetry}>
-        {t("retry")}
-      </Button>
-    </div>
   );
 }

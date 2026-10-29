@@ -11,6 +11,8 @@ export type AvailabilitySource = {
   fetchSlots: (day: string) => Promise<string[]>;
 };
 
+export type Availability = ReturnType<typeof useAvailability>;
+
 // Free dates for the horizon, the nearest free slot, and the slots of the chosen date.
 export function useAvailability({
   timeZone,

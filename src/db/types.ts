@@ -590,11 +590,40 @@ export type Database = {
         };
         Returns: string[];
       };
+      get_my_bookings: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          address: string;
+          appointment_id: string;
+          auto_confirm: boolean;
+          can_reschedule: boolean;
+          change_until: string;
+          currency: string;
+          ends_at: string;
+          format: Database["public"]["Enums"]["service_format"];
+          hold_until: string;
+          horizon_days: number;
+          master_name: string;
+          master_slug: string;
+          price: number;
+          price_kind: Database["public"]["Enums"]["price_kind"];
+          primary_locale: Database["public"]["Enums"]["locale"];
+          service_id: string;
+          service_name: Json;
+          starts_at: string;
+          status: Database["public"]["Enums"]["appointment_status"];
+          time_zone: string;
+        }[];
+      };
       health: { Args: Record<PropertyKey, never>; Returns: string };
       release_booking: { Args: { appointment_id: string }; Returns: undefined };
       reschedule_appointment: {
         Args: { appointment_id: string; starts_at: string };
         Returns: undefined;
+      };
+      reschedule_booking: {
+        Args: { appointment_id: string; starts_at: string };
+        Returns: Database["public"]["Enums"]["appointment_status"];
       };
       set_no_show: {
         Args: { appointment_id: string; no_show: boolean };

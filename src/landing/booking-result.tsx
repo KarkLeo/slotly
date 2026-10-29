@@ -1,9 +1,10 @@
 "use client";
 
-import { ClockIcon } from "lucide-react";
+import { CalendarPlusIcon, ClockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { accent } from "@/components/accent";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   BookingSummary,
   BookingTitle,
@@ -12,11 +13,13 @@ import {
 
 export function BookingDone({
   status,
+  bookingHref,
   summary,
   cancelUntil,
   onClose,
 }: {
   status: "confirmed" | "awaitingMaster";
+  bookingHref: string;
   summary: BookingSummaryView;
   cancelUntil: string | null;
   onClose: () => void;
@@ -44,9 +47,27 @@ export function BookingDone({
           ? t("cancelUntil", { date: cancelUntil })
           : t("cancelClosed")}
       </p>
+      <a
+        href={`${bookingHref}/calendar`}
+        download
+        className={buttonVariants({ variant: "outline" })}
+      >
+        <CalendarPlusIcon aria-hidden />
+        {t("addToCalendar")}
+      </a>
       <Button size="lg" onClick={onClose}>
         {t("close")}
       </Button>
+      <Link
+        href="/app/bookings"
+        prefetch={false}
+        className={buttonVariants({
+          variant: "link",
+          className: "self-center",
+        })}
+      >
+        {t("myBookings")}
+      </Link>
     </>
   );
 }

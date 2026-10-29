@@ -97,8 +97,10 @@ describe("link tokens", () => {
     );
   });
 
-  it("lead to the account until booking pages exist", () => {
-    expect(bookingPath("client", appointmentId)).toBe("/app");
+  it("lead a client to the booking and a master to the cabinet", () => {
+    expect(bookingPath("client", appointmentId)).toBe(
+      `/app/bookings/${appointmentId}`,
+    );
     expect(bookingPath("master", appointmentId)).toBe("/app");
   });
 });

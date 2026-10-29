@@ -1,5 +1,6 @@
 import "server-only";
 import { jwtVerify, SignJWT } from "jose";
+import { bookingPath as clientBookingPath } from "@/client-cabinet/view";
 import { siteUrl } from "@/lib/site-url";
 import type { Audience } from "./notification";
 
@@ -61,9 +62,7 @@ export function linkUrl(token: string): string {
   return `${siteUrl()}/auth/link?token=${encodeURIComponent(token)}`;
 }
 
-// SLT-21 and the master's account will open the booking itself.
+// Masters land in the cabinet until it can open a booking itself.
 export function bookingPath(audience: Audience, appointmentId: string): string {
-  void audience;
-  void appointmentId;
-  return "/app";
+  return audience === "client" ? clientBookingPath(appointmentId) : "/app";
 }
