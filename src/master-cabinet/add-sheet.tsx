@@ -3,11 +3,10 @@
 import { CalendarPlusIcon, LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import {
   Sheet,
   SheetBody,
-  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -20,9 +19,10 @@ const linkClass =
 
 export function AddSheet({ trigger }: { trigger: ReactElement }) {
   const t = useTranslations("MasterCabinet");
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger render={trigger} />
       <SheetContent side="bottom">
         <SheetHeader>
@@ -31,21 +31,25 @@ export function AddSheet({ trigger }: { trigger: ReactElement }) {
           </SheetTitle>
         </SheetHeader>
         <SheetBody className="flex flex-col gap-1 pb-2">
-          <SheetClose
-            render={<Link href={newBookingHref} className={linkClass} />}
+          <Link
+            href={newBookingHref}
+            onClick={() => setOpen(false)}
+            className={linkClass}
           >
             <CalendarPlusIcon
               aria-hidden
               className="size-5 text-muted-foreground"
             />
             {t("add.booking")}
-          </SheetClose>
-          <SheetClose
-            render={<Link href={newBlockHref} className={linkClass} />}
+          </Link>
+          <Link
+            href={newBlockHref}
+            onClick={() => setOpen(false)}
+            className={linkClass}
           >
             <LockIcon aria-hidden className="size-5 text-muted-foreground" />
             {t("add.block")}
-          </SheetClose>
+          </Link>
         </SheetBody>
       </SheetContent>
     </Sheet>

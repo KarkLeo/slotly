@@ -4,6 +4,7 @@ import {
   expect,
   mocked,
   screen,
+  spyOn,
   userEvent,
   waitFor,
   within,
@@ -12,7 +13,7 @@ import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
 import { Button } from "@/components/ui/button";
-import { overflowsX } from "@/components/ui/story-helpers";
+import { boxWidth, overflowsX } from "@/components/ui/story-helpers";
 import { isLocale, type Locale } from "@/i18n/locales";
 import { MoreSheet } from "./more-sheet";
 import { sections } from "./sections";
@@ -43,6 +44,7 @@ type Story = StoryObj<typeof meta>;
 export const Open: Story = {
   play: async ({ canvas, args, globals }) => {
     const t = dictionaryOf(globals.locale);
+    const consoleError = spyOn(console, "error");
     await userEvent.click(canvas.getByRole("button", { name: "Open" }));
     const dialog = await screen.findByRole("dialog", {
       name: t.MasterCabinet.more,
@@ -77,12 +79,23 @@ export const Open: Story = {
     ).toBeVisible();
     await expect(within(dialog).getByText(args.email!)).toBeVisible();
     await expect(overflowsX(dialog)).toBe(false);
+    for (const link of links) await expect(link).not.toHaveAttribute("type");
+    const clientRole = within(dialog).getByRole("link", {
+      name: t.MasterCabinet.clientRole,
+    });
+    await expect(boxWidth(clientRole)).toBe(
+      boxWidth(within(dialog).getByRole("button", { name: t.Cabinet.signOut })),
+    );
     await userEvent.click(
       within(dialog).getByRole("link", {
         name: t.MasterCabinet.sections.services,
       }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await expect(consoleError).not.toHaveBeenCalledWith(
+      expect.stringContaining("nativeButton"),
+    );
+    consoleError.mockRestore();
   },
 };
 

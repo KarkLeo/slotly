@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import {
+  expect,
+  screen,
+  spyOn,
+  userEvent,
+  waitFor,
+  within,
+} from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
@@ -28,6 +35,7 @@ type Story = StoryObj<typeof meta>;
 export const Open: Story = {
   play: async ({ canvas, globals }) => {
     const t = textsOf(globals.locale);
+    const consoleError = spyOn(console, "error");
     await userEvent.click(canvas.getByRole("button", { name: "Open" }));
     const dialog = await screen.findByRole("dialog", { name: t.add.title });
     await waitFor(() =>
@@ -42,10 +50,16 @@ export const Open: Story = {
       within(dialog).getByRole("link", { name: t.add.block }),
     ).toHaveAttribute("href", newBlockHref);
     await expect(overflowsX(dialog)).toBe(false);
+    for (const link of within(dialog).getAllByRole("link"))
+      await expect(link).not.toHaveAttribute("type");
     await userEvent.click(
       within(dialog).getByRole("link", { name: t.add.block }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await expect(consoleError).not.toHaveBeenCalledWith(
+      expect.stringContaining("nativeButton"),
+    );
+    consoleError.mockRestore();
   },
 };
 

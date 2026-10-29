@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
 import { expect, fn, userEvent, waitFor } from "storybook/test";
-import { Button } from "./button";
+import { Button, buttonVariants } from "./button";
 import {
   boxHeight,
   computedColor,
@@ -122,6 +122,20 @@ export const LongText: Story = {
     const button = canvas.getByRole("button");
     await expect(overflowsX(button)).toBe(false);
     await expect(boxHeight(button)).toBeGreaterThanOrEqual(44);
+  },
+};
+
+export const OutlineLink: Story = {
+  render: () => (
+    <a href="#top" className={buttonVariants({ variant: "outline" })}>
+      Outline link
+    </a>
+  ),
+  play: async ({ canvas }) => {
+    const link = canvas.getByRole("link", { name: "Outline link" });
+    await expect(computedColor(link, "borderTopColor")).toBe(
+      resolvedColor("border-input", "borderTopColor"),
+    );
   },
 };
 

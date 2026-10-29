@@ -3,11 +3,10 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import {
   Sheet,
   SheetBody,
-  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -30,9 +29,10 @@ export function MoreSheet({
 }) {
   const t = useTranslations("MasterCabinet");
   const active = activeSection(usePathname());
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger render={trigger} />
       <SheetContent side="bottom">
         <SheetHeader>
@@ -44,18 +44,15 @@ export function MoreSheet({
           <ul className="flex flex-col gap-1">
             {moreSections.map(({ key, href, icon: Icon }) => (
               <li key={key}>
-                <SheetClose
-                  render={
-                    <Link
-                      href={href}
-                      aria-current={active === key ? "page" : undefined}
-                      className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-base font-medium outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring aria-[current=page]:bg-muted aria-[current=page]:font-bold"
-                    />
-                  }
+                <Link
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  aria-current={active === key ? "page" : undefined}
+                  className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-base font-medium outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring aria-[current=page]:bg-muted aria-[current=page]:font-bold"
                 >
                   <Icon aria-hidden className="size-5 text-muted-foreground" />
                   {t(`sections.${key}`)}
-                </SheetClose>
+                </Link>
               </li>
             ))}
           </ul>

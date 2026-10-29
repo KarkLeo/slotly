@@ -13,6 +13,11 @@ export function boxHeight(el: Element): number {
   return el.getBoundingClientRect().height;
 }
 
+export function boxWidth(el: Element): number {
+  settle();
+  return el.getBoundingClientRect().width;
+}
+
 export function overflowsX(el: Element): boolean {
   settle();
   return (

@@ -23,7 +23,7 @@ export function AccountControls({
       <ThemeSwitcher theme={theme} />
       <Link
         href="/app/bookings"
-        className={buttonVariants({ variant: "outline" })}
+        className={buttonVariants({ variant: "outline", className: "w-full" })}
       >
         {t("clientRole")}
       </Link>

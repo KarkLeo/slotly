@@ -3,6 +3,7 @@ import { expect, screen, waitFor, within } from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
+import { boxWidth } from "@/components/ui/story-helpers";
 import { isLocale, type Locale } from "@/i18n/locales";
 import { CabinetHeader } from "./cabinet-header";
 
@@ -55,6 +56,13 @@ export const Master: Story = {
       expect(
         within(menu).getByRole("link", { name: t.MyBookings.masterCabinet }),
       ).toHaveAttribute("href", "/app"),
+    );
+    await expect(
+      boxWidth(
+        within(menu).getByRole("link", { name: t.MyBookings.masterCabinet }),
+      ),
+    ).toBe(
+      boxWidth(within(menu).getByRole("button", { name: t.Cabinet.signOut })),
     );
   },
 };

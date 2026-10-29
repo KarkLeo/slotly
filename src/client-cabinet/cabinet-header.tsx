@@ -53,12 +53,17 @@ export function CabinetHeader({
             {isMaster && (
               <Link
                 href="/app"
-                className={buttonVariants({ variant: "outline" })}
+                className={buttonVariants({
+                  variant: "outline",
+                  className: "w-full",
+                })}
               >
                 {t("masterCabinet")}
               </Link>
             )}
-            <SignOutForm />
+            <div className="w-full">
+              <SignOutForm />
+            </div>
           </SheetBody>
         </SheetContent>
       </Sheet>
