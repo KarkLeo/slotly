@@ -29,7 +29,7 @@ declare
   is_master boolean;
   moved_minutes integer;
   zone text;
-  -- Zones differ by up to 26 hours, so a day in another zone lies within two master days around it.
+  -- Zones differ by up to 26 hours, so a day in another zone lies within two master days on either side.
   spread integer;
 begin
   select sv.master_id, sv.archived_at, m.published_at, m.timezone into s
@@ -85,7 +85,8 @@ begin
       get_available_slots.ignore_appointment_id,
       coalesce(get_available_slots.ignore_booking_rules, false)
     ) as slot
-    where (slot at time zone zone)::date between get_available_slots.day_from and get_available_slots.day_to;
+    where (slot at time zone zone)::date between get_available_slots.day_from and get_available_slots.day_to
+    order by slot;
 end;
 $$;
 
