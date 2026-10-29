@@ -6,10 +6,11 @@ import {
 import type * as api from "../reschedule-api";
 
 export const fetchRescheduleDays = fn<typeof api.fetchRescheduleDays>(
-  (serviceId, _appointmentId, from, to) =>
-    fetchAvailableDays(serviceId, from, to),
+  (serviceId, _appointmentId, from, to, timeZone) =>
+    fetchAvailableDays(serviceId, from, to, timeZone),
 );
 
 export const fetchRescheduleSlots = fn<typeof api.fetchRescheduleSlots>(
-  (serviceId, _appointmentId, day) => fetchAvailableSlots(serviceId, day),
+  (serviceId, _appointmentId, day, timeZone) =>
+    fetchAvailableSlots(serviceId, day, timeZone),
 );

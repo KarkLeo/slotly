@@ -47,7 +47,7 @@ export function toBookingView(
   now: Date,
 ): BookingView {
   const { master, service } = booking;
-  const zone = master.timeZone;
+  const zone = booking.timeZone;
   const time = (value: string) => slotTimeLabel(value, zone, locale);
   const upcoming = isUpcoming(booking, now);
   const changeable = canChange(booking, now);
@@ -99,7 +99,7 @@ export function toBookingView(
     slots: {
       serviceId: service.id,
       startsAt: booking.startsAt,
-      timeZone: zone,
+      timeZone: master.timeZone,
       horizonDays: master.horizonDays,
     },
   };

@@ -3,7 +3,8 @@ import { expect, mocked, waitFor, within } from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
-import { slotTimeLabel } from "@/booking/dates";
+import { useBrowserTimeZone } from "@/booking/browser-time-zone";
+import { slotTimeLabel, zoneLabel } from "@/booking/dates";
 import { isLocale } from "@/i18n/locales";
 import { confirmBooking, startBooking } from "./booking-actions";
 import { fetchAvailableDays, fetchAvailableSlots } from "./booking-api";
@@ -495,6 +496,131 @@ export const StaleCloseEvent: Story = {
     await new Promise((resolve) => setTimeout(resolve, 100));
     await expect(
       canvas.getByRole("heading", { level: 1, name: plain(t.codeTitle) }),
+    ).toBeVisible();
+  },
+};
+
+const newYork = "America/New_York";
+
+const onlineService = {
+  ...meta.args.service,
+  name: "Онлайн-консультація",
+  format: "online" as const,
+};
+
+function slotRadio(canvas: Context["canvas"], slot: string) {
+  return canvas
+    .getAllByRole("radio")
+    .find((radio) => (radio as HTMLInputElement).value === slot);
+}
+
+export const OnlineInClientZone: Story = {
+  args: { service: onlineService },
+  beforeEach: () => {
+    mocked(useBrowserTimeZone).mockReturnValue(newYork);
+  },
+  play: async (context) => {
+    const { canvas, userEvent, globals } = context;
+    const t = texts(globals.locale);
+    const locale = isLocale(globals.locale) ? globals.locale : "uk";
+    const zones = within(
+      await canvas.findByRole("group", { name: t.SlotPicker.zones }),
+    );
+    const own = zones.getByRole("radio", {
+      name: new RegExp(t.SlotPicker.clientZone),
+    });
+    await expect(own).toBeChecked();
+    await expect(canvas.getAllByText(zoneLabel(newYork, locale))).toHaveLength(
+      2,
+    );
+
+    await userEvent.click(
+      await canvas.findByRole("button", {
+        name: new RegExp(t.SlotPicker.nearest),
+      }),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.getByRole("button", { name: t.Landing.next }),
+      ).toBeEnabled(),
+    );
+    await expect(fetchAvailableSlots).toHaveBeenLastCalledWith(
+      "gel",
+      expect.any(String),
+      newYork,
+    );
+    const slot = (
+      canvas
+        .getAllByRole("radio", { name: /\d:\d\d/ })
+        .find(
+          (radio) => (radio as HTMLInputElement).checked,
+        ) as HTMLInputElement
+    ).value;
+    await expect(slotRadio(canvas, slot)).toHaveAccessibleName(
+      slotTimeLabel(slot, newYork, locale),
+    );
+
+    await userEvent.click(
+      zones.getByRole("radio", { name: new RegExp(t.SlotPicker.masterZone) }),
+    );
+    await waitFor(() =>
+      expect(slotRadio(canvas, slot)).toHaveAccessibleName(
+        slotTimeLabel(slot, "Europe/Kyiv", locale),
+      ),
+    );
+    await expect(slotRadio(canvas, slot)).toBeChecked();
+    await expect(fetchAvailableSlots).toHaveBeenLastCalledWith(
+      "gel",
+      expect.any(String),
+      "Europe/Kyiv",
+    );
+
+    await userEvent.click(own);
+    await waitFor(() =>
+      expect(slotRadio(canvas, slot)).toHaveAccessibleName(
+        slotTimeLabel(slot, newYork, locale),
+      ),
+    );
+    await userEvent.click(canvas.getByRole("button", { name: t.Landing.next }));
+    const dialog = within(await canvas.findByRole("dialog"));
+    await expect(
+      dialog.getByText(new RegExp(zoneLabel(newYork, locale))),
+    ).toBeVisible();
+    await sendContact(context);
+    await expect(startBooking).toHaveBeenCalledWith(
+      expect.objectContaining({ slot, timeZone: newYork }),
+    );
+  },
+};
+
+export const OnlineInClientZoneEnglish: Story = {
+  ...OnlineInClientZone,
+  globals: { locale: "en" },
+};
+
+export const OnlineInMasterZone: Story = {
+  args: { service: onlineService },
+  beforeEach: () => {
+    mocked(useBrowserTimeZone).mockReturnValue("Europe/Kyiv");
+  },
+  play: async ({ canvas, globals }) => {
+    const t = texts(globals.locale).SlotPicker;
+    await canvas.findByRole("group", { name: t.dates });
+    await expect(canvas.queryByRole("group", { name: t.zones })).toBeNull();
+  },
+};
+
+export const InPersonFromAnotherZone: Story = {
+  beforeEach: () => {
+    mocked(useBrowserTimeZone).mockReturnValue(newYork);
+  },
+  play: async ({ canvas, globals }) => {
+    const t = texts(globals.locale).SlotPicker;
+    const locale = isLocale(globals.locale) ? globals.locale : "uk";
+    await canvas.findByRole("group", { name: t.dates });
+    await expect(canvas.queryByRole("group", { name: t.zones })).toBeNull();
+    await expect(
+      canvas.getByText(zoneLabel("Europe/Kyiv", locale)),
     ).toBeVisible();
   },
 };

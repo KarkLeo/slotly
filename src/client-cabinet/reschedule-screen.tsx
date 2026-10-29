@@ -4,7 +4,8 @@ import { ChevronLeftIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useState, useTransition } from "react";
-import { slotDateTimeLabel } from "@/booking/dates";
+import { useBrowserTimeZone } from "@/booking/browser-time-zone";
+import { clientTimeZone, slotDateTimeLabel } from "@/booking/dates";
 import { SlotPicker } from "@/booking/slot-picker";
 import { useAvailability } from "@/booking/use-availability";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,28 +19,34 @@ import type { BookingView } from "./view";
 export function RescheduleScreen({ booking }: { booking: BookingView }) {
   const t = useTranslations("MyBookings");
   const locale = useLocale();
+  const browserTimeZone = useBrowserTimeZone();
   const { serviceId, startsAt, timeZone, horizonDays } = booking.slots;
   const fetchDays = useCallback(
-    (from: string, to: string) =>
-      fetchRescheduleDays(serviceId, booking.id, from, to),
+    (from: string, to: string, zone: string) =>
+      fetchRescheduleDays(serviceId, booking.id, from, to, zone),
     [serviceId, booking.id],
   );
   const fetchSlots = useCallback(
-    async (day: string) => {
+    async (day: string, zone: string) => {
       const current = new Date(startsAt).getTime();
-      return (await fetchRescheduleSlots(serviceId, booking.id, day)).filter(
-        (slot) => new Date(slot).getTime() !== current,
-      );
+      return (
+        await fetchRescheduleSlots(serviceId, booking.id, day, zone)
+      ).filter((slot) => new Date(slot).getTime() !== current);
     },
     [serviceId, booking.id, startsAt],
   );
   const availability = useAvailability({
     timeZone,
+    clientTimeZone: clientTimeZone(
+      booking.service.format,
+      timeZone,
+      browserTimeZone,
+    ),
     horizonDays,
     fetchDays,
     fetchSlots,
   });
-  const { selectedSlot } = availability;
+  const { selectedSlot, timeZone: shownZone } = availability;
   const [taken, setTaken] = useState<string | null>(null);
   const [toast, setToast] = useState<ActionToast>();
   const [pending, startTransition] = useTransition();
@@ -96,7 +103,6 @@ export function RescheduleScreen({ booking }: { booking: BookingView }) {
 
         <SlotPicker
           availability={availability}
-          timeZone={timeZone}
           taken={taken}
           headingLevel={2}
           onSelectDate={(date) => {
@@ -115,7 +121,7 @@ export function RescheduleScreen({ booking }: { booking: BookingView }) {
           <div className="text-muted-foreground">{t("newTime")}</div>
           <div className="truncate font-bold">
             {selectedSlot
-              ? slotDateTimeLabel(selectedSlot, timeZone, locale)
+              ? slotDateTimeLabel(selectedSlot, shownZone, locale)
               : t("pickTime")}
           </div>
         </div>

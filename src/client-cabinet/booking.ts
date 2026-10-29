@@ -19,6 +19,8 @@ export type MyBooking = {
   holdUntil: string | null;
   changeUntil: string;
   canReschedule: boolean;
+  // The client's zone for an online booking made in another zone, otherwise the master's.
+  timeZone: string;
   master: {
     name: string;
     slug: string;
@@ -48,6 +50,7 @@ export function toMyBooking(row: MyBookingRow): MyBooking {
     holdUntil: row.hold_until,
     changeUntil: row.change_until,
     canReschedule: row.can_reschedule,
+    timeZone: row.booking_time_zone,
     master: {
       name: row.master_name,
       slug: row.master_slug,

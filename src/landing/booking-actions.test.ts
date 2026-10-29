@@ -63,6 +63,7 @@ describe("startBooking", () => {
       locale: "en",
       address: undefined,
       client_ip: "203.0.113.5",
+      time_zone: undefined,
     });
     expect(sendOtp).toHaveBeenCalledWith("anna@example.com", {
       data: { locale: "en" },
@@ -126,6 +127,14 @@ describe("startBooking", () => {
     expect(rpc).toHaveBeenCalledWith(
       "book_appointment",
       expect.objectContaining({ address: "Khreshchatyk 1" }),
+    );
+  });
+
+  it("passes the zone the client sees the time in", async () => {
+    await startBooking({ ...request, timeZone: "America/New_York" });
+    expect(rpc).toHaveBeenCalledWith(
+      "book_appointment",
+      expect.objectContaining({ time_zone: "America/New_York" }),
     );
   });
 

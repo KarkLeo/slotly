@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, waitFor } from "storybook/test";
+import { expect, mocked, waitFor, within } from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
+import { useBrowserTimeZone } from "@/booking/browser-time-zone";
+import { zoneLabel } from "@/booking/dates";
 import { isLocale, type Locale } from "@/i18n/locales";
 import { rescheduleBooking } from "./actions";
 import type { MyBooking } from "./booking";
@@ -50,6 +52,7 @@ export const Default: Story = {
       "gel",
       "b1",
       expect.any(String),
+      "Europe/Kyiv",
     );
     await userEvent.click(submit);
     await waitFor(() =>
@@ -76,5 +79,34 @@ export const NeedsApproval: Story = {
     const t = dictionaries[localeOf(globals.locale)].MyBookings;
     await expect(canvas.getByText(t.needsApproval)).toBeVisible();
     await expect(canvas.getByText(/Дарина Коваль/)).toBeVisible();
+  },
+};
+
+export const OnlineInClientZone: Story = {
+  parameters: { booking: stories.online },
+  beforeEach: () => {
+    mocked(useBrowserTimeZone).mockReturnValue("America/New_York");
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const locale = localeOf(globals.locale);
+    const t = dictionaries[locale].SlotPicker;
+    const zones = within(await canvas.findByRole("group", { name: t.zones }));
+    await expect(
+      zones.getByRole("radio", { name: new RegExp(t.clientZone) }),
+    ).toBeChecked();
+    await expect(fetchRescheduleSlots).toHaveBeenCalledWith(
+      "consult",
+      "b7",
+      expect.any(String),
+      "America/New_York",
+    );
+    await userEvent.click(
+      zones.getByRole("radio", { name: new RegExp(t.masterZone) }),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.getAllByText(zoneLabel("Europe/Kyiv", locale)),
+      ).toHaveLength(2),
+    );
   },
 };

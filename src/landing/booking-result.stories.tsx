@@ -23,6 +23,7 @@ const meta = {
     summary: {
       service: "Манікюр з покриттям",
       when: "чт, 29 жовтня о 11:45",
+      zone: "за східноєвропейським часом",
       price: { kind: "fixed", amount: "900 ₴" },
     },
     cancelUntil: "чт, 28 жовтня о 23:45",

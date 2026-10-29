@@ -192,9 +192,9 @@ reset role;
 -- Privileges
 
 select ok(
-  not has_function_privilege('anon', 'public.book_appointment(uuid, timestamptz, text, text, public.locale, text, inet)', 'execute')
-  and not has_function_privilege('authenticated', 'public.book_appointment(uuid, timestamptz, text, text, public.locale, text, inet)', 'execute')
-  and has_function_privilege('service_role', 'public.book_appointment(uuid, timestamptz, text, text, public.locale, text, inet)', 'execute'),
+  not has_function_privilege('anon', 'public.book_appointment(uuid, timestamptz, text, text, public.locale, text, inet, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.book_appointment(uuid, timestamptz, text, text, public.locale, text, inet, text)', 'execute')
+  and has_function_privilege('service_role', 'public.book_appointment(uuid, timestamptz, text, text, public.locale, text, inet, text)', 'execute'),
   'only the server may book'
 );
 

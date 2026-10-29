@@ -3,6 +3,7 @@ import { expect, mocked, screen, waitFor, within } from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
+import { slotTimeLabel, zoneLabel } from "@/booking/dates";
 import { isLocale, type Locale } from "@/i18n/locales";
 import { cancelBooking } from "./actions";
 import type { MyBooking } from "./booking";
@@ -62,6 +63,23 @@ export const AwaitingMaster: Story = {
     await expect(canvas.getByText(/Січових Стрільців/)).toBeVisible();
     await expect(
       canvas.getByRole("link", { name: t.reschedule }),
+    ).toBeVisible();
+  },
+};
+
+export const OnlineInClientZone: Story = {
+  parameters: { booking: stories.online },
+  play: async ({ canvas, globals }) => {
+    const locale = localeOf(globals.locale);
+    const { startsAt } = stories.online;
+    await expect(
+      canvas.getByRole("heading", {
+        level: 1,
+        name: new RegExp(slotTimeLabel(startsAt, "America/New_York", locale)),
+      }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByText(new RegExp(zoneLabel("America/New_York", locale))),
     ).toBeVisible();
   },
 };

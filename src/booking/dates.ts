@@ -1,6 +1,7 @@
+import type { Database } from "@/db/types";
 import type { Locale } from "@/i18n/locales";
 
-// Dates are master-local calendar days as "YYYY-MM-DD"; slots are ISO instants.
+// Dates are calendar days in the shown zone as "YYYY-MM-DD"; slots are ISO instants.
 
 export function localDate(instant: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -132,4 +133,15 @@ export function zoneLabel(timeZone: string, locale: Locale): string {
       .formatToParts(new Date())
       .find((part) => part.type === "timeZoneName")?.value ?? timeZone
   );
+}
+
+// An online service is shown in the client's own zone when it is not the master's.
+export function clientTimeZone(
+  format: Database["public"]["Enums"]["service_format"],
+  timeZone: string,
+  browserTimeZone: string | null,
+): string | null {
+  return format === "online" && browserTimeZone && browserTimeZone !== timeZone
+    ? browserTimeZone
+    : null;
 }
