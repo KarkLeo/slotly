@@ -209,6 +209,52 @@
       "landing": "Landing",
       "agents": "Agents",
       "settings": "Settings"
+    },
+    "stub": {
+      "today": {
+        "title": "<accent>Today</accent> will be here",
+        "text": "Upcoming appointments and free hours for the day."
+      },
+      "calendar": {
+        "title": "Your <accent>calendar</accent> will be here",
+        "text": "The week and the day with all appointments and blocks."
+      },
+      "clients": {
+        "title": "Your <accent>clients</accent> will be here",
+        "text": "Every client with their booking history."
+      },
+      "appointments": {
+        "title": "Your <accent>appointments</accent> will be here",
+        "text": "A list of appointments and bookings with every status."
+      },
+      "services": {
+        "title": "Your <accent>services</accent> will be here",
+        "text": "Your services with duration and price."
+      },
+      "schedule": {
+        "title": "Your <accent>schedule</accent> will be here",
+        "text": "The weekly working template and exceptions for single days."
+      },
+      "landing": {
+        "title": "Your <accent>landing</accent> will be here",
+        "text": "Your public page for online booking."
+      },
+      "agents": {
+        "title": "Your <accent>agents</accent> will be here",
+        "text": "Agents that help manage bookings for you."
+      },
+      "settings": {
+        "title": "Your <accent>settings</accent> will be here",
+        "text": "Profile, language and cabinet options."
+      },
+      "newBooking": {
+        "title": "A <accent>booking</accent> form will be here",
+        "text": "A form to book a client for an appointment."
+      },
+      "newBlock": {
+        "title": "A <accent>block</accent> form will be here",
+        "text": "A form to close time for bookings."
+      }
     }
   }
 }
