@@ -1,5 +1,5 @@
 import { fn } from "storybook/test";
-import { addDays } from "@/booking/dates";
+import { addDays, localDate } from "@/booking/dates";
 import type * as api from "../booking-api";
 
 const times = [
@@ -30,22 +30,29 @@ function kyiv(day: string, time: string): string {
   return instant.toISOString();
 }
 
-// Every date is free except Sundays and a today whose times have all passed; each free date offers the times above, never in the past.
+// Every date is free except Sundays and a today whose times have all passed; each free date offers the times above
+// in Kyiv, never in the past. A day in another zone gathers the Kyiv times that fall on it.
+function slotsOf(day: string, timeZone: string): string[] {
+  return [addDays(day, -1), day, addDays(day, 1)]
+    .filter((date) => new Date(`${date}T12:00:00Z`).getUTCDay() !== 0)
+    .flatMap((date) => times.map((time) => kyiv(date, time)))
+    .filter(
+      (slot) =>
+        localDate(new Date(slot), timeZone) === day &&
+        new Date(slot) > new Date(),
+    );
+}
+
 export const fetchAvailableDays = fn<typeof api.fetchAvailableDays>(
-  async (_serviceId, from, to) => {
+  async (_serviceId, from, to, timeZone) => {
     const days: string[] = [];
     for (let day = from; day <= to; day = addDays(day, 1)) {
-      const sunday = new Date(`${day}T12:00:00Z`).getUTCDay() === 0;
-      const over = new Date(kyiv(day, times[times.length - 1])) <= new Date();
-      if (!sunday && !over) days.push(day);
+      if (slotsOf(day, timeZone).length > 0) days.push(day);
     }
     return days;
   },
 );
 
 export const fetchAvailableSlots = fn<typeof api.fetchAvailableSlots>(
-  async (_serviceId, day) =>
-    times
-      .map((time) => kyiv(day, time))
-      .filter((slot) => new Date(slot) > new Date()),
+  async (_serviceId, day, timeZone) => slotsOf(day, timeZone),
 );

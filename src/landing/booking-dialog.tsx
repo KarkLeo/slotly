@@ -11,6 +11,7 @@ import type { ServiceView } from "./view";
 export type BookingSummaryView = {
   service: string;
   when: string;
+  zone: string;
   price: ServiceView["price"];
 };
 
@@ -97,6 +98,8 @@ export function BookingSummary({ summary }: { summary: BookingSummaryView }) {
       <span className="font-semibold">{summary.service}</span>
       <span className="text-sm text-muted-foreground">
         {summary.when}
+        {" · "}
+        {summary.zone}
         {summary.price.amount && (
           <>
             {" · "}

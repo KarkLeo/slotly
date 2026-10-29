@@ -6,20 +6,30 @@ import { dayRanges, horizonDates, localDate } from "./dates";
 export type Loadable<T> =
   { status: "loading" } | { status: "error" } | { status: "ready"; value: T };
 
+// Days are calendar dates in the given zone.
 export type AvailabilitySource = {
-  fetchDays: (from: string, to: string) => Promise<string[]>;
-  fetchSlots: (day: string) => Promise<string[]>;
+  fetchDays: (from: string, to: string, timeZone: string) => Promise<string[]>;
+  fetchSlots: (day: string, timeZone: string) => Promise<string[]>;
 };
 
 export type Availability = ReturnType<typeof useAvailability>;
 
-// Free dates for the horizon, the nearest free slot, and the slots of the chosen date.
+// Free dates for the horizon, the nearest free slot, and the slots of the chosen date,
+// in the client's zone when there is one and the client has not switched to the master's.
 export function useAvailability({
-  timeZone,
+  timeZone: masterTimeZone,
+  clientTimeZone,
   horizonDays,
   fetchDays,
   fetchSlots,
-}: AvailabilitySource & { timeZone: string; horizonDays: number }) {
+}: AvailabilitySource & {
+  timeZone: string;
+  clientTimeZone: string | null;
+  horizonDays: number;
+}) {
+  const [masterZoneChosen, setMasterZoneChosen] = useState(false);
+  const timeZone =
+    clientTimeZone && !masterZoneChosen ? clientTimeZone : masterTimeZone;
   const [attempt, setAttempt] = useState(0);
   const [dates, setDates] = useState<
     Loadable<{ date: string; available: boolean }[]>
@@ -33,12 +43,16 @@ export function useAvailability({
   useEffect(() => {
     let current = true;
     const all = horizonDates(localDate(new Date(), timeZone), horizonDays);
-    Promise.all(dayRanges(all).map(([from, to]) => fetchDays(from, to)))
+    Promise.all(
+      dayRanges(all).map(([from, to]) => fetchDays(from, to, timeZone)),
+    )
       .then(async (chunks) => {
         const free = new Set(chunks.flat());
         const first = all.find((date) => free.has(date));
         // The nearest-time hint is optional: if its slots fail to load, the strip still works.
-        const firstSlots = first ? await fetchSlots(first).catch(() => []) : [];
+        const firstSlots = first
+          ? await fetchSlots(first, timeZone).catch(() => [])
+          : [];
         if (!current) return;
         // Shown together, so the hint does not push the strip down under a tapping finger.
         setNearest(firstSlots[0] ?? null);
@@ -55,12 +69,12 @@ export function useAvailability({
     };
   }, [attempt, timeZone, horizonDays, fetchDays, fetchSlots]);
 
-  function loadSlots(date: string, slot: string | null) {
+  function loadSlots(date: string, slot: string | null, zone = timeZone) {
     const request = ++slotRequest.current;
     setSelectedDate(date);
     setSelectedSlot(slot);
     setSlots({ status: "loading" });
-    fetchSlots(date)
+    fetchSlots(date, zone)
       .then((value) => {
         if (request !== slotRequest.current) return;
         setSlots({ status: "ready", value });
@@ -72,7 +86,30 @@ export function useAvailability({
       });
   }
 
+  // The chosen time stays chosen and shows up on its date in the other zone.
+  function chooseMasterZone(chosen: boolean) {
+    const zone = clientTimeZone && !chosen ? clientTimeZone : masterTimeZone;
+    setMasterZoneChosen(chosen);
+    setDates({ status: "loading" });
+    if (selectedSlot) {
+      loadSlots(localDate(new Date(selectedSlot), zone), selectedSlot, zone);
+    } else {
+      slotRequest.current++;
+      setSelectedDate(null);
+      setSlots(null);
+    }
+  }
+
   return {
+    timeZone,
+    zones: clientTimeZone
+      ? {
+          client: clientTimeZone,
+          master: masterTimeZone,
+          masterChosen: masterZoneChosen,
+        }
+      : null,
+    chooseMasterZone,
     dates,
     nearest,
     selectedDate,

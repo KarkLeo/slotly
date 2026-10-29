@@ -4,6 +4,7 @@ import {
   dayLabel,
   dayRanges,
   cancelDeadline,
+  clientTimeZone,
   groupSlots,
   horizonDates,
   localDate,
@@ -186,5 +187,24 @@ describe("cancelDeadline", () => {
 
   it("is gone when the deadline has already passed", () => {
     expect(cancelDeadline("2030-01-14T10:00:00Z", 720, now)).toBeNull();
+  });
+});
+
+describe("clientTimeZone", () => {
+  it("is the browser's zone for an online service in another zone", () => {
+    expect(clientTimeZone("online", "Europe/Kyiv", "America/New_York")).toBe(
+      "America/New_York",
+    );
+  });
+
+  it("is none in the master's zone, before the browser is known, or for a service in person", () => {
+    expect(clientTimeZone("online", "Europe/Kyiv", "Europe/Kyiv")).toBeNull();
+    expect(clientTimeZone("online", "Europe/Kyiv", null)).toBeNull();
+    expect(
+      clientTimeZone("on_site", "Europe/Kyiv", "America/New_York"),
+    ).toBeNull();
+    expect(
+      clientTimeZone("at_client", "Europe/Kyiv", "America/New_York"),
+    ).toBeNull();
   });
 });

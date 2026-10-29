@@ -17,6 +17,8 @@ export type BookingRequest = {
   email: string;
   address: string;
   locale: string;
+  // The zone the client sees the slot in, kept for an online service.
+  timeZone?: string;
   replaces?: string | null;
   // A code sent to the same email less than a minute ago still works, and Auth refuses to send another.
   reuseCode?: boolean;
@@ -69,6 +71,7 @@ export async function startBooking(
     locale: request.locale,
     address: request.address || undefined,
     client_ip: ip ?? undefined,
+    time_zone: request.timeZone,
   });
   if (error?.message === "slot_unavailable") return { status: "slotTaken" };
   if (error?.message === "booking_limit_reached")

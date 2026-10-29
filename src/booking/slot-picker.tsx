@@ -15,18 +15,17 @@ import {
 import { DateStrip } from "./date-strip";
 import { SlotGrid } from "./slot-grid";
 import type { Availability } from "./use-availability";
+import { ZoneSwitch } from "./zone-switch";
 
 // The date strip and the slot grid of one service, shared by booking and moving a booking.
 export function SlotPicker({
   availability,
-  timeZone,
   taken,
   onSelectDate,
   onSelectSlot,
   headingLevel = 3,
 }: {
   availability: Availability;
-  timeZone: string;
   taken: string | null;
   onSelectDate: (date: string) => void;
   onSelectSlot: (slot: string) => void;
@@ -35,12 +34,17 @@ export function SlotPicker({
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const t = useTranslations("SlotPicker");
   const locale = useLocale();
-  const { dates, nearest, selectedDate, slots, selectedSlot } = availability;
+  const { timeZone, zones, dates, nearest, selectedDate, slots, selectedSlot } =
+    availability;
   const noFreeTime =
     dates.status === "ready" && !dates.value.some((d) => d.available);
 
   return (
     <>
+      {zones && dates.status !== "error" && !noFreeTime && (
+        <ZoneSwitch {...zones} onChoose={availability.chooseMasterZone} />
+      )}
+
       {dates.status === "loading" && (
         <div role="status" className="flex flex-col gap-3">
           <span className="sr-only">{t("loading")}</span>

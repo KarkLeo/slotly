@@ -2,7 +2,13 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { cancelDeadline, slotDateTimeLabel } from "@/booking/dates";
+import { useBrowserTimeZone } from "@/booking/browser-time-zone";
+import {
+  cancelDeadline,
+  clientTimeZone,
+  slotDateTimeLabel,
+  zoneLabel,
+} from "@/booking/dates";
 import { SlotPicker } from "@/booking/slot-picker";
 import { useAvailability } from "@/booking/use-availability";
 import { bookingPath } from "@/client-cabinet/view";
@@ -51,21 +57,24 @@ export function BookingFlow({
 }) {
   const tl = useTranslations("Landing");
   const locale = useLocale();
+  const browserTimeZone = useBrowserTimeZone();
   const fetchDays = useCallback(
-    (from: string, to: string) => fetchAvailableDays(service.id, from, to),
+    (from: string, to: string, zone: string) =>
+      fetchAvailableDays(service.id, from, to, zone),
     [service.id],
   );
   const fetchSlots = useCallback(
-    (day: string) => fetchAvailableSlots(service.id, day),
+    (day: string, zone: string) => fetchAvailableSlots(service.id, day, zone),
     [service.id],
   );
   const availability = useAvailability({
     timeZone,
+    clientTimeZone: clientTimeZone(service.format, timeZone, browserTimeZone),
     horizonDays,
     fetchDays,
     fetchSlots,
   });
-  const { selectedSlot } = availability;
+  const { selectedSlot, timeZone: shownZone } = availability;
   const [screen, setScreen] = useState<Screen | null>(null);
   const [slot, setSlot] = useState<string | null>(null);
   const [values, setValues] = useState<ContactValues>();
@@ -133,6 +142,7 @@ export function BookingFlow({
           slot,
           ...contact,
           locale,
+          timeZone: shownZone,
           replaces: held.current,
           reuseCode: fresh !== null,
         }),
@@ -239,12 +249,13 @@ export function BookingFlow({
   }
 
   const when = selectedSlot
-    ? slotDateTimeLabel(selectedSlot, timeZone, locale)
+    ? slotDateTimeLabel(selectedSlot, shownZone, locale)
     : null;
-  const bookingWhen = slot ? slotDateTimeLabel(slot, timeZone, locale) : "";
+  const bookingWhen = slot ? slotDateTimeLabel(slot, shownZone, locale) : "";
   const summary = {
     service: service.name,
     when: bookingWhen,
+    zone: zoneLabel(shownZone, locale),
     price: service.price,
   };
   const deadline = slot
@@ -255,7 +266,6 @@ export function BookingFlow({
     <>
       <SlotPicker
         availability={availability}
-        timeZone={timeZone}
         taken={taken}
         onSelectDate={selectDate}
         onSelectSlot={selectSlot}
@@ -324,7 +334,7 @@ export function BookingFlow({
               bookingHref={bookingPath(screen.appointmentId)}
               summary={summary}
               cancelUntil={
-                deadline && slotDateTimeLabel(deadline, timeZone, locale)
+                deadline && slotDateTimeLabel(deadline, shownZone, locale)
               }
               onClose={() => closeBooking({ refresh: true })}
             />

@@ -24,6 +24,7 @@ function booking(
     holdUntil: null,
     changeUntil: fromNow(startsIn - 12),
     canReschedule: true,
+    timeZone: "Europe/Kyiv",
     master: {
       name: "Олена Мельник",
       slug: "olena-nails",
@@ -81,6 +82,16 @@ export const stories = {
   archivedService: booking("b4", 80, { canReschedule: false }),
   completed: booking("b5", -480, { status: "completed" }),
   cancelled: booking("b6", -1300, { ...daryna, status: "cancelled" }),
+  // Booked from New York, so its time reads in the client's zone.
+  online: booking("b7", 74, {
+    timeZone: "America/New_York",
+    service: {
+      ...booking("b7", 74).service,
+      id: "consult",
+      name: { uk: "Онлайн-консультація", en: "Online consultation" },
+      format: "online",
+    },
+  }),
 };
 
 export function view(booking: MyBooking, locale: Locale): BookingView {

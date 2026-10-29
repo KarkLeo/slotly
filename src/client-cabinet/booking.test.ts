@@ -19,6 +19,7 @@ const row: MyBookingRow = {
   master_name: "Олена Мельник",
   master_slug: "olena",
   time_zone: "Europe/Kyiv",
+  booking_time_zone: "Europe/Kyiv",
   auto_confirm: true,
   horizon_days: 30,
   primary_locale: "uk",
@@ -108,6 +109,25 @@ describe("toBookingView", () => {
       bookAgainHref: null,
     });
     expect(view.changeUntil).toContain("12:00");
+  });
+
+  it("shows an online booking in the zone it was booked in, but moves it by the master's dates", () => {
+    const view = toBookingView(
+      toMyBooking({
+        ...row,
+        format: "online",
+        booking_time_zone: "America/New_York",
+      }),
+      "en",
+      now,
+    );
+    expect(view).toMatchObject({
+      date: "Mon, January 14",
+      time: "05:00 AM–06:30 AM",
+      zone: "Eastern Time",
+      slots: { timeZone: "Europe/Kyiv" },
+    });
+    expect(view.changeUntil).toContain("05:00 PM");
   });
 
   it("falls back to the master's language for the service name", () => {

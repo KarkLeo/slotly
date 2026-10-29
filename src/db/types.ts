@@ -125,6 +125,7 @@ export type Database = {
           service_id: string;
           source: Database["public"]["Enums"]["appointment_source"];
           status: Database["public"]["Enums"]["appointment_status"];
+          time_zone: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -141,6 +142,7 @@ export type Database = {
           service_id: string;
           source: Database["public"]["Enums"]["appointment_source"];
           status: Database["public"]["Enums"]["appointment_status"];
+          time_zone?: string | null;
         };
         Update: {
           buffer_minutes?: number;
@@ -156,6 +158,7 @@ export type Database = {
           service_id?: string;
           source?: Database["public"]["Enums"]["appointment_source"];
           status?: Database["public"]["Enums"]["appointment_status"];
+          time_zone?: string | null;
         };
         Relationships: [
           {
@@ -491,6 +494,7 @@ export type Database = {
           name: string;
           service_id: string;
           starts_at: string;
+          time_zone?: string;
         };
         Returns: {
           appointment_id: string;
@@ -576,6 +580,7 @@ export type Database = {
           ignore_appointment_id?: string;
           ignore_booking_rules?: boolean;
           service_id: string;
+          time_zone?: string;
         };
         Returns: string[];
       };
@@ -587,6 +592,7 @@ export type Database = {
           ignore_appointment_id?: string;
           ignore_booking_rules?: boolean;
           service_id: string;
+          time_zone?: string;
         };
         Returns: string[];
       };
@@ -596,6 +602,7 @@ export type Database = {
           address: string;
           appointment_id: string;
           auto_confirm: boolean;
+          booking_time_zone: string;
           can_reschedule: boolean;
           change_until: string;
           currency: string;
