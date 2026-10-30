@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { formatDuration } from "@/landing/format";
 import type { AgendaItem, AwaitingDecision } from "./agenda";
 import type { TodayData } from "./load";
 import { toTodayView } from "./view";
@@ -94,17 +95,42 @@ const data: TodayData = {
 };
 
 describe("toTodayView", () => {
-  it("badges by status and time", () => {
+  it("derives the status from the database status and time", () => {
     const view = toTodayView(data, "uk", now);
     const row = (id: string) => view.today.find((r) => r.id === id);
-    expect(row("done")).toMatchObject({ badge: "completed", muted: true });
-    expect(row("live")).toMatchObject({ badge: "now", muted: false });
-    expect(row("later")).toMatchObject({ badge: "confirmed", muted: false });
-    expect(row("p-today")).toMatchObject({
-      badge: "awaitingMaster",
-      muted: false,
+    expect(row("done")).toMatchObject({ status: "completed", finished: true });
+    expect(row("live")).toMatchObject({ status: "now", finished: false });
+    expect(row("later")).toMatchObject({
+      status: "confirmed",
+      finished: false,
     });
-    expect(row("miss")).toMatchObject({ badge: "noShow", muted: true });
+    expect(row("p-today")).toMatchObject({
+      status: "awaitingMaster",
+      finished: false,
+    });
+    expect(row("miss")).toMatchObject({ status: "noShow", finished: true });
+  });
+
+  it("gives the service and the duration of an appointment apart", () => {
+    const view = toTodayView(data, "uk", now);
+    expect(view.today.find((r) => r.id === "later")).toMatchObject({
+      service: "Манікюр",
+      duration: formatDuration(90, "uk"),
+    });
+  });
+
+  it("is empty only without a queue and without anything on both days", () => {
+    expect(toTodayView(data, "uk", now).empty).toBe(false);
+    const nothing = { ...data, agenda: [], awaiting: [] };
+    expect(toTodayView(nothing, "uk", now).empty).toBe(true);
+    const queueOnly = { ...data, agenda: [] };
+    expect(toTodayView(queueOnly, "uk", now).empty).toBe(false);
+    const blockOnly = {
+      ...data,
+      agenda: data.agenda.slice(5, 6),
+      awaiting: [],
+    };
+    expect(toTodayView(blockOnly, "uk", now).empty).toBe(false);
   });
 
   it("counts appointments per day, not blocks", () => {
@@ -196,10 +222,7 @@ describe("toTodayView", () => {
       "en",
       now,
     );
-    const r = view.today[0];
-    expect(r.kind === "appointment" && r.detail.startsWith("Манікюр")).toBe(
-      true,
-    );
+    expect(view.today[0]).toMatchObject({ service: "Манікюр" });
   });
 
   it("shows no time for an all-day block and a range for a timed one", () => {
@@ -212,7 +235,7 @@ describe("toTodayView", () => {
     });
   });
 
-  it("keeps the SQL order and formats the header date in the locale", () => {
+  it("keeps the SQL order and capitalizes the header date in the locale", () => {
     const view = toTodayView(data, "uk", now);
     expect(view.today.map((r) => r.id)).toEqual([
       "done",
@@ -222,6 +245,7 @@ describe("toTodayView", () => {
       "miss",
       "b-today",
     ]);
-    expect(view.date).toBe("пʼятниця, 30 жовтня");
+    expect(view.date).toBe("Пʼятниця, 30 жовтня");
+    expect(toTodayView(data, "ru", now).date).toBe("Пятница, 30 октября");
   });
 });

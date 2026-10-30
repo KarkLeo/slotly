@@ -1,4 +1,5 @@
 import { getLocale } from "next-intl/server";
+import { RefreshOnVisible } from "@/lib/refresh-on-visible";
 import { loadToday } from "@/master-cabinet/today/load";
 import { requireMaster } from "@/master-cabinet/session";
 import { TodayScreen } from "@/master-cabinet/today/today-screen";
@@ -12,5 +13,10 @@ export default async function Page() {
     loadToday(user.id, now),
   ]);
 
-  return <TodayScreen view={toTodayView(data, locale, now)} />;
+  return (
+    <>
+      <RefreshOnVisible />
+      <TodayScreen view={toTodayView(data, locale, now)} />
+    </>
+  );
 }

@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { accent } from "@/components/accent";
 import { EmptyState } from "@/components/empty-state";
 import type { Theme } from "@/theme/theme";
-import { AddActions, PageHeader } from "./page-header";
+import { AddActions } from "./add-actions";
+import { PageHeader } from "./page-header";
 import { sections, type SectionKey } from "./sections";
 
 type StubKey = Exclude<SectionKey, "today"> | "newBooking" | "newBlock";

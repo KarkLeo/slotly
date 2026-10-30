@@ -12,7 +12,6 @@ const confirmSchema = z.object({ appointmentId: z.uuid() });
 const cancelSchema = z.object({
   appointmentId: z.uuid(),
   comment: z.string().trim().max(500),
-  variant: z.enum(["decline"]),
 });
 
 // The appointment changed or expired between render and tap; the screen then shows its real state.
@@ -59,7 +58,6 @@ export async function cancelAppointment(
   const input = cancelSchema.safeParse({
     appointmentId: formData.get("appointmentId"),
     comment: formData.get("comment") ?? "",
-    variant: formData.get("variant"),
   });
   if (!input.success) return { toast: { type: "error", key: "unexpected" } };
 

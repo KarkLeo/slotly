@@ -5,7 +5,7 @@ import { localize } from "@/landing/localize";
 import type { AgendaItem } from "./agenda";
 import type { TodayData } from "./load";
 
-export type Badge =
+export type AppointmentStatus =
   "awaitingMaster" | "confirmed" | "now" | "completed" | "noShow";
 
 export type RelativeDay = {
@@ -20,9 +20,10 @@ export type RowView =
       id: string;
       time: string;
       clientName: string;
-      detail: string;
-      badge: Badge;
-      muted: boolean;
+      service: string;
+      duration: string;
+      status: AppointmentStatus;
+      finished: boolean;
     }
   | { kind: "block"; id: string; time: string | null; note: string | null };
 
@@ -40,12 +41,17 @@ export type TodayView = {
   awaiting: AwaitingView[];
   today: RowView[];
   tomorrow: RowView[];
+  empty: boolean;
 };
 
-function badgeOf(
+function capitalize(text: string, locale: Locale): string {
+  return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
+}
+
+function statusOf(
   item: Extract<AgendaItem, { kind: "appointment" }>,
   now: Date,
-): Badge {
+): AppointmentStatus {
   if (item.status === "pending") return "awaitingMaster";
   if (item.status === "no_show") return "noShow";
   if (item.status === "completed") return "completed";
@@ -86,7 +92,7 @@ export function toTodayView(
         note: item.note,
       };
     }
-    const badge = badgeOf(item, now);
+    const status = statusOf(item, now);
     const minutes =
       (new Date(item.endsAt).getTime() - new Date(item.startsAt).getTime()) /
       60_000;
@@ -95,9 +101,10 @@ export function toTodayView(
       id: item.id,
       time: time(item.startsAt),
       clientName: item.clientName,
-      detail: `${localize(item.serviceName, locale, primaryLocale)} · ${formatDuration(minutes, locale)}`,
-      badge,
-      muted: badge === "completed" || badge === "noShow",
+      service: localize(item.serviceName, locale, primaryLocale),
+      duration: formatDuration(minutes, locale),
+      status,
+      finished: status === "completed" || status === "noShow",
     };
   };
 
@@ -109,7 +116,7 @@ export function toTodayView(
   const tomorrowItems = onDay(tomorrow);
 
   return {
-    date: dayLabel(today, locale).full,
+    date: capitalize(dayLabel(today, locale).full, locale),
     counts: {
       today: appointments(todayItems),
       tomorrow: appointments(tomorrowItems),
@@ -124,5 +131,9 @@ export function toTodayView(
     })),
     today: todayItems.map(row),
     tomorrow: tomorrowItems.map(row),
+    empty:
+      data.awaiting.length === 0 &&
+      todayItems.length === 0 &&
+      tomorrowItems.length === 0,
   };
 }

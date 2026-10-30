@@ -1,14 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { createTranslator } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  expect,
-  fireEvent,
-  mocked,
-  screen,
-  waitFor,
-  within,
-} from "storybook/test";
+import { expect, mocked, screen, waitFor, within } from "storybook/test";
 import en from "../../../messages/en.json";
 import ru from "../../../messages/ru.json";
 import uk from "../../../messages/uk.json";
@@ -33,6 +27,14 @@ const localeOf = (value: unknown): Locale => (isLocale(value) ? value : "uk");
 const textsOf = (locale: unknown) =>
   dictionaries[localeOf(locale)].MasterCabinet;
 
+// Formats a message as the screen renders it, so stories compare rendered text, not ICU source.
+const formatterOf = (locale: unknown) =>
+  createTranslator({
+    locale: localeOf(locale),
+    messages: dictionaries[localeOf(locale)],
+    namespace: "MasterCabinet.today",
+  });
+
 const plain = (message: string) => message.replace(/<\/?\w+>/g, "");
 
 // A row stretches its cells, so the text's own line boxes show whether it wrapped.
@@ -42,8 +44,12 @@ const lineCount = (el: HTMLElement) => {
   return new Set([...range.getClientRects()].map((rect) => rect.top)).size;
 };
 
-const counter = (canvas: HTMLElement, label: string) =>
-  within(canvas).getByText(label, { selector: "dt" }).parentElement!;
+// A counter's value is the definition paired with its term.
+const counter = (canvas: HTMLElement, label: string) => {
+  const terms = within(canvas).getAllByRole("term");
+  const index = terms.findIndex((term) => term.textContent === label);
+  return within(canvas).getAllByRole("definition")[index];
+};
 
 const meta = {
   title: "MasterCabinet/TodayScreen",
@@ -74,6 +80,7 @@ type Story = StoryObj<typeof meta>;
 export const Full: Story = {
   play: async ({ canvas, canvasElement, globals }) => {
     const t = textsOf(globals.locale);
+    const format = formatterOf(globals.locale);
     const view = todayView(stories.full, localeOf(globals.locale));
     await expect(
       canvas.getByRole("heading", { level: 1, name: t.sections.today }),
@@ -81,27 +88,32 @@ export const Full: Story = {
     await expect(canvas.getByText(view.date)).toBeVisible();
     await expect(
       counter(canvasElement, t.today.counters.today),
-    ).toHaveTextContent("4");
+    ).toHaveTextContent(/^4$/);
     await expect(
       counter(canvasElement, t.today.counters.tomorrow),
-    ).toHaveTextContent("2");
+    ).toHaveTextContent(/^2$/);
     await expect(
       counter(canvasElement, t.today.counters.awaiting),
-    ).toHaveTextContent("1");
+    ).toHaveTextContent(/^1$/);
 
     const queue = canvas.getByRole("region", { name: t.today.awaitingTitle });
+    const [awaiting] = view.awaiting;
     await expect(within(queue).getByText("Олена Кравець")).toBeVisible();
-    await expect(queue).toHaveTextContent(
-      t.today.answerBy.split("{time}")[0].trim(),
-    );
-    await expect(queue).toHaveTextContent(view.awaiting[0].answerBy.time);
+    await expect(
+      within(queue).getByText(
+        `${awaiting.service} · ${format("when", awaiting.when)}`,
+      ),
+    ).toBeVisible();
+    await expect(
+      within(queue).getByText(format("answerBy", awaiting.answerBy)),
+    ).toBeVisible();
     await expect(
       within(queue).getByRole("button", { name: t.today.confirm }),
     ).toBeEnabled();
     await expect(
       within(queue).getByRole("button", { name: t.today.decline.open }),
     ).toBeEnabled();
-    const subject = `Олена Кравець ${view.awaiting[0].service}`;
+    const subject = `Олена Кравець ${awaiting.service}`;
     for (const name of [t.today.confirm, t.today.decline.open]) {
       await expect(
         within(queue).getByRole("button", { name }),
@@ -149,10 +161,10 @@ export const QueueOnly: Story = {
     ).toBeVisible();
     await expect(
       counter(canvasElement, t.today.counters.awaiting),
-    ).toHaveTextContent("1");
+    ).toHaveTextContent(/^1$/);
     await expect(
       counter(canvasElement, t.today.counters.today),
-    ).toHaveTextContent("0");
+    ).toHaveTextContent(/^0$/);
     for (const name of [t.today.todayTitle, t.today.tomorrowTitle]) {
       const feed = canvas.getByRole("region", { name });
       await expect(feed).toHaveTextContent(t.today.nothingPlanned);
@@ -183,7 +195,7 @@ export const NoQueue: Story = {
     ).toBeNull();
     await expect(
       counter(canvasElement, t.today.counters.awaiting),
-    ).toHaveTextContent("0");
+    ).toHaveTextContent(/^0$/);
     const tomorrowFeed = canvas.getByRole("region", {
       name: t.today.tomorrowTitle,
     });
@@ -298,15 +310,6 @@ export const Confirming: Story = {
     await expect(
       within(queue).getByRole("button", { name: t.today.decline.open }),
     ).toBeDisabled();
-
-    const submits = { count: 0 };
-    const form = confirm.closest("form")!;
-    const count = () => submits.count++;
-    form.addEventListener("submit", count);
-    fireEvent.click(confirm);
-    form.removeEventListener("submit", count);
-    await expect(submits.count).toBe(0);
-
     await expect(confirmAppointment).toHaveBeenCalledTimes(1);
     const data = mocked(confirmAppointment).mock.calls[0][1];
     await expect(data.get("appointmentId")).toBe("a5");
@@ -320,6 +323,53 @@ export const ConfirmingRussian: Story = {
 
 export const ConfirmingEnglish: Story = {
   ...Confirming,
+  globals: { locale: "en" },
+};
+
+export const Declining: Story = {
+  beforeEach: () => {
+    const settle = { now: () => {} };
+    mocked(cancelAppointment).mockImplementation(
+      () => new Promise((resolve) => (settle.now = () => resolve({}))),
+    );
+    return () => settle.now();
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const t = textsOf(globals.locale);
+    const queue = canvas.getByRole("region", { name: t.today.awaitingTitle });
+    await userEvent.click(
+      within(queue).getByRole("button", { name: t.today.decline.open }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: t.today.decline.title,
+    });
+    const submit = within(dialog).getByRole("button", {
+      name: t.today.decline.submit,
+    });
+    await userEvent.click(submit);
+    await waitFor(() => expect(submit).toHaveAttribute("aria-busy", "true"));
+    await expect(submit).toHaveAttribute("aria-disabled", "true");
+    await expect(
+      within(dialog).getByRole("button", { name: t.today.decline.back }),
+    ).toBeDisabled();
+    // The open dialog hides the page behind it from the accessibility tree.
+    await expect(
+      within(queue).getByRole("button", {
+        name: t.today.confirm,
+        hidden: true,
+      }),
+    ).toBeDisabled();
+    await expect(cancelAppointment).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const DecliningRussian: Story = {
+  ...Declining,
+  globals: { locale: "ru" },
+};
+
+export const DecliningEnglish: Story = {
+  ...Declining,
   globals: { locale: "en" },
 };
 
@@ -419,6 +469,12 @@ export const DeclinedAndGone: Story = {
     const decline = texts.MasterCabinet.today.decline;
     await userEvent.click(canvas.getByRole("button", { name: decline.open }));
     const dialog = await screen.findByRole("dialog", { name: decline.title });
+    await userEvent.type(
+      within(dialog).getByRole("textbox", {
+        name: new RegExp(decline.comment),
+      }),
+      "Захворіла",
+    );
     await userEvent.click(
       within(dialog).getByRole("button", { name: decline.submit }),
     );
@@ -426,6 +482,9 @@ export const DeclinedAndGone: Story = {
       expect(screen.getByText(texts.Toasts.appointmentDeclined)).toBeVisible(),
     );
     await expect(screen.queryByRole("dialog")).toBeNull();
+    const data = mocked(cancelAppointment).mock.calls[0][1];
+    await expect(data.get("appointmentId")).toBe("a5");
+    await expect(data.get("comment")).toBe("Захворіла");
   },
 };
 

@@ -77,7 +77,7 @@ describe("confirmAppointment", () => {
 });
 
 describe("cancelAppointment", () => {
-  const decline = { appointmentId, variant: "decline" };
+  const decline = { appointmentId };
 
   it("declines with the trimmed comment and refreshes", async () => {
     await expect(
@@ -126,9 +126,7 @@ describe("cancelAppointment", () => {
   });
 
   it.each<Record<string, string>>([
-    { appointmentId: "1", variant: "decline" },
-    { appointmentId, variant: "other" },
-    { appointmentId },
+    { appointmentId: "1" },
     { ...decline, comment: "x".repeat(501) },
   ])("refuses invalid input %#", async (values) => {
     await expect(cancelAppointment({}, form(values))).resolves.toEqual(
