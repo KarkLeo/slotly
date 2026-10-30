@@ -96,9 +96,9 @@ begin
     ('5eed0000-0000-4000-8000-0000000000e9', daryna, '5eed0000-0000-4000-8000-0000000000b1', 1, time '10:00', interval '60 minutes', 15, 'cancelled', 'client', 'uk', 'master', 'Захворіла, вибачте. Оберіть, будь ласка, інший час.'),
     ('5eed0000-0000-4000-8000-000000000e10', olena, '5eed0000-0000-4000-8000-0000000000a1', 0, time '09:00', interval '90 minutes', 15, 'confirmed', 'client', 'uk', null, null),
     ('5eed0000-0000-4000-8000-000000000e11', olena, '5eed0000-0000-4000-8000-0000000000a2', 0, time '13:00', interval '30 minutes', 0, 'confirmed', 'manual', 'uk', null, null),
-    ('5eed0000-0000-4000-8000-000000000e12', olena, '5eed0000-0000-4000-8000-0000000000a3', 0, time '18:00', interval '60 minutes', 0, 'confirmed', 'client', 'en', null, null),
-    ('5eed0000-0000-4000-8000-000000000e13', olena, '5eed0000-0000-4000-8000-0000000000a2', 1, time '16:00', interval '30 minutes', 0, 'pending', 'client', 'uk', null, null),
-    ('5eed0000-0000-4000-8000-000000000e14', olena, '5eed0000-0000-4000-8000-0000000000a1', 5, time '12:30', interval '90 minutes', 15, 'pending', 'client', 'en', null, null)
+    ('5eed0000-0000-4000-8000-000000000e12', olena, '5eed0000-0000-4000-8000-0000000000a3', 0, time '16:30', interval '120 minutes', 15, 'confirmed', 'client', 'en', null, null),
+    ('5eed0000-0000-4000-8000-000000000e13', olena, '5eed0000-0000-4000-8000-0000000000a2', 1, time '16:00', interval '30 minutes', 0, 'pending', 'client', 'en', null, null),
+    ('5eed0000-0000-4000-8000-000000000e14', olena, '5eed0000-0000-4000-8000-0000000000a1', 5, time '12:30', interval '90 minutes', 15, 'pending', 'client', 'uk', null, null)
   ) as a (id, master_id, service_id, day, starts, duration, buffer, status, source, locale, cancelled_by, cancel_comment);
 
   insert into public.appointment_clients (appointment_id, master_id, client_card_id, name) values
