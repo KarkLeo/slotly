@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { useOnline } from "@/lib/use-online";
 import { useShownToastAction } from "@/toasts/use-shown-toast-action";
@@ -12,6 +12,7 @@ import type { AwaitingView } from "./view";
 export function AwaitingCard({ item }: { item: AwaitingView }) {
   const t = useTranslations("MasterCabinet.today");
   const online = useOnline();
+  const subjectId = useId();
   const [, action, pending] = useActionState<AppointmentActionState, FormData>(
     useShownToastAction(confirmAppointment),
     {},
@@ -19,7 +20,7 @@ export function AwaitingCard({ item }: { item: AwaitingView }) {
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-dashed border-primary bg-card p-3.5">
-      <div className="min-w-0">
+      <div id={subjectId} className="min-w-0">
         <p className="font-bold break-words">{item.clientName}</p>
         <p className="text-sm break-words text-muted-foreground">
           {item.service} · {t("when", item.when)}
@@ -34,6 +35,7 @@ export function AwaitingCard({ item }: { item: AwaitingView }) {
           <Button
             type="submit"
             className="flex-1"
+            aria-describedby={subjectId}
             disabled={!online}
             loading={pending}
           >
@@ -43,6 +45,7 @@ export function AwaitingCard({ item }: { item: AwaitingView }) {
         <CancelAppointmentDialog
           appointmentId={item.id}
           variant="decline"
+          describedBy={subjectId}
           disabled={!online || pending}
         />
       </div>

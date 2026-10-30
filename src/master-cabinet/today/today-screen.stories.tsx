@@ -35,6 +35,13 @@ const textsOf = (locale: unknown) =>
 
 const plain = (message: string) => message.replace(/<\/?\w+>/g, "");
 
+// A row stretches its cells, so the text's own line boxes show whether it wrapped.
+const lineCount = (el: HTMLElement) => {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  return new Set([...range.getClientRects()].map((rect) => rect.top)).size;
+};
+
 const counter = (canvas: HTMLElement, label: string) =>
   within(canvas).getByText(label, { selector: "dt" }).parentElement!;
 
@@ -94,6 +101,12 @@ export const Full: Story = {
     await expect(
       within(queue).getByRole("button", { name: t.today.decline.open }),
     ).toBeEnabled();
+    const subject = `Олена Кравець ${view.awaiting[0].service}`;
+    for (const name of [t.today.confirm, t.today.decline.open]) {
+      await expect(
+        within(queue).getByRole("button", { name }),
+      ).toHaveAccessibleDescription(expect.stringContaining(subject));
+    }
 
     const todayFeed = canvas.getByRole("region", { name: t.today.todayTitle });
     await expect(within(todayFeed).getAllByRole("listitem")).toHaveLength(5);
@@ -223,6 +236,10 @@ export const LongNames: Story = {
         new RegExp(longNames.service[localeOf(globals.locale)]),
       ),
     ).toBeVisible();
+    const time = within(todayFeed).getByText(
+      todayView(stories.longNames, localeOf(globals.locale)).today[0].time!,
+    );
+    await expect(lineCount(time)).toBe(1);
     await expect(overflowsX(queue)).toBe(false);
     await expect(overflowsX(todayFeed)).toBe(false);
     await expect(overflowsX(document.documentElement)).toBe(false);

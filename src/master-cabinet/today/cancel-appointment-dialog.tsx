@@ -20,10 +20,12 @@ import { type AppointmentActionState, cancelAppointment } from "./actions";
 export function CancelAppointmentDialog({
   appointmentId,
   variant,
+  describedBy,
   disabled = false,
 }: {
   appointmentId: string;
   variant: "decline";
+  describedBy?: string;
   disabled?: boolean;
 }) {
   const t = useTranslations(`MasterCabinet.today.${variant}`);
@@ -36,6 +38,7 @@ export function CancelAppointmentDialog({
   return (
     <Dialog>
       <DialogTrigger
+        aria-describedby={describedBy}
         disabled={disabled}
         render={<Button variant="outline" className="flex-1" />}
       >

@@ -66,6 +66,22 @@ export const Calendar: Story = {
   },
 };
 
+export const CalendarPhone: Story = {
+  args: { section: "calendar" },
+  beforeEach: () => {
+    mocked(usePathname).mockReturnValue("/app/calendar");
+  },
+  play: async ({ canvas, globals }) => {
+    const t = textsOf(globals.locale);
+    await expect(
+      canvas.getByRole("link", { name: t.add.block, hidden: true }),
+    ).not.toBeVisible();
+    await expect(
+      canvas.getByRole("link", { name: t.add.booking, hidden: true }),
+    ).not.toBeVisible();
+  },
+};
+
 export const NewBooking: Story = {
   args: { section: "newBooking" },
   beforeEach: () => {

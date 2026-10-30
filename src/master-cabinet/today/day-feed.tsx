@@ -33,7 +33,7 @@ function Row({ row }: { row: RowView }) {
     <div className="flex gap-3 px-2 py-3">
       <span
         className={cn(
-          "w-12 shrink-0 font-bold",
+          "min-w-12 shrink-0 font-bold whitespace-nowrap",
           row.muted && "text-muted-foreground",
         )}
       >
