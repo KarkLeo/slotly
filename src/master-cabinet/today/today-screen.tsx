@@ -9,7 +9,6 @@ import { accent } from "@/components/accent";
 import { EmptyState } from "@/components/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import { useRefreshOnVisible } from "@/lib/use-refresh-on-visible";
-import type { Theme } from "@/theme/theme";
 import { AddActions, PageHeader } from "../page-header";
 import { newBookingHref } from "../sections";
 import { AwaitingCard } from "./awaiting-card";
@@ -55,14 +54,7 @@ function Counters({ counts }: { counts: TodayView["counts"] }) {
   );
 }
 
-// theme and email keep the signature of the other cabinet sections; Today has no back button that needs them.
-export function TodayScreen({
-  view,
-}: {
-  view: TodayView;
-  theme: Theme;
-  email: string | null;
-}) {
+export function TodayScreen({ view }: { view: TodayView }) {
   const t = useTranslations("MasterCabinet");
   const queueId = useId();
   useRefreshOnVisible();

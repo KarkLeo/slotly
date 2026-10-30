@@ -250,10 +250,6 @@
       }
     },
     "stub": {
-      "today": {
-        "title": "Your <accent>day</accent> will be here",
-        "text": "Today's appointments and bookings waiting for confirmation."
-      },
       "calendar": {
         "title": "Your <accent>calendar</accent> will be here",
         "text": "The week and the day with all appointments and blocks."

@@ -19,7 +19,7 @@ const meta = {
   component: SectionStub,
   parameters: { layout: "fullscreen" },
   globals: { viewport: { value: "mobile360" } },
-  args: { section: "today", theme: "system", email: "master@example.com" },
+  args: { section: "calendar", theme: "system", email: "master@example.com" },
 } satisfies Meta<typeof SectionStub>;
 
 export default meta;
@@ -42,11 +42,11 @@ export const Services: Story = {
   },
 };
 
-export const Today: Story = {
-  args: { section: "today" },
+export const Calendar: Story = {
+  args: { section: "calendar" },
   globals: { viewport: { value: "desktop1280" } },
   beforeEach: () => {
-    mocked(usePathname).mockReturnValue("/app");
+    mocked(usePathname).mockReturnValue("/app/calendar");
   },
   play: async ({ canvas, globals }) => {
     const t = textsOf(globals.locale);
@@ -63,22 +63,6 @@ export const Today: Story = {
     await expect(
       canvas.getByRole("link", { name: t.add.booking }),
     ).toBeVisible();
-  },
-};
-
-export const TodayPhone: Story = {
-  args: { section: "today" },
-  beforeEach: () => {
-    mocked(usePathname).mockReturnValue("/app");
-  },
-  play: async ({ canvas, globals }) => {
-    const t = textsOf(globals.locale);
-    await expect(
-      canvas.getByRole("link", { name: t.add.block, hidden: true }),
-    ).not.toBeVisible();
-    await expect(
-      canvas.getByRole("link", { name: t.add.booking, hidden: true }),
-    ).not.toBeVisible();
   },
 };
 

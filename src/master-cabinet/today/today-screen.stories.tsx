@@ -38,8 +38,6 @@ const meta = {
   globals: { viewport: { value: "mobile360" } },
   args: {
     view: todayView(stories.full, "uk"),
-    theme: "system",
-    email: "master@example.com",
   },
   render: (args, { globals, parameters }) => (
     <div className="p-4">

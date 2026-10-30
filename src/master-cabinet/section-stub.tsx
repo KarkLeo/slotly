@@ -8,7 +8,7 @@ import type { Theme } from "@/theme/theme";
 import { AddActions, PageHeader } from "./page-header";
 import { sections, type SectionKey } from "./sections";
 
-type StubKey = SectionKey | "newBooking" | "newBlock";
+type StubKey = Exclude<SectionKey, "today"> | "newBooking" | "newBlock";
 
 export function SectionStub({
   section,
@@ -26,7 +26,7 @@ export function SectionStub({
   const title = found
     ? t(`sections.${found.key}`)
     : t(section === "newBlock" ? "add.block" : "add.booking");
-  const hasActions = section === "today" || section === "calendar";
+  const hasActions = section === "calendar";
 
   return (
     <>
