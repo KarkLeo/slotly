@@ -596,6 +596,33 @@ export type Database = {
         };
         Returns: string[];
       };
+      get_awaiting_decisions: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          appointment_id: string;
+          client_name: string;
+          ends_at: string;
+          hold_until: string;
+          service_name: Json;
+          starts_at: string;
+        }[];
+      };
+      get_master_agenda: {
+        Args: { from_date: string; to_date: string };
+        Returns: {
+          all_day: boolean;
+          client_name: string;
+          day: string;
+          ends_at: string;
+          hold_until: string;
+          id: string;
+          kind: string;
+          note: string;
+          service_name: Json;
+          starts_at: string;
+          status: Database["public"]["Enums"]["appointment_status"];
+        }[];
+      };
       get_my_bookings: {
         Args: Record<PropertyKey, never>;
         Returns: {
