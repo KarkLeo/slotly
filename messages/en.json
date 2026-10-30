@@ -63,7 +63,11 @@
     "rescheduleRequested": "The new time has been sent to the master to confirm.",
     "changeClosed": "This booking can no longer be cancelled or moved online.",
     "bookingNotActive": "This booking is no longer active.",
-    "rescheduleClosed": "The master no longer takes bookings for this service, so it cannot be moved. You can cancel the booking."
+    "rescheduleClosed": "The master no longer takes bookings for this service, so it cannot be moved. You can cancel the booking.",
+    "appointmentConfirmed": "Appointment confirmed. The client will be notified.",
+    "appointmentDeclined": "Appointment declined. The client will be notified.",
+    "decisionExpired": "The time to respond has run out, the appointment is already cancelled.",
+    "appointmentChanged": "This appointment has already changed. The screen was refreshed."
   },
   "Landing": {
     "languages": "Page language",
