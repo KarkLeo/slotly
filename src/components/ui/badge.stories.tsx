@@ -58,9 +58,12 @@ export const StatusOnCard: Story = {
     </div>
   ),
   play: async ({ canvas }) => {
-    const status = canvas.getByText("success").closest("[data-slot=badge]")!;
-    await expect(getComputedStyle(status).fontWeight).toBe("600");
-    await expect(computedColor(status)).toBe(resolvedColor("bg-background"));
+    // A one-line status badge stays 20 px tall, with or without a visible border.
+    for (const variant of variants) {
+      const status = canvas.getByText(variant).closest("[data-slot=badge]")!;
+      await expect(getComputedStyle(status).fontWeight).toBe("600");
+      await expect(status.getBoundingClientRect().height).toBe(20);
+    }
   },
 };
 

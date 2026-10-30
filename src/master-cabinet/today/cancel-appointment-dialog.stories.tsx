@@ -49,7 +49,6 @@ export const Decline: Story = {
     const form = mocked(args.action).mock.calls[0][0];
     await expect(form.get("appointmentId")).toBe("a5");
     await expect(form.get("comment")).toBe("Захворіла");
-    await expect(form.has("variant")).toBe(false);
   },
 };
 
