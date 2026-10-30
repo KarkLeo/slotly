@@ -4,7 +4,7 @@ import { MenuIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { SignOutForm } from "@/auth/sign-out-form";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Sheet,
   SheetBody,
@@ -17,7 +17,13 @@ import { LocaleSwitcher } from "@/i18n/locale-switcher";
 import type { Theme } from "@/theme/theme";
 import { ThemeSwitcher } from "@/theme/theme-switcher";
 
-export function CabinetHeader({ theme }: { theme: Theme }) {
+export function CabinetHeader({
+  theme,
+  isMaster,
+}: {
+  theme: Theme;
+  isMaster: boolean;
+}) {
   const t = useTranslations("MyBookings");
 
   return (
@@ -44,7 +50,20 @@ export function CabinetHeader({ theme }: { theme: Theme }) {
           <SheetBody className="flex flex-col items-start gap-4">
             <LocaleSwitcher />
             <ThemeSwitcher theme={theme} />
-            <SignOutForm />
+            {isMaster && (
+              <Link
+                href="/app"
+                className={buttonVariants({
+                  variant: "outline",
+                  className: "w-full",
+                })}
+              >
+                {t("masterCabinet")}
+              </Link>
+            )}
+            <div className="w-full">
+              <SignOutForm />
+            </div>
           </SheetBody>
         </SheetContent>
       </Sheet>

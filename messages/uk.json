@@ -29,10 +29,7 @@
     }
   },
   "Cabinet": {
-    "title": "Кабінет",
-    "signedInAs": "Ви увійшли як {email}",
-    "signOut": "Вийти",
-    "myBookings": "Мої записи"
+    "signOut": "Вийти"
   },
   "OAuthConsent": {
     "title": "Підключити {client} до Slotly?",
@@ -148,6 +145,7 @@
   "MyBookings": {
     "title": "Мої <accent>записи</accent>",
     "menu": "Меню",
+    "masterCabinet": "Кабінет майстра",
     "home": "Slotly — мої записи",
     "upcoming": "Актуальні",
     "history": "Історія",
@@ -187,5 +185,74 @@
     "notFoundTitle": "Запис <accent>не знайдено</accent>",
     "notFoundText": "Можливо, його вже немає або він належить іншому користувачу.",
     "toList": "До моїх записів"
+  },
+  "MasterCabinet": {
+    "offline": "Немає з’єднання. Зміни недоступні.",
+    "navigation": "Розділи кабінету",
+    "more": "Ще",
+    "back": "Назад",
+    "clientRole": "Мої записи як клієнт",
+    "add": {
+      "title": "Створити",
+      "booking": "Записати клієнта",
+      "block": "Заблокувати час"
+    },
+    "sections": {
+      "today": "Сьогодні",
+      "calendar": "Календар",
+      "clients": "Клієнти",
+      "appointments": "Заняття",
+      "services": "Послуги",
+      "schedule": "Розклад",
+      "landing": "Лендинг",
+      "agents": "Агенти",
+      "settings": "Налаштування"
+    },
+    "stub": {
+      "today": {
+        "title": "Тут буде ваш <accent>день</accent>",
+        "text": "Заняття на сьогодні й записи, що чекають підтвердження."
+      },
+      "calendar": {
+        "title": "Тут буде <accent>календар</accent>",
+        "text": "Тиждень і день з усіма заняттями та блокуваннями."
+      },
+      "clients": {
+        "title": "Тут будуть <accent>клієнти</accent>",
+        "text": "Усі клієнти з історією їхніх записів."
+      },
+      "appointments": {
+        "title": "Тут будуть <accent>заняття</accent>",
+        "text": "Список занять і записів з усіма статусами."
+      },
+      "services": {
+        "title": "Тут будуть <accent>послуги</accent>",
+        "text": "Ваші послуги з тривалістю та ціною."
+      },
+      "schedule": {
+        "title": "Тут буде <accent>розклад</accent>",
+        "text": "Робочий шаблон тижня та винятки на окремі дні."
+      },
+      "landing": {
+        "title": "Тут буде <accent>лендинг</accent>",
+        "text": "Блоки, тема й публікація вашого лендингу."
+      },
+      "agents": {
+        "title": "Тут будуть <accent>агенти</accent>",
+        "text": "Агенти, які допомагають вести записи за вас."
+      },
+      "settings": {
+        "title": "Тут будуть <accent>налаштування</accent>",
+        "text": "Профіль, адреса лендингу, часовий пояс, валюта й Telegram."
+      },
+      "newBooking": {
+        "title": "Тут буде <accent>запис</accent>",
+        "text": "Форма, щоб записати клієнта на заняття."
+      },
+      "newBlock": {
+        "title": "Тут буде <accent>блокування</accent>",
+        "text": "Форма, щоб закрити час для записів."
+      }
+    }
   }
 }

@@ -29,10 +29,7 @@
     }
   },
   "Cabinet": {
-    "title": "Dashboard",
-    "signedInAs": "Signed in as {email}",
-    "signOut": "Sign out",
-    "myBookings": "My bookings"
+    "signOut": "Sign out"
   },
   "OAuthConsent": {
     "title": "Connect {client} to Slotly?",
@@ -148,6 +145,7 @@
   "MyBookings": {
     "title": "My <accent>bookings</accent>",
     "menu": "Menu",
+    "masterCabinet": "Master cabinet",
     "home": "Slotly — my bookings",
     "upcoming": "Upcoming",
     "history": "History",
@@ -187,5 +185,74 @@
     "notFoundTitle": "Booking <accent>not found</accent>",
     "notFoundText": "It may no longer exist or belong to another user.",
     "toList": "To my bookings"
+  },
+  "MasterCabinet": {
+    "offline": "No connection. Changes are unavailable.",
+    "navigation": "Cabinet sections",
+    "more": "More",
+    "back": "Back",
+    "clientRole": "My bookings as a client",
+    "add": {
+      "title": "Create",
+      "booking": "Book a client",
+      "block": "Block time"
+    },
+    "sections": {
+      "today": "Today",
+      "calendar": "Calendar",
+      "clients": "Clients",
+      "appointments": "Appointments",
+      "services": "Services",
+      "schedule": "Schedule",
+      "landing": "Landing",
+      "agents": "Agents",
+      "settings": "Settings"
+    },
+    "stub": {
+      "today": {
+        "title": "Your <accent>day</accent> will be here",
+        "text": "Today's appointments and bookings waiting for confirmation."
+      },
+      "calendar": {
+        "title": "Your <accent>calendar</accent> will be here",
+        "text": "The week and the day with all appointments and blocks."
+      },
+      "clients": {
+        "title": "Your <accent>clients</accent> will be here",
+        "text": "Every client with their booking history."
+      },
+      "appointments": {
+        "title": "Your <accent>appointments</accent> will be here",
+        "text": "A list of appointments and bookings with every status."
+      },
+      "services": {
+        "title": "Your <accent>services</accent> will be here",
+        "text": "Your services with duration and price."
+      },
+      "schedule": {
+        "title": "Your <accent>schedule</accent> will be here",
+        "text": "The weekly working template and exceptions for single days."
+      },
+      "landing": {
+        "title": "Your <accent>landing</accent> will be here",
+        "text": "Blocks, theme and publishing of your landing."
+      },
+      "agents": {
+        "title": "Your <accent>agents</accent> will be here",
+        "text": "Agents that help manage bookings for you."
+      },
+      "settings": {
+        "title": "Your <accent>settings</accent> will be here",
+        "text": "Profile, landing address, time zone, currency and Telegram."
+      },
+      "newBooking": {
+        "title": "A <accent>booking</accent> form will be here",
+        "text": "A form to book a client for an appointment."
+      },
+      "newBlock": {
+        "title": "A <accent>block</accent> form will be here",
+        "text": "A form to close time for bookings."
+      }
+    }
   }
 }

@@ -2,6 +2,7 @@ import { CalendarIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { accent } from "@/components/accent";
+import { EmptyState } from "@/components/empty-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { StatusLine } from "./status";
 import type { BookingView } from "./view";
@@ -40,17 +41,11 @@ export function BookingsList({
       </nav>
 
       {bookings.length === 0 && tab === "upcoming" && (
-        <div className="flex flex-col items-center gap-2.5 px-3 py-12 text-center">
-          <span className="flex size-16 items-center justify-center rounded-full bg-card text-muted-foreground">
-            <CalendarIcon aria-hidden className="size-7" />
-          </span>
-          <h2 className="text-xl font-extrabold tracking-[-0.02em]">
-            {t.rich("emptyTitle", { accent })}
-          </h2>
-          <p className="max-w-64 text-sm text-muted-foreground">
-            {t("emptyText")}
-          </p>
-        </div>
+        <EmptyState
+          icon={CalendarIcon}
+          title={t.rich("emptyTitle", { accent })}
+          text={t("emptyText")}
+        />
       )}
       {bookings.length === 0 && tab === "history" && (
         <p className="py-12 text-center text-sm text-muted-foreground">
