@@ -94,7 +94,6 @@ function data(
   return {
     timeZone,
     primaryLocale: "uk",
-    today,
     agenda,
     awaiting: awaitingDecisions,
   };

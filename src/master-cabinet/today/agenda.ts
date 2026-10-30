@@ -6,8 +6,9 @@ type Functions = Database["public"]["Functions"];
 // Generated types lose the nullability of set-returning function columns.
 export type AgendaRow = Omit<
   Functions["get_master_agenda"]["Returns"][number],
-  "hold_until" | "client_name" | "service_name" | "note"
+  "status" | "hold_until" | "client_name" | "service_name" | "note"
 > & {
+  status: Functions["get_master_agenda"]["Returns"][number]["status"] | null;
   hold_until: string | null;
   client_name: string | null;
   service_name: LocalizedText | null;

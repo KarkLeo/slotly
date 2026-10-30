@@ -14,7 +14,6 @@ import {
 export type TodayData = {
   timeZone: string;
   primaryLocale: Locale;
-  today: string;
   agenda: AgendaItem[];
   awaiting: AwaitingDecision[];
 };
@@ -46,7 +45,6 @@ export async function loadToday(
   return {
     timeZone: master.timezone,
     primaryLocale: master.primary_locale,
-    today,
     agenda: (agenda.data as AgendaRow[]).map(toAgendaItem),
     awaiting: (awaiting.data as AwaitingRow[]).map(toAwaitingDecision),
   };

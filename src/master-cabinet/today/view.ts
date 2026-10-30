@@ -59,7 +59,8 @@ export function toTodayView(
   locale: Locale,
   now: Date,
 ): TodayView {
-  const { timeZone, primaryLocale, today } = data;
+  const { timeZone, primaryLocale } = data;
+  const today = localDate(now, timeZone);
   const tomorrow = addDays(today, 1);
   const time = (instant: string) => slotTimeLabel(instant, timeZone, locale);
 

@@ -22,7 +22,7 @@ describe("toAgendaItem", () => {
         ...base,
         kind: "block",
         all_day: true,
-        status: null as never,
+        status: null,
         client_name: null,
         service_name: null,
         note: "Vacation",

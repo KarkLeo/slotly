@@ -46,7 +46,6 @@ function awaiting(
 const data: TodayData = {
   timeZone: "Europe/Kyiv",
   primaryLocale: "uk",
-  today: "2026-10-30",
   agenda: [
     appt("done", "2026-10-30", "2026-10-30T06:00:00Z", "2026-10-30T07:00:00Z"),
     appt("live", "2026-10-30", "2026-10-30T09:30:00Z", "2026-10-30T10:30:00Z"),
@@ -154,6 +153,7 @@ describe("toTodayView", () => {
   });
 
   it("uses the master's date, not UTC, for a New York master", () => {
+    // Already 31 October in UTC, still 30 October in New York.
     const ny = new Date("2026-10-31T02:30:00Z");
     const view = toTodayView(
       {
