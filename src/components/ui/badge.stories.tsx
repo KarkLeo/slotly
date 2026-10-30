@@ -9,6 +9,9 @@ const variants = [
   "accent",
   "outline",
   "destructive",
+  "muted",
+  "success",
+  "warning",
 ] as const;
 
 const meta = {
@@ -40,6 +43,24 @@ export const Variants: Story = {
     }
     const accent = canvas.getByText("accent").closest("[data-slot=badge]")!;
     await expect(computedColor(accent)).toBe(resolvedColor("bg-accent"));
+  },
+};
+
+// Status badges sit on cards as well as on the page, so their text must keep its contrast on both.
+export const StatusOnCard: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-2 bg-card p-4">
+      {variants.map((variant) => (
+        <Badge key={variant} variant={variant} size="status">
+          {variant}
+        </Badge>
+      ))}
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const status = canvas.getByText("success").closest("[data-slot=badge]")!;
+    await expect(getComputedStyle(status).fontWeight).toBe("600");
+    await expect(computedColor(status)).toBe(resolvedColor("bg-background"));
   },
 };
 
