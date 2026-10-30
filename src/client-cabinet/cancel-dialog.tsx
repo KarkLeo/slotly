@@ -1,19 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useId } from "react";
+import { useActionState } from "react";
+import { CommentDialog } from "@/components/comment-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Textarea } from "@/components/ui/textarea";
 import { useActionToast } from "@/toasts/use-action-toast";
 import { withUnexpectedToast } from "@/toasts/with-unexpected-toast";
 import { cancelBooking, type CancelBookingState } from "./actions";
@@ -22,7 +12,6 @@ const submit = withUnexpectedToast(cancelBooking);
 
 export function CancelDialog({ appointmentId }: { appointmentId: string }) {
   const t = useTranslations("MyBookings");
-  const commentId = useId();
   const [state, action, pending] = useActionState<CancelBookingState, FormData>(
     submit,
     {},
@@ -30,52 +19,23 @@ export function CancelDialog({ appointmentId }: { appointmentId: string }) {
   useActionToast(state.toast);
 
   return (
-    <Dialog>
-      <DialogTrigger
-        render={
-          <Button variant="outline" className="flex-1 text-destructive" />
-        }
-      >
-        {t("cancel")}
-      </DialogTrigger>
-      <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle className="text-xl font-extrabold tracking-[-0.02em]">
-            {t("cancelTitle")}
-          </DialogTitle>
-          <DialogDescription>{t("cancelText")}</DialogDescription>
-        </DialogHeader>
-        <form action={action} className="flex flex-col gap-3">
-          <input type="hidden" name="appointmentId" value={appointmentId} />
-          <Field>
-            <FieldLabel htmlFor={commentId}>
-              {t("comment")}{" "}
-              <span className="font-normal text-muted-foreground">
-                {t("optional")}
-              </span>
-            </FieldLabel>
-            <Textarea
-              id={commentId}
-              name="comment"
-              rows={3}
-              maxLength={500}
-              placeholder={t("commentPlaceholder")}
-              className="resize-none"
-            />
-          </Field>
-          <Button
-            type="submit"
-            variant="destructive"
-            disabled={pending}
-            aria-busy={pending || undefined}
-          >
-            {t("cancelConfirm")}
-          </Button>
-          <DialogClose render={<Button variant="outline" />}>
-            {t("back")}
-          </DialogClose>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <CommentDialog
+      trigger={
+        <Button variant="outline" className="flex-1 text-destructive">
+          {t("cancel")}
+        </Button>
+      }
+      title={t("cancelTitle")}
+      text={t("cancelText")}
+      commentLabel={t("comment")}
+      optionalLabel={t("optional")}
+      placeholder={t("commentPlaceholder")}
+      submitLabel={t("cancelConfirm")}
+      backLabel={t("back")}
+      action={action}
+      pending={pending}
+    >
+      <input type="hidden" name="appointmentId" value={appointmentId} />
+    </CommentDialog>
   );
 }
