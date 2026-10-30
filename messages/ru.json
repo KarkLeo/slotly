@@ -212,6 +212,43 @@
       "agents": "Агенты",
       "settings": "Настройки"
     },
+    "today": {
+      "counters": {
+        "today": "сегодня",
+        "tomorrow": "завтра",
+        "awaiting": "ждут вас"
+      },
+      "awaitingTitle": "Ждут вас",
+      "when": "{day, select, today {сегодня} tomorrow {завтра} other {{date}}}, {time}",
+      "answerBy": "Ответьте до {time} {day, select, today {сегодня} tomorrow {завтра} other {{date}}}, иначе запись отменится",
+      "confirm": "Подтвердить",
+      "decline": {
+        "open": "Отклонить",
+        "title": "Отклонить запись?",
+        "text": "Клиент получит уведомление, что запись отклонена, и ссылку, чтобы выбрать другое время. Время освободится.",
+        "comment": "Комментарий для клиента",
+        "optional": "(необязательно)",
+        "placeholder": "Например: заболела, давайте перенесём на следующую неделю",
+        "submit": "Отклонить запись",
+        "back": "Назад"
+      },
+      "todayTitle": "Сегодня",
+      "tomorrowTitle": "Завтра",
+      "nothingPlanned": "Ничего не запланировано",
+      "block": "Блокировка",
+      "allDay": "Весь день",
+      "badges": {
+        "awaitingMaster": "Ждёт вас",
+        "confirmed": "Подтверждено",
+        "now": "Сейчас",
+        "completed": "Завершено",
+        "noShow": "Неявка"
+      },
+      "empty": {
+        "title": "День <accent>свободен</accent>",
+        "text": "На сегодня и завтра нет занятий, и никто не ждёт вашего ответа."
+      }
+    },
     "stub": {
       "today": {
         "title": "Здесь будет ваш <accent>день</accent>",

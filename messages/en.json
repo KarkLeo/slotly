@@ -212,6 +212,43 @@
       "agents": "Agents",
       "settings": "Settings"
     },
+    "today": {
+      "counters": {
+        "today": "today",
+        "tomorrow": "tomorrow",
+        "awaiting": "awaiting you"
+      },
+      "awaitingTitle": "Awaiting you",
+      "when": "{day, select, today {today} tomorrow {tomorrow} other {{date}}}, {time}",
+      "answerBy": "Reply by {time} {day, select, today {today} tomorrow {tomorrow} other {{date}}}, or the booking will be cancelled",
+      "confirm": "Confirm",
+      "decline": {
+        "open": "Decline",
+        "title": "Decline the booking?",
+        "text": "The client will be told the booking was declined and get a link to pick another time. The time will be free.",
+        "comment": "Comment for the client",
+        "optional": "(optional)",
+        "placeholder": "For example: I'm ill, let's move it to next week",
+        "submit": "Decline booking",
+        "back": "Back"
+      },
+      "todayTitle": "Today",
+      "tomorrowTitle": "Tomorrow",
+      "nothingPlanned": "Nothing planned",
+      "block": "Block",
+      "allDay": "All day",
+      "badges": {
+        "awaitingMaster": "Awaiting you",
+        "confirmed": "Confirmed",
+        "now": "Now",
+        "completed": "Completed",
+        "noShow": "No-show"
+      },
+      "empty": {
+        "title": "The day is <accent>free</accent>",
+        "text": "No appointments today or tomorrow, and nobody is waiting for your reply."
+      }
+    },
     "stub": {
       "today": {
         "title": "Your <accent>day</accent> will be here",

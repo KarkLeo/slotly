@@ -2,18 +2,11 @@
 
 import { CalendarPlusIcon, LockIcon, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { accent } from "@/components/accent";
 import { EmptyState } from "@/components/empty-state";
-import { buttonVariants } from "@/components/ui/button";
 import type { Theme } from "@/theme/theme";
-import { PageHeader } from "./page-header";
-import {
-  newBlockHref,
-  newBookingHref,
-  sections,
-  type SectionKey,
-} from "./sections";
+import { AddActions, PageHeader } from "./page-header";
+import { sections, type SectionKey } from "./sections";
 
 type StubKey = SectionKey | "newBooking" | "newBlock";
 
@@ -40,21 +33,7 @@ export function SectionStub({
       <PageHeader
         title={title}
         back={found?.place === "more" ? { theme, email } : undefined}
-        actions={
-          hasActions && (
-            <>
-              <Link
-                href={newBlockHref}
-                className={buttonVariants({ variant: "outline" })}
-              >
-                {t("add.block")}
-              </Link>
-              <Link href={newBookingHref} className={buttonVariants()}>
-                {t("add.booking")}
-              </Link>
-            </>
-          )
-        }
+        actions={hasActions && <AddActions />}
       />
       <EmptyState
         icon={Icon}

@@ -4,7 +4,12 @@ import { expect, mocked, waitFor, within } from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
-import { intersects, overflowsX } from "@/components/ui/story-helpers";
+import {
+  intersects,
+  overflowsX,
+  restoreOnLine,
+  stubOnLine,
+} from "@/components/ui/story-helpers";
 import { isLocale, type Locale } from "@/i18n/locales";
 import { MasterShell } from "./shell";
 
@@ -12,17 +17,6 @@ const dictionaries = { uk, ru, en };
 
 const textsOf = (locale: unknown) =>
   dictionaries[isLocale(locale) ? (locale as Locale) : "uk"].MasterCabinet;
-
-const original = Object.getOwnPropertyDescriptor(Navigator.prototype, "onLine");
-
-function stubOnLine(value: boolean) {
-  Object.defineProperty(navigator, "onLine", { configurable: true, value });
-}
-
-function restoreOnLine() {
-  Reflect.deleteProperty(navigator, "onLine");
-  if (original) Object.defineProperty(Navigator.prototype, "onLine", original);
-}
 
 const cards = Array.from({ length: 20 }, (_, i) => (
   <div key={i} className="mb-3 rounded-2xl bg-card p-4">

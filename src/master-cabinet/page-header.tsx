@@ -2,10 +2,12 @@
 
 import { ArrowLeftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { Theme } from "@/theme/theme";
 import { MoreSheet } from "./more-sheet";
+import { newBlockHref, newBookingHref } from "./sections";
 
 export function PageHeader({
   title,
@@ -47,5 +49,23 @@ export function PageHeader({
         <div className="hidden items-center gap-2 lg:flex">{actions}</div>
       )}
     </header>
+  );
+}
+
+export function AddActions() {
+  const t = useTranslations("MasterCabinet");
+
+  return (
+    <>
+      <Link
+        href={newBlockHref}
+        className={buttonVariants({ variant: "outline" })}
+      >
+        {t("add.block")}
+      </Link>
+      <Link href={newBookingHref} className={buttonVariants()}>
+        {t("add.booking")}
+      </Link>
+    </>
   );
 }
