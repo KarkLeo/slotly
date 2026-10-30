@@ -14,11 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import { useActionToast } from "@/toasts/use-action-toast";
-import { withUnexpectedToast } from "@/toasts/with-unexpected-toast";
+import { useShownToastAction } from "@/toasts/use-shown-toast-action";
 import { type AppointmentActionState, cancelAppointment } from "./actions";
-
-const submit = withUnexpectedToast(cancelAppointment);
 
 export function CancelAppointmentDialog({
   appointmentId,
@@ -31,11 +28,10 @@ export function CancelAppointmentDialog({
 }) {
   const t = useTranslations(`MasterCabinet.today.${variant}`);
   const commentId = useId();
-  const [state, action, pending] = useActionState<
-    AppointmentActionState,
-    FormData
-  >(submit, {});
-  useActionToast(state.toast);
+  const [, action, pending] = useActionState<AppointmentActionState, FormData>(
+    useShownToastAction(cancelAppointment),
+    {},
+  );
 
   return (
     <Dialog>

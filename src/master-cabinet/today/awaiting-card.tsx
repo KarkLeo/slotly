@@ -4,22 +4,18 @@ import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { useOnline } from "@/lib/use-online";
-import { useActionToast } from "@/toasts/use-action-toast";
-import { withUnexpectedToast } from "@/toasts/with-unexpected-toast";
+import { useShownToastAction } from "@/toasts/use-shown-toast-action";
 import { type AppointmentActionState, confirmAppointment } from "./actions";
 import { CancelAppointmentDialog } from "./cancel-appointment-dialog";
 import type { AwaitingView } from "./view";
 
-const submit = withUnexpectedToast(confirmAppointment);
-
 export function AwaitingCard({ item }: { item: AwaitingView }) {
   const t = useTranslations("MasterCabinet.today");
   const online = useOnline();
-  const [state, action, pending] = useActionState<
-    AppointmentActionState,
-    FormData
-  >(submit, {});
-  useActionToast(state.toast);
+  const [, action, pending] = useActionState<AppointmentActionState, FormData>(
+    useShownToastAction(confirmAppointment),
+    {},
+  );
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-dashed border-primary bg-card p-3.5">

@@ -1,5 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, fireEvent, mocked, waitFor, within } from "storybook/test";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  expect,
+  fireEvent,
+  mocked,
+  screen,
+  waitFor,
+  within,
+} from "storybook/test";
 import en from "../../../messages/en.json";
 import ru from "../../../messages/ru.json";
 import uk from "../../../messages/uk.json";
@@ -8,9 +17,11 @@ import {
   restoreOnLine,
   stubOnLine,
 } from "@/components/ui/story-helpers";
+import { Toaster } from "@/components/ui/sonner";
 import { isLocale, type Locale } from "@/i18n/locales";
+import type { ActionToast } from "@/toasts/toast";
 import { newBookingHref } from "../sections";
-import { confirmAppointment } from "./actions";
+import { cancelAppointment, confirmAppointment } from "./actions";
 import type { TodayData } from "./load";
 import { longNames, stories, todayView } from "./story-today";
 import { TodayScreen } from "./today-screen";
@@ -251,7 +262,12 @@ export const OfflineEnglish: Story = { ...Offline, globals: { locale: "en" } };
 
 export const Confirming: Story = {
   beforeEach: () => {
-    mocked(confirmAppointment).mockImplementation(() => new Promise(() => {}));
+    const settle = { now: () => {} };
+    mocked(confirmAppointment).mockImplementation(
+      () => new Promise((resolve) => (settle.now = () => resolve({}))),
+    );
+    // React holds every later transition on the page until a pending action settles.
+    return () => settle.now();
   },
   play: async ({ canvas, userEvent, globals }) => {
     const t = textsOf(globals.locale);
@@ -288,4 +304,115 @@ export const ConfirmingRussian: Story = {
 export const ConfirmingEnglish: Story = {
   ...Confirming,
   globals: { locale: "en" },
+};
+
+// A decision refreshes the page, which drops the decided card in the same commit as the action's result.
+const decided = { drop: () => {} };
+
+function DecidedQueue({ locale }: { locale: Locale }) {
+  const [data, setData] = useState(stories.full);
+  useEffect(() => {
+    decided.drop = () => setData((before) => ({ ...before, awaiting: [] }));
+  }, []);
+  return (
+    <div className="p-4">
+      <Toaster />
+      <TodayScreen view={todayView(data, locale)} />
+    </div>
+  );
+}
+
+const dropOnResolve = (result: ActionToast) => async () => {
+  decided.drop();
+  return { toast: result };
+};
+
+const decidedQueue: Story["render"] = (_args, { globals }) => (
+  <DecidedQueue locale={localeOf(globals.locale)} />
+);
+
+export const ConfirmedAndGone: Story = {
+  render: decidedQueue,
+  beforeEach: () => {
+    mocked(confirmAppointment).mockImplementation(
+      dropOnResolve({ type: "success", key: "appointmentConfirmed" }),
+    );
+    return () => toast.dismiss();
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const texts = dictionaries[localeOf(globals.locale)];
+    const queue = canvas.getByRole("region", {
+      name: texts.MasterCabinet.today.awaitingTitle,
+    });
+    await userEvent.click(
+      within(queue).getByRole("button", {
+        name: texts.MasterCabinet.today.confirm,
+      }),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole("region", {
+          name: texts.MasterCabinet.today.awaitingTitle,
+        }),
+      ).toBeNull(),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(texts.Toasts.appointmentConfirmed)).toBeVisible(),
+    );
+  },
+};
+
+export const ConfirmedAndGoneEnglish: Story = {
+  ...ConfirmedAndGone,
+  globals: { locale: "en" },
+};
+
+export const ExpiredAndGone: Story = {
+  render: decidedQueue,
+  beforeEach: () => {
+    mocked(confirmAppointment).mockImplementation(
+      dropOnResolve({ type: "error", key: "decisionExpired" }),
+    );
+    return () => toast.dismiss();
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const texts = dictionaries[localeOf(globals.locale)];
+    await userEvent.click(
+      canvas.getByRole("button", { name: texts.MasterCabinet.today.confirm }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(texts.Toasts.decisionExpired)).toBeVisible(),
+    );
+    await expect(
+      screen.queryByText(texts.Toasts.appointmentConfirmed),
+    ).toBeNull();
+  },
+};
+
+export const DeclinedAndGone: Story = {
+  render: decidedQueue,
+  beforeEach: () => {
+    mocked(cancelAppointment).mockImplementation(
+      dropOnResolve({ type: "success", key: "appointmentDeclined" }),
+    );
+    return () => toast.dismiss();
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const texts = dictionaries[localeOf(globals.locale)];
+    const decline = texts.MasterCabinet.today.decline;
+    await userEvent.click(canvas.getByRole("button", { name: decline.open }));
+    const dialog = await screen.findByRole("dialog", { name: decline.title });
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: decline.submit }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(texts.Toasts.appointmentDeclined)).toBeVisible(),
+    );
+    await expect(screen.queryByRole("dialog")).toBeNull();
+  },
+};
+
+export const DeclinedAndGoneRussian: Story = {
+  ...DeclinedAndGone,
+  globals: { locale: "ru" },
 };
