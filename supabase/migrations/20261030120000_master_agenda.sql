@@ -28,10 +28,10 @@ begin
   ),
   days as (
     select d::date as day,
-      d::timestamp at time zone me.timezone as day_start,
+      d at time zone me.timezone as day_start,
       (d::date + 1)::timestamp at time zone me.timezone as day_end
     from me
-    cross join generate_series(get_master_agenda.from_date, get_master_agenda.to_date, interval '1 day') d
+    cross join generate_series(get_master_agenda.from_date::timestamp, get_master_agenda.to_date::timestamp, interval '1 day') d
   )
   select 'appointment', a.id, (lower(a.during) at time zone me.timezone)::date, lower(a.during), upper(a.during),
     false, a.status, a.hold_until, cc.name, sv.name, null::text
@@ -40,7 +40,9 @@ begin
   join public.services sv on sv.id = a.service_id
   left join public.appointment_clients ac on ac.appointment_id = a.id
   left join public.client_cards cc on cc.id = ac.client_card_id
-  where (lower(a.during) at time zone me.timezone)::date between get_master_agenda.from_date and get_master_agenda.to_date
+  where a.during && tstzrange(get_master_agenda.from_date::timestamp at time zone me.timezone,
+      (get_master_agenda.to_date + 1)::timestamp at time zone me.timezone)
+    and (lower(a.during) at time zone me.timezone)::date between get_master_agenda.from_date and get_master_agenda.to_date
     and (a.status in ('confirmed', 'completed', 'no_show')
       or (a.status = 'pending' and a.contact_confirmed_at is not null and a.hold_until > now()))
   union all
