@@ -37,7 +37,9 @@
   --destructive-solid: #b42318;
   --destructive-solid-foreground: #ffffff;
   --success: light-dark(#2a7448, #5cc489);
+  --success-bg: light-dark(#dcefe3, #1f3a29);
   --warning: light-dark(#8f6200, #e0b13c);
+  --warning-bg: light-dark(#f7ecd4, #3a2f14);
   --info: light-dark(#2b67a6, #7ab3ee);
   --chart-1: light-dark(#5b3fd1, #a78bfa);
   --chart-2: light-dark(#0f9f7b, #34d3a6);
@@ -76,7 +78,9 @@
   --color-destructive-solid: var(--destructive-solid);
   --color-destructive-solid-foreground: var(--destructive-solid-foreground);
   --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
   --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
   --color-info: var(--info);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);

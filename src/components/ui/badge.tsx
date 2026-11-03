@@ -19,9 +19,8 @@ const badgeVariants = cva(
         outline:
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         muted: "bg-muted text-muted-foreground",
-        // Colored text keeps its contrast on the page background, also when the badge sits on a card.
-        success: "border-success/30 bg-background text-success",
-        warning: "border-warning/30 bg-background text-warning",
+        success: "bg-success-bg text-success",
+        warning: "bg-warning-bg text-warning",
       },
       size: {
         default: "h-5 px-2 py-0.5 font-medium",
