@@ -4,6 +4,7 @@ export type TimeZoneOption = {
   id: string;
   city: string;
   region: string;
+  country: string;
   offset: string;
 };
 
@@ -41,6 +42,37 @@ function offsetMinutes(offset: string): number {
   return match[1] === "-" ? -minutes : minutes;
 }
 
+let countryCodesByZone: Map<string, string[]> | undefined;
+
+function zoneCountryCodes(id: string): string[] {
+  if (!countryCodesByZone) {
+    countryCodesByZone = new Map();
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (const first of letters) {
+      for (const second of letters) {
+        const code = first + second;
+        const zones = new Intl.Locale(`und-${code}`).getTimeZones?.() ?? [];
+        for (const zone of zones) {
+          const key = canonicalTimeZone(zone);
+          countryCodesByZone.set(key, [
+            ...(countryCodesByZone.get(key) ?? []),
+            code,
+          ]);
+        }
+      }
+    }
+  }
+  return countryCodesByZone.get(id) ?? [];
+}
+
+function countryNames(id: string, locale: Locale): string {
+  const names = new Intl.DisplayNames([locale], { type: "region" });
+  return zoneCountryCodes(id)
+    .map((code) => names.of(code))
+    .filter(Boolean)
+    .join(", ");
+}
+
 export function timeZoneOption(
   id: string,
   locale: Locale,
@@ -50,6 +82,7 @@ export function timeZoneOption(
     id,
     city: (id.split("/").at(-1) ?? id).replaceAll("_", " "),
     region: zoneName(id, locale, "longGeneric", now),
+    country: countryNames(id, locale),
     offset: zoneName(id, "en", "shortOffset", now)
       .replace("GMT", "UTC")
       .replace(/^UTC\+0$/, "UTC"),
@@ -79,7 +112,7 @@ export function searchTimeZones(
 ): TimeZoneOption[] {
   const needle = query.trim().toLowerCase();
   return options.filter((option) =>
-    [option.id, option.city, option.region].some((field) =>
+    [option.id, option.city, option.region, option.country].some((field) =>
       field.toLowerCase().includes(needle),
     ),
   );

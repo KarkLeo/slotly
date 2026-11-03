@@ -46,10 +46,19 @@ describe("toSettingsView", () => {
     };
     expect(view({ slugPolicy }).slugLock).toEqual({
       nextChangeAt: "2026-12-02T23:30:00Z",
-      date: "03.12.2026",
+      date: "04.12.2026",
     });
-    expect(view({ slugPolicy }, "en").slugLock?.date).toBe("12/03/2026");
+    expect(view({ slugPolicy }, "en").slugLock?.date).toBe("12/04/2026");
     expect(view({ slugPolicy }).changesLeft).toBe(1);
+  });
+
+  it("keeps the date when the lock ends exactly at local midnight", () => {
+    const slugPolicy = {
+      limited: true,
+      nextChangeAt: "2026-12-02T22:00:00Z",
+      changesLeft: 1,
+    };
+    expect(view({ slugPolicy }).slugLock?.date).toBe("03.12.2026");
   });
 
   it("lists the primary language first", () => {

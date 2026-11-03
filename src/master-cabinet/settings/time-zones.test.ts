@@ -45,4 +45,15 @@ describe("time zones", () => {
       searchTimeZones(options, region.toUpperCase()).map((o) => o.id),
     ).toContain("Europe/Kyiv");
   });
+
+  it("finds a zone by its localized country", () => {
+    const ru = timeZoneOptions("ru", winter, ["Europe/Kyiv"]);
+    expect(searchTimeZones(options, "україна").map((o) => o.id)).toContain(
+      "Europe/Kyiv",
+    );
+    expect(searchTimeZones(ru, "польша").map((o) => o.id)).toContain(
+      "Europe/Warsaw",
+    );
+    expect(option("Europe/Kyiv")?.country).toBe("Україна");
+  });
 });

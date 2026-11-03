@@ -4,7 +4,7 @@ update public.masters set first_published_at = published_at;
 
 -- A retired slug stays taken after its master is deleted, so old links never reach someone else.
 create table public.retired_slugs (
-  slug text primary key check (private.is_valid_slug(slug)),
+  slug text primary key,
   master_id uuid references public.masters (id) on delete set null,
   retired_at timestamptz not null default now()
 );

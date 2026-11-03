@@ -68,8 +68,8 @@
     "appointmentDeclined": "Appointment declined. The client will be notified.",
     "decisionExpired": "The time to respond has run out, the appointment is already cancelled.",
     "appointmentChanged": "This appointment has already changed. The screen was refreshed.",
-    "settingsSaved": "Saved",
-    "slugChanged": "Address changed. The old one leads here.",
+    "settingsSaved": "Saved.",
+    "slugChanged": "Address changed.",
     "pagePublished": "Your page is published again.",
     "pageUnpublished": "Your page is unpublished."
   },
@@ -275,7 +275,6 @@
         "submit": "Change address",
         "checking": "Checking…",
         "available": "Available",
-        "current": "This is your current address",
         "checkFailed": "Couldn’t check the address. Check your connection.",
         "taken": "This address is taken",
         "invalid": "3 to 40 characters: Latin letters, digits and hyphens, starting with a letter. Reserved words are not allowed.",

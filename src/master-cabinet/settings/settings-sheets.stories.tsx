@@ -441,6 +441,14 @@ export const TimeZone: Story = {
     );
     await expect(dialog).toHaveTextContent(s.timeZone.warning);
     await expect(save).toBeEnabled();
+    const search = within(dialog).getByRole("searchbox", {
+      name: s.timeZone.search,
+    });
+    await userEvent.clear(search);
+    await userEvent.type(search, "Tokyo");
+    await expect(
+      within(dialog).getByRole("radio", { name: /^Berlin/ }),
+    ).toBeChecked();
     await userEvent.click(save);
     await waitFor(() =>
       expect(screen.getByText(texts.Toasts.settingsSaved)).toBeVisible(),

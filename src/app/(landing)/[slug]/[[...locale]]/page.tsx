@@ -39,7 +39,8 @@ async function load({ params, searchParams }: Props) {
     if (current !== slug) {
       permanentRedirect(retiredSlugPath(current, locale, await query()));
     }
-    const requested = await getLocale();
+    if (locale && (locale.length !== 1 || !isLocale(locale[0]))) notFound();
+    const requested = locale?.[0] ?? (await getLocale());
     const unavailableLocale: Locale = isLocale(requested) ? requested : "uk";
     setRequestLocale(unavailableLocale);
     return { kind: "unavailable" as const, locale: unavailableLocale };

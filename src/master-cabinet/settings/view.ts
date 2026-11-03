@@ -29,6 +29,33 @@ function publicationState(data: SettingsData): PublicationState {
   return data.everPublished ? "unpublished" : "neverPublished";
 }
 
+// The change is allowed from the exact instant, but the first day it is allowed all day is the next one.
+function firstFullDay(instant: string, timeZone: string, locale: Locale) {
+  const at = new Date(instant);
+  const clock = new Intl.DateTimeFormat("en", {
+    timeZone,
+    hourCycle: "h23",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  }).formatToParts(at);
+  const part = (type: string) =>
+    Number(clock.find((p) => p.type === type)?.value ?? 0);
+  const midnight =
+    part("hour") === 0 &&
+    part("minute") === 0 &&
+    part("second") === 0 &&
+    at.getUTCMilliseconds() === 0;
+  // A day later in absolute time lands on the next local day, DST shifts aside.
+  const day = midnight ? at : new Date(at.getTime() + 24 * 3600 * 1000);
+  return new Intl.DateTimeFormat(locale, {
+    timeZone,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(day);
+}
+
 function endonym(locale: Locale): string {
   const name = new Intl.DisplayNames([locale], { type: "language" }).of(locale);
   return name
@@ -71,12 +98,7 @@ export function toSettingsView(
       limited && nextChangeAt
         ? {
             nextChangeAt,
-            date: new Intl.DateTimeFormat(locale, {
-              timeZone: data.timeZone,
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            }).format(new Date(nextChangeAt)),
+            date: firstFullDay(nextChangeAt, data.timeZone, locale),
           }
         : null,
     changesLeft: limited ? changesLeft : null,

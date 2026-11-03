@@ -58,7 +58,11 @@ function ZoneOption({
   current?: boolean;
 }) {
   const t = useTranslations("MasterCabinet.settings.timeZone");
-  const details = [option.offset, option.region, current && t("current")]
+  const details = [
+    option.offset,
+    option.country || option.region,
+    current && t("current"),
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -96,8 +100,17 @@ function TimeZoneForm({
     phoneId && phoneId !== current.id
       ? timeZones.find((option) => option.id === phoneId)
       : undefined;
+  const pinned =
+    selected !== current.id && selected !== phone?.id
+      ? timeZones.find((option) => option.id === selected)
+      : undefined;
   const results = searchTimeZones(timeZones, query)
-    .filter((option) => option.id !== current.id && option.id !== phone?.id)
+    .filter(
+      (option) =>
+        option.id !== current.id &&
+        option.id !== phone?.id &&
+        option.id !== pinned?.id,
+    )
     .slice(0, resultLimit);
 
   // The search box sits outside the form, so Enter or the keyboard's search key never saves.
@@ -133,6 +146,7 @@ function TimeZoneForm({
               />
             )}
             <ZoneOption option={current} title={current.city} current />
+            {pinned && <ZoneOption option={pinned} title={pinned.city} />}
             {results.map((option) => (
               <ZoneOption key={option.id} option={option} title={option.city} />
             ))}
