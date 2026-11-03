@@ -1,5 +1,7 @@
 import { cn } from "cn";
 import { useTranslations } from "next-intl";
+import type { ComponentProps } from "react";
+import { Badge } from "@/components/ui/badge";
 import type { BookingStatusView } from "./view";
 
 const dots: Record<BookingStatusView, string> = {
@@ -16,11 +18,14 @@ const texts: Record<BookingStatusView, string> = {
   cancelled: "text-muted-foreground",
 };
 
-const pills: Record<BookingStatusView, string> = {
-  confirmed: "bg-success/15 text-success",
-  awaitingMaster: "bg-accent text-accent-foreground",
-  completed: "bg-muted text-muted-foreground",
-  cancelled: "bg-muted text-muted-foreground",
+const pills: Record<
+  BookingStatusView,
+  ComponentProps<typeof Badge>["variant"]
+> = {
+  confirmed: "success",
+  awaitingMaster: "accent",
+  completed: "muted",
+  cancelled: "muted",
 };
 
 export function StatusLine({
@@ -48,13 +53,8 @@ export function StatusLine({
 export function StatusPill({ status }: { status: BookingStatusView }) {
   const t = useTranslations("MyBookings");
   return (
-    <span
-      className={cn(
-        "rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap",
-        pills[status],
-      )}
-    >
+    <Badge variant={pills[status]} size="status">
       {t(status === "awaitingMaster" ? "awaitingMasterLong" : status)}
-    </span>
+    </Badge>
   );
 }

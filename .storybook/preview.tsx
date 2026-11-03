@@ -21,6 +21,7 @@ sb.mock(import("../src/client-cabinet/reschedule-api.ts"));
 sb.mock(import("../src/i18n/actions.ts"));
 sb.mock(import("../src/landing/booking-actions.ts"));
 sb.mock(import("../src/landing/booking-api.ts"));
+sb.mock(import("../src/master-cabinet/today/actions.ts"));
 sb.mock(import("../src/theme/actions.ts"));
 
 const messages = {

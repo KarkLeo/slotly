@@ -3,23 +3,13 @@ import { expect, waitFor } from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
+import { restoreOnLine, stubOnLine } from "@/components/ui/story-helpers";
 import { isLocale, type Locale } from "@/i18n/locales";
 import { OfflineBanner } from "./offline-banner";
 
 const dictionaries = { uk, ru, en };
 
 const localeOf = (value: unknown): Locale => (isLocale(value) ? value : "uk");
-
-const original = Object.getOwnPropertyDescriptor(Navigator.prototype, "onLine");
-
-function stubOnLine(value: boolean) {
-  Object.defineProperty(navigator, "onLine", { configurable: true, value });
-}
-
-function restoreOnLine() {
-  Reflect.deleteProperty(navigator, "onLine");
-  if (original) Object.defineProperty(Navigator.prototype, "onLine", original);
-}
 
 const meta = {
   title: "App/OfflineBanner",

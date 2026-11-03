@@ -62,3 +62,14 @@ export function intersects(a: Element, b: Element): boolean {
     r2.top < r1.bottom
   );
 }
+
+const onLine = Object.getOwnPropertyDescriptor(Navigator.prototype, "onLine");
+
+export function stubOnLine(value: boolean) {
+  Object.defineProperty(navigator, "onLine", { configurable: true, value });
+}
+
+export function restoreOnLine() {
+  Reflect.deleteProperty(navigator, "onLine");
+  if (onLine) Object.defineProperty(Navigator.prototype, "onLine", onLine);
+}

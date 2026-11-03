@@ -63,7 +63,11 @@
     "rescheduleRequested": "The new time has been sent to the master to confirm.",
     "changeClosed": "This booking can no longer be cancelled or moved online.",
     "bookingNotActive": "This booking is no longer active.",
-    "rescheduleClosed": "The master no longer takes bookings for this service, so it cannot be moved. You can cancel the booking."
+    "rescheduleClosed": "The master no longer takes bookings for this service, so it cannot be moved. You can cancel the booking.",
+    "appointmentConfirmed": "Appointment confirmed. The client will be notified.",
+    "appointmentDeclined": "Appointment declined. The client will be notified.",
+    "decisionExpired": "The time to respond has run out, the appointment is already cancelled.",
+    "appointmentChanged": "This appointment has already changed. The screen was refreshed."
   },
   "Landing": {
     "languages": "Page language",
@@ -208,11 +212,44 @@
       "agents": "Agents",
       "settings": "Settings"
     },
-    "stub": {
-      "today": {
-        "title": "Your <accent>day</accent> will be here",
-        "text": "Today's appointments and bookings waiting for confirmation."
+    "today": {
+      "counters": {
+        "today": "today",
+        "tomorrow": "tomorrow",
+        "awaiting": "awaiting you"
       },
+      "awaitingTitle": "Awaiting you",
+      "when": "{day, select, today {today} tomorrow {tomorrow} other {{date}}}, {time}",
+      "answerBy": "Reply by {time} {day, select, today {today} tomorrow {tomorrow} other {{date}}}, or the booking will be cancelled",
+      "confirm": "Confirm",
+      "decline": {
+        "open": "Decline",
+        "title": "Decline the booking?",
+        "text": "The client will be told the booking was declined and get a link to pick another time. The time will be free.",
+        "comment": "Comment for the client",
+        "optional": "(optional)",
+        "placeholder": "For example: I'm ill, let's move it to next week",
+        "submit": "Decline booking",
+        "back": "Back"
+      },
+      "todayTitle": "Today",
+      "tomorrowTitle": "Tomorrow",
+      "nothingPlanned": "Nothing planned",
+      "block": "Block",
+      "allDay": "All day",
+      "badges": {
+        "awaitingMaster": "Awaiting you",
+        "confirmed": "Confirmed",
+        "now": "Now",
+        "completed": "Completed",
+        "noShow": "No-show"
+      },
+      "empty": {
+        "title": "The day is <accent>free</accent>",
+        "text": "No appointments today or tomorrow, and nobody is waiting for your reply."
+      }
+    },
+    "stub": {
       "calendar": {
         "title": "Your <accent>calendar</accent> will be here",
         "text": "The week and the day with all appointments and blocks."

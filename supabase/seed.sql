@@ -68,7 +68,8 @@ begin
   union all select daryna, today + 3, '{}'::int4multirange;
 
   insert into public.blocks (master_id, during, note) values
-    (olena, tstzrange((today + 1 + time '15:00') at time zone 'Europe/Kyiv', (today + 1 + time '16:00') at time zone 'Europe/Kyiv'), 'Стоматолог');
+    (olena, tstzrange((today + 1 + time '15:00') at time zone 'Europe/Kyiv', (today + 1 + time '16:00') at time zone 'Europe/Kyiv'), 'Стоматолог'),
+    (olena, tstzrange((today + time '14:30') at time zone 'Europe/Kyiv', (today + time '15:00') at time zone 'Europe/Kyiv'), 'Обід');
 
   insert into public.client_cards (id, master_id, user_id, name, note) values
     ('5eed0000-0000-4000-8000-0000000000d1', olena, iryna, 'Ірина Коваленко', 'Любить нюдові відтінки'),
@@ -92,7 +93,12 @@ begin
     ('5eed0000-0000-4000-8000-0000000000e6', olena, '5eed0000-0000-4000-8000-0000000000a2', -2, time '12:00', interval '30 minutes', 0, 'no_show', 'client', 'en', null, null),
     ('5eed0000-0000-4000-8000-0000000000e7', daryna, '5eed0000-0000-4000-8000-0000000000b1', 2, time '12:00', interval '60 minutes', 15, 'pending', 'client', 'uk', null, null),
     ('5eed0000-0000-4000-8000-0000000000e8', daryna, '5eed0000-0000-4000-8000-0000000000b2', 6, time '14:00', interval '45 minutes', 0, 'confirmed', 'client', 'uk', null, null),
-    ('5eed0000-0000-4000-8000-0000000000e9', daryna, '5eed0000-0000-4000-8000-0000000000b1', 1, time '10:00', interval '60 minutes', 15, 'cancelled', 'client', 'uk', 'master', 'Захворіла, вибачте. Оберіть, будь ласка, інший час.')
+    ('5eed0000-0000-4000-8000-0000000000e9', daryna, '5eed0000-0000-4000-8000-0000000000b1', 1, time '10:00', interval '60 minutes', 15, 'cancelled', 'client', 'uk', 'master', 'Захворіла, вибачте. Оберіть, будь ласка, інший час.'),
+    ('5eed0000-0000-4000-8000-000000000e10', olena, '5eed0000-0000-4000-8000-0000000000a1', 0, time '09:00', interval '90 minutes', 15, 'confirmed', 'client', 'uk', null, null),
+    ('5eed0000-0000-4000-8000-000000000e11', olena, '5eed0000-0000-4000-8000-0000000000a2', 0, time '13:00', interval '30 minutes', 0, 'confirmed', 'manual', 'uk', null, null),
+    ('5eed0000-0000-4000-8000-000000000e12', olena, '5eed0000-0000-4000-8000-0000000000a3', 0, time '16:30', interval '120 minutes', 15, 'confirmed', 'client', 'en', null, null),
+    ('5eed0000-0000-4000-8000-000000000e13', olena, '5eed0000-0000-4000-8000-0000000000a2', 1, time '16:00', interval '30 minutes', 0, 'pending', 'client', 'en', null, null),
+    ('5eed0000-0000-4000-8000-000000000e14', olena, '5eed0000-0000-4000-8000-0000000000a1', 5, time '12:30', interval '90 minutes', 15, 'pending', 'client', 'uk', null, null)
   ) as a (id, master_id, service_id, day, starts, duration, buffer, status, source, locale, cancelled_by, cancel_comment);
 
   insert into public.appointment_clients (appointment_id, master_id, client_card_id, name) values
@@ -104,7 +110,12 @@ begin
     ('5eed0000-0000-4000-8000-0000000000e6', olena, '5eed0000-0000-4000-8000-0000000000d2', 'Mark Taylor'),
     ('5eed0000-0000-4000-8000-0000000000e7', daryna, '5eed0000-0000-4000-8000-0000000000d4', 'Ірина'),
     ('5eed0000-0000-4000-8000-0000000000e8', daryna, '5eed0000-0000-4000-8000-0000000000d4', 'Ірина'),
-    ('5eed0000-0000-4000-8000-0000000000e9', daryna, '5eed0000-0000-4000-8000-0000000000d4', 'Ірина');
+    ('5eed0000-0000-4000-8000-0000000000e9', daryna, '5eed0000-0000-4000-8000-0000000000d4', 'Ірина'),
+    ('5eed0000-0000-4000-8000-000000000e10', olena, '5eed0000-0000-4000-8000-0000000000d1', 'Ірина'),
+    ('5eed0000-0000-4000-8000-000000000e11', olena, '5eed0000-0000-4000-8000-0000000000d3', 'Світлана'),
+    ('5eed0000-0000-4000-8000-000000000e12', olena, '5eed0000-0000-4000-8000-0000000000d2', 'Mark Taylor'),
+    ('5eed0000-0000-4000-8000-000000000e13', olena, '5eed0000-0000-4000-8000-0000000000d2', 'Mark Taylor'),
+    ('5eed0000-0000-4000-8000-000000000e14', olena, '5eed0000-0000-4000-8000-0000000000d1', 'Ірина');
 end;
 $$;
 
