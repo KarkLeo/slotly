@@ -67,8 +67,9 @@ export function toSettingsView(
             nextChangeAt,
             date: new Intl.DateTimeFormat(locale, {
               timeZone: data.timeZone,
-              day: "numeric",
-              month: "long",
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
             }).format(new Date(nextChangeAt)),
           }
         : null,

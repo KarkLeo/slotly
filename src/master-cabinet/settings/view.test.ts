@@ -46,9 +46,9 @@ describe("toSettingsView", () => {
     };
     expect(view({ slugPolicy }).slugLock).toEqual({
       nextChangeAt: "2026-12-02T23:30:00Z",
-      date: "3 грудня",
+      date: "03.12.2026",
     });
-    expect(view({ slugPolicy }, "en").slugLock?.date).toBe("December 3");
+    expect(view({ slugPolicy }, "en").slugLock?.date).toBe("12/03/2026");
     expect(view({ slugPolicy }).changesLeft).toBe(1);
   });
 
