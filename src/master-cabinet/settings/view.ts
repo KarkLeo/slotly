@@ -36,14 +36,20 @@ function endonym(locale: Locale): string {
     : locale;
 }
 
-function currencyLabel(code: string, locale: Locale): string {
-  const symbol = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: code,
-    currencyDisplay: "narrowSymbol",
-  })
-    .formatToParts(0)
-    .find((part) => part.type === "currency")?.value;
+export function currencySymbol(code: string, locale: Locale): string | null {
+  return (
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: code,
+      currencyDisplay: "narrowSymbol",
+    })
+      .formatToParts(0)
+      .find((part) => part.type === "currency")?.value ?? null
+  );
+}
+
+export function currencyLabel(code: string, locale: Locale): string {
+  const symbol = currencySymbol(code, locale);
   return symbol ? `${code} ${symbol}` : code;
 }
 

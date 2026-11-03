@@ -9,7 +9,8 @@ import { AddActions } from "./add-actions";
 import { PageHeader } from "./page-header";
 import { sections, type SectionKey } from "./sections";
 
-type StubKey = Exclude<SectionKey, "today"> | "newBooking" | "newBlock";
+type StubKey =
+  Exclude<SectionKey, "today" | "settings"> | "newBooking" | "newBlock";
 
 export function SectionStub({
   section,
