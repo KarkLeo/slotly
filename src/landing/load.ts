@@ -19,3 +19,14 @@ export const getLanding = cache(
     return data ? toLanding(data) : null;
   },
 );
+
+export const findLandingSlug = cache(
+  async (slug: string): Promise<string | null> => {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("resolve_landing_slug", {
+      slug,
+    });
+    if (error) throw error;
+    return data;
+  },
+);

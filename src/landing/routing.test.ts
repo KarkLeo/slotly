@@ -3,6 +3,7 @@ import {
   landingPath,
   resolveLandingLocale,
   resolveLandingSlug,
+  retiredSlugPath,
 } from "./routing";
 
 const master = { primaryLocale: "uk", locales: ["uk", "en"] } as const;
@@ -61,5 +62,17 @@ describe("resolveLandingSlug", () => {
     expect(resolveLandingSlug("robots.txt")).toEqual({ kind: "notFound" });
     expect(resolveLandingSlug("app")).toEqual({ kind: "notFound" });
     expect(resolveLandingSlug("APP")).toEqual({ kind: "notFound" });
+  });
+});
+
+describe("retiredSlugPath", () => {
+  it("keeps the language and the query string", () => {
+    expect(retiredSlugPath("anna-kyiv", ["en"], "?service=x")).toBe(
+      "/anna-kyiv/en?service=x",
+    );
+  });
+
+  it("points at the bare address without a language", () => {
+    expect(retiredSlugPath("anna-kyiv", undefined, "")).toBe("/anna-kyiv");
   });
 });

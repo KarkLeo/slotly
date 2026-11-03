@@ -87,6 +87,8 @@
     "notFoundTitle": "Сторінку <accent>не знайдено</accent>",
     "notFoundText": "Можливо, майстер змінив адресу або ще не опублікував сторінку.",
     "notFoundHome": "На головну Slotly",
+    "unavailableTitle": "Сторінка недоступна",
+    "unavailableText": "Сторінка майстра тимчасово недоступна. Спробуйте зайти пізніше.",
     "unpublished": "Сторінку ще не опубліковано: її бачите тільки ви.",
     "next": "Далі",
     "contactTitle": "Як вас <accent>звати?</accent>",

@@ -87,6 +87,8 @@
     "notFoundTitle": "Page <accent>not found</accent>",
     "notFoundText": "The master may have changed the address or not published the page yet.",
     "notFoundHome": "Go to Slotly",
+    "unavailableTitle": "Page unavailable",
+    "unavailableText": "The master’s page is temporarily unavailable. Please try again later.",
     "unpublished": "This page is not published yet: only you can see it.",
     "next": "Next",
     "contactTitle": "What is your <accent>name?</accent>",

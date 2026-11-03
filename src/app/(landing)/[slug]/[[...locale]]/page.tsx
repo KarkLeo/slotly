@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { notFound, redirect } from "next/navigation";
+import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { isLocale, type Locale } from "@/i18n/locales";
 import { LandingPage } from "@/landing/landing-page";
-import { getLanding } from "@/landing/load";
+import { LandingUnavailable } from "@/landing/landing-unavailable";
+import { findLandingSlug, getLanding } from "@/landing/load";
 import { landingMetadata } from "@/landing/metadata";
-import { resolveLandingLocale, resolveLandingSlug } from "@/landing/routing";
+import {
+  resolveLandingLocale,
+  resolveLandingSlug,
+  retiredSlugPath,
+} from "@/landing/routing";
 import { toLandingView } from "@/landing/view";
 import { siteUrl } from "@/lib/site-url";
 
@@ -27,18 +33,35 @@ async function load({ params, searchParams }: Props) {
   }
 
   const landing = await getLanding(slug);
-  if (!landing) notFound();
+  if (!landing) {
+    const current = await findLandingSlug(slug);
+    if (current === null) notFound();
+    if (current !== slug) {
+      permanentRedirect(retiredSlugPath(current, locale, await query()));
+    }
+    const requested = await getLocale();
+    const unavailableLocale: Locale = isLocale(requested) ? requested : "uk";
+    setRequestLocale(unavailableLocale);
+    return { kind: "unavailable" as const, locale: unavailableLocale };
+  }
   const resolved = resolveLandingLocale(locale, landing);
   if (resolved.kind === "notFound") notFound();
   if (resolved.kind === "redirect")
     redirect(`/${landing.slug}${await query()}`);
   setRequestLocale(resolved.locale);
-  return { landing, locale: resolved.locale };
+  return { kind: "landing" as const, landing, locale: resolved.locale };
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const { landing, locale } = await load(props);
-  const t = await getTranslations({ locale, namespace: "Landing" });
+  const loaded = await load(props);
+  const t = await getTranslations({
+    locale: loaded.locale,
+    namespace: "Landing",
+  });
+  if (loaded.kind === "unavailable") {
+    return { title: t("unavailableTitle"), robots: { index: false } };
+  }
+  const { landing, locale } = loaded;
   return {
     metadataBase: new URL(siteUrl()),
     ...landingMetadata(landing, locale, t),
@@ -46,7 +69,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function LandingRoute(props: Props) {
-  const { landing, locale } = await load(props);
+  const loaded = await load(props);
+  if (loaded.kind === "unavailable") return <LandingUnavailable />;
+  const { landing, locale } = loaded;
   const { service } = await props.searchParams;
   return (
     <LandingPage

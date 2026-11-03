@@ -45,3 +45,11 @@ export function resolveLandingSlug(slug: string): LandingSlugResult {
     ? { kind: "redirect", slug: lower }
     : { kind: "notFound" };
 }
+
+export function retiredSlugPath(
+  currentSlug: string,
+  segments: readonly string[] | undefined,
+  query: string,
+): string {
+  return `/${[currentSlug, ...(segments ?? [])].join("/")}${query}`;
+}
