@@ -67,7 +67,11 @@
     "appointmentConfirmed": "Appointment confirmed. The client will be notified.",
     "appointmentDeclined": "Appointment declined. The client will be notified.",
     "decisionExpired": "The time to respond has run out, the appointment is already cancelled.",
-    "appointmentChanged": "This appointment has already changed. The screen was refreshed."
+    "appointmentChanged": "This appointment has already changed. The screen was refreshed.",
+    "settingsSaved": "Saved",
+    "slugChanged": "Address changed. The old one leads here.",
+    "pagePublished": "Your page is published again.",
+    "pageUnpublished": "Your page is unpublished."
   },
   "Landing": {
     "languages": "Page language",
