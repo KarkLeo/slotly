@@ -1,4 +1,9 @@
-import type { Locale } from "@/i18n/locales";
+import { createTranslator } from "next-intl";
+import { within } from "storybook/test";
+import en from "../../../messages/en.json";
+import ru from "../../../messages/ru.json";
+import uk from "../../../messages/uk.json";
+import { isLocale, type Locale } from "@/i18n/locales";
 import type { SettingsData } from "./load";
 import { type TimeZoneOption, timeZoneOptions } from "./time-zones";
 import { type SettingsView, toSettingsView } from "./view";
@@ -21,7 +26,12 @@ const published: SettingsData = {
   currency: "UAH",
   published: true,
   everPublished: true,
-  slugPolicy: { limited: true, nextChangeAt: null, changesLeft: 3 },
+  slugPolicy: {
+    limited: true,
+    nextChangeAt: null,
+    lastChangeAt: null,
+    changesLeft: 3,
+  },
 };
 
 export const settingsStories = {
@@ -33,6 +43,7 @@ export const settingsStories = {
     slugPolicy: {
       limited: true,
       nextChangeAt: "2026-12-02T23:30:00Z",
+      lastChangeAt: "2026-11-03T09:00:00Z",
       changesLeft: 2,
     },
   },
@@ -40,7 +51,12 @@ export const settingsStories = {
     ...published,
     published: false,
     everPublished: false,
-    slugPolicy: { limited: false, nextChangeAt: null, changesLeft: 3 },
+    slugPolicy: {
+      limited: false,
+      nextChangeAt: null,
+      lastChangeAt: null,
+      changesLeft: 3,
+    },
   },
   unpublished: { ...published, published: false },
   longSlug: {
@@ -63,3 +79,18 @@ export function storyTimeZones(locale: Locale): TimeZoneOption[] {
   zones.set(locale, options);
   return options;
 }
+
+export const dictionaries = { uk, ru, en };
+
+export const localeOf = (value: unknown): Locale =>
+  isLocale(value) ? value : "uk";
+
+export const formatterOf = (locale: unknown) =>
+  createTranslator({
+    locale: localeOf(locale),
+    messages: dictionaries[localeOf(locale)],
+    namespace: "MasterCabinet.settings",
+  });
+
+export const row = (canvas: HTMLElement, label: string) =>
+  within(canvas).getByRole("button", { name: new RegExp(`^${label}`) });

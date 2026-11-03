@@ -1,43 +1,28 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { createTranslator } from "next-intl";
 import { usePathname } from "next/navigation";
 import { expect, mocked, screen, waitFor, within } from "storybook/test";
-import en from "../../../messages/en.json";
-import ru from "../../../messages/ru.json";
-import uk from "../../../messages/uk.json";
 import { overflowsX } from "@/components/ui/story-helpers";
-import { isLocale, type Locale } from "@/i18n/locales";
 import { setPublished } from "./actions";
 import type { SettingsData } from "./load";
 import { SettingsScreen } from "./settings-screen";
 import {
+  dictionaries,
+  formatterOf,
+  localeOf,
   longSlug,
+  row,
   settingsStories,
   settingsView,
   siteHost,
   storyTimeZones,
 } from "./story-settings";
 
-const dictionaries = { uk, ru, en };
-
-const localeOf = (value: unknown): Locale => (isLocale(value) ? value : "uk");
-
 const textsOf = (locale: unknown) =>
   dictionaries[localeOf(locale)].MasterCabinet;
-
-const formatterOf = (locale: unknown) =>
-  createTranslator({
-    locale: localeOf(locale),
-    messages: dictionaries[localeOf(locale)],
-    namespace: "MasterCabinet.settings",
-  });
 
 // The sentence about keeping the old address, which only a limited master sees.
 const keepSentence = (format: ReturnType<typeof formatterOf>) =>
   format("slug.keep", { left: 0, date: "" }).split(".")[0];
-
-const row = (canvas: HTMLElement, label: string) =>
-  within(canvas).getByRole("button", { name: new RegExp(`^${label}`) });
 
 const meta = {
   title: "MasterCabinet/SettingsScreen",
@@ -144,7 +129,11 @@ export const SlugLocked: Story = {
     await expect(input).toHaveAttribute("readonly");
     await expect(dialog).toHaveTextContent(`${siteHost}/`);
     await expect(dialog).toHaveTextContent(
-      format("slug.lockedUntil", { date: view.slugLock!.date, count: 2 }),
+      format("slug.lockedUntilLast", {
+        date: view.slugLock!.date,
+        last: view.slugLock!.lastChangeDate!,
+        count: 2,
+      }),
     );
     await expect(dialog).not.toHaveTextContent(keepSentence(format));
     await expect(within(dialog).getByRole("listitem")).toHaveTextContent(

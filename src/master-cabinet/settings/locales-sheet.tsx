@@ -11,15 +11,13 @@ import { useOnline } from "@/lib/use-online";
 import { updateLocales } from "./actions";
 import { SettingsRow } from "./settings-row";
 import {
+  optionRowClass,
   SettingsFooter,
   SettingsSheet,
   SettingsWarning,
   useSettingsAction,
 } from "./settings-sheet";
 import type { SettingsView } from "./view";
-
-const optionClass =
-  "flex min-h-12 items-center justify-between gap-3 border-b py-2 text-base leading-snug font-normal last:border-b-0";
 
 export function LocalesSheet({ view }: { view: SettingsView }) {
   const t = useTranslations("MasterCabinet.settings.locales");
@@ -73,10 +71,10 @@ function LocalesForm({
 
   return (
     <form action={action} className="flex min-h-0 flex-col gap-4">
-      <SheetBody className="flex flex-col gap-3 py-1">
+      <SheetBody className="flex flex-col gap-3">
         <div className="flex flex-col">
           {locales.map((locale) => (
-            <Label key={locale} className={optionClass}>
+            <Label key={locale} className={optionRowClass}>
               <span className="flex flex-col gap-0.5">
                 {names(locale)}
                 {locale === primary && (
@@ -112,7 +110,7 @@ function LocalesForm({
             {locales
               .filter((locale) => enabled.includes(locale))
               .map((locale) => (
-                <Label key={locale} className={optionClass}>
+                <Label key={locale} className={optionRowClass}>
                   {names(locale)}
                   <RadioGroupItem value={locale} />
                 </Label>

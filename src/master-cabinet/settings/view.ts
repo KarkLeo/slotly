@@ -14,7 +14,11 @@ export type SettingsView = {
   name: string;
   slug: string;
   retiredSlugs: string[];
-  slugLock: { nextChangeAt: string; date: string } | null;
+  slugLock: {
+    nextChangeAt: string;
+    date: string;
+    lastChangeDate: string | null;
+  } | null;
   changesLeft: number | null;
   locales: Locale[];
   primaryLocale: Locale;
@@ -48,12 +52,20 @@ function firstFullDay(instant: string, timeZone: string, locale: Locale) {
     at.getUTCMilliseconds() === 0;
   // A day later in absolute time lands on the next local day, DST shifts aside.
   const day = midnight ? at : new Date(at.getTime() + 24 * 3600 * 1000);
+  return formatDate(day, timeZone, locale);
+}
+
+function formatDate(day: Date, timeZone: string, locale: Locale) {
   return new Intl.DateTimeFormat(locale, {
     timeZone,
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   }).format(day);
+}
+
+function localDate(instant: string, timeZone: string, locale: Locale) {
+  return formatDate(new Date(instant), timeZone, locale);
 }
 
 function endonym(locale: Locale): string {
@@ -85,7 +97,7 @@ export function toSettingsView(
   locale: Locale,
   now: Date,
 ): SettingsView {
-  const { limited, nextChangeAt, changesLeft } = data.slugPolicy;
+  const { limited, nextChangeAt, lastChangeAt, changesLeft } = data.slugPolicy;
   const ordered = [
     data.primaryLocale,
     ...data.locales.filter((l) => l !== data.primaryLocale),
@@ -99,6 +111,9 @@ export function toSettingsView(
         ? {
             nextChangeAt,
             date: firstFullDay(nextChangeAt, data.timeZone, locale),
+            lastChangeDate: lastChangeAt
+              ? localDate(lastChangeAt, data.timeZone, locale)
+              : null,
           }
         : null,
     changesLeft: limited ? changesLeft : null,

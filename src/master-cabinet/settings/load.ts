@@ -15,6 +15,7 @@ export type SettingsData = {
   slugPolicy: {
     limited: boolean;
     nextChangeAt: string | null;
+    lastChangeAt: string | null;
     changesLeft: number;
   };
 };
@@ -55,6 +56,7 @@ export async function loadSettings(masterId: string): Promise<SettingsData> {
     slugPolicy: {
       limited: row.limited,
       nextChangeAt: row.next_change_at as string | null,
+      lastChangeAt: row.last_change_at as string | null,
       changesLeft: row.changes_left,
     },
   };

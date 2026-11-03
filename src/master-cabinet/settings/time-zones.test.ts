@@ -36,6 +36,23 @@ describe("time zones", () => {
     expect(index("Europe/London")).toBeLessThan(index("Europe/Kyiv"));
   });
 
+  it("writes half-hour and 45-minute offsets and sorts them by minutes", () => {
+    const index = (id: string) => options.findIndex((o) => o.id === id);
+    expect(option("Asia/Kolkata")?.offset).toBe("UTC+5:30");
+    expect(option("Asia/Kathmandu")?.offset).toBe("UTC+5:45");
+    const plus5 = options.find((o) => o.offset === "UTC+5");
+    const plus6 = options.find((o) => o.offset === "UTC+6");
+    expect(index("Asia/Kolkata")).toBeGreaterThan(index(plus5?.id ?? ""));
+    expect(index("Asia/Kolkata")).toBeLessThan(index("Asia/Kathmandu"));
+    expect(index("Asia/Kathmandu")).toBeLessThan(index(plus6?.id ?? ""));
+  });
+
+  it("reuses the list for the same locale, day and zones", () => {
+    const later = new Date("2026-01-15T20:00:00Z");
+    expect(timeZoneOptions("uk", later, ["Europe/Kyiv"])).toBe(options);
+    expect(timeZoneOptions("ru", winter, ["Europe/Kyiv"])).not.toBe(options);
+  });
+
   it("finds a zone by city and by localized region", () => {
     expect(searchTimeZones(options, "kyiv").map((o) => o.id)).toContain(
       "Europe/Kyiv",

@@ -98,13 +98,9 @@ function SlugForm({
   const locked = view.slugLock !== null;
 
   useEffect(() => {
-    if (slug === view.slug) return;
+    if (slug === view.slug || !isValidSlug(slug)) return;
     let latest = true;
     const timer = setTimeout(() => {
-      if (!isValidSlug(slug)) {
-        setCheck({ slug, status: "invalid" });
-        return;
-      }
       checkSlug(slug).then(
         (status) => {
           if (latest) setCheck({ slug, status });
@@ -125,19 +121,27 @@ function SlugForm({
   const status: SlugStatus =
     slug === view.slug
       ? "current"
-      : check.slug === slug
-        ? check.status
-        : "checking";
+      : !isValidSlug(slug)
+        ? "invalid"
+        : check.slug === slug
+          ? check.status
+          : "checking";
   const error = fieldError
     ? fieldErrorKey[fieldError]
     : status === "taken" || status === "invalid"
       ? status
       : null;
   const hint = view.slugLock
-    ? t("lockedUntil", {
-        date: view.slugLock.date,
-        count: view.changesLeft ?? 0,
-      })
+    ? view.slugLock.lastChangeDate
+      ? t("lockedUntilLast", {
+          date: view.slugLock.date,
+          last: view.slugLock.lastChangeDate,
+          count: view.changesLeft ?? 0,
+        })
+      : t("lockedUntil", {
+          date: view.slugLock.date,
+          count: view.changesLeft ?? 0,
+        })
     : view.changesLeft !== null
       ? t("keep", {
           left: Math.max(0, view.changesLeft - 1),
@@ -152,7 +156,7 @@ function SlugForm({
 
   return (
     <form action={action} className="flex min-h-0 flex-col gap-4">
-      <SheetBody className="flex flex-col gap-2 py-1">
+      <SheetBody className="flex flex-col gap-2">
         <div
           data-invalid={error ? true : undefined}
           className={cn(

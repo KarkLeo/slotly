@@ -30,7 +30,7 @@ create index slug_changes_master_id_changed_at_idx on private.slug_changes (mast
 
 -- After the first publication a change needs 30 days since the last one and fewer than 3 in 365 days.
 create function private.slug_policy(master_id uuid, at timestamptz)
-returns table (limited boolean, next_change_at timestamptz, changes_left integer)
+returns table (limited boolean, next_change_at timestamptz, changes_left integer, last_change_at timestamptz)
 language sql
 stable
 set search_path = ''
@@ -38,11 +38,13 @@ as $$
   select
     m.first_published_at is not null,
     case when m.first_published_at is not null and w.next_at > slug_policy.at then w.next_at end,
-    greatest(0, 3 - w.changes)
+    greatest(0, 3 - w.changes),
+    w.last_at
   from public.masters m
   cross join lateral (
     select
       count(*)::integer as changes,
+      max(sc.changed_at) as last_at,
       greatest(
         max(sc.changed_at) + interval '30 days',
         (array_agg(sc.changed_at order by sc.changed_at desc))[3] + interval '365 days'
@@ -104,7 +106,8 @@ begin
     insert into private.slug_changes (master_id) values (old.id);
     insert into public.retired_slugs (slug, master_id, retired_at)
     values (old.slug, old.id, now())
-    on conflict (slug) do update set master_id = excluded.master_id, retired_at = excluded.retired_at;
+    on conflict (slug) do update set retired_at = excluded.retired_at
+      where public.retired_slugs.master_id = excluded.master_id;
     delete from public.retired_slugs r where r.slug = new.slug and r.master_id = old.id;
   end if;
 
@@ -153,13 +156,13 @@ as $$
 $$;
 
 create function public.get_slug_policy()
-returns table (limited boolean, next_change_at timestamptz, changes_left integer)
+returns table (limited boolean, next_change_at timestamptz, changes_left integer, last_change_at timestamptz)
 language sql
 stable
 security definer
 set search_path = ''
 as $$
-  select p.limited, p.next_change_at, p.changes_left
+  select p.limited, p.next_change_at, p.changes_left, p.last_change_at
   from private.slug_policy(auth.uid(), now()) p;
 $$;
 

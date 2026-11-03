@@ -1,6 +1,6 @@
 begin;
 
-select plan(45);
+select plan(49);
 
 create function pg_temp.act_as(user_id uuid)
 returns void
@@ -138,9 +138,9 @@ select throws_ok(
 );
 
 select results_eq(
-  $$ select limited, next_change_at, changes_left from public.get_slug_policy() $$,
-  $$ values (true, now() - interval '300 days' + interval '365 days', 0) $$,
-  'the policy shows the date a year after the oldest of the three changes and no changes left'
+  $$ select limited, next_change_at, changes_left, last_change_at from public.get_slug_policy() $$,
+  $$ values (true, now() - interval '300 days' + interval '365 days', 0, now() - interval '100 days') $$,
+  'the policy shows the date a year after the oldest of the three changes, no changes left and the last change'
 );
 
 reset role;
@@ -149,8 +149,8 @@ where master_id = '00000000-0000-0000-0000-00000000000a' and changed_at = now() 
 set local role authenticated;
 
 select results_eq(
-  $$ select limited, next_change_at, changes_left from public.get_slug_policy() $$,
-  $$ values (true, null::timestamptz, 1) $$,
+  $$ select limited, next_change_at, changes_left, last_change_at from public.get_slug_policy() $$,
+  $$ values (true, null::timestamptz, 1, now() - interval '100 days') $$,
   'with the oldest change over a year ago a change is open and one is left'
 );
 
@@ -162,8 +162,8 @@ select lives_ok(
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000b');
 
 select results_eq(
-  $$ select limited, next_change_at, changes_left from public.get_slug_policy() $$,
-  $$ values (true, null::timestamptz, 3) $$,
+  $$ select limited, next_change_at, changes_left, last_change_at from public.get_slug_policy() $$,
+  $$ values (true, null::timestamptz, 3, null::timestamptz) $$,
   'a published master with no changes has three left'
 );
 
@@ -301,6 +301,52 @@ select throws_ok(
 );
 
 reset role;
+
+-- Unpublishing does not lift the limits
+
+insert into auth.users (id, email, email_confirmed_at) values
+  ('00000000-0000-0000-0000-00000000000d', 'dora@example.com', now());
+insert into public.masters (id, slug, name, published_at) values
+  ('00000000-0000-0000-0000-00000000000d', 'dora', 'Dora', now());
+update public.masters set published_at = null where id = '00000000-0000-0000-0000-00000000000d';
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000d');
+
+select lives_ok(
+  $$ update public.masters set slug = 'dora-hair' where id = '00000000-0000-0000-0000-00000000000d' $$,
+  'an unpublished master who was published changes the slug once'
+);
+
+reset role;
+
+select is(
+  (select count(*)::integer from private.slug_changes where master_id = '00000000-0000-0000-0000-00000000000d'),
+  1,
+  'the change of an unpublished master is logged'
+);
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-0000-0000-00000000000d');
+
+select throws_ok(
+  $$ update public.masters set slug = 'dora-nails' where id = '00000000-0000-0000-0000-00000000000d' $$,
+  'P0001', 'slug_change_locked',
+  'an unpublished master who was published is locked after a change'
+);
+
+reset role;
+
+insert into auth.users (id, email, email_confirmed_at) values
+  ('00000000-0000-0000-0000-00000000000e', 'eva@example.com', now());
+insert into public.masters (id, slug, name, published_at, first_published_at) values
+  ('00000000-0000-0000-0000-00000000000e', 'eva', 'Eva', null, '2026-10-01 10:00+00');
+
+select is(
+  (select first_published_at from public.masters where id = '00000000-0000-0000-0000-00000000000e'),
+  null,
+  'an insert with a first publication but no publication stores no first publication'
+);
 
 select * from finish();
 

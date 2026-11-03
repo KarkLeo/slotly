@@ -683,6 +683,7 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: {
           changes_left: number;
+          last_change_at: string;
           limited: boolean;
           next_change_at: string;
         }[];

@@ -1,15 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { createTranslator } from "next-intl";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { expect, mocked, screen, waitFor, within } from "storybook/test";
-import en from "../../../messages/en.json";
-import ru from "../../../messages/ru.json";
-import uk from "../../../messages/uk.json";
 import { useBrowserTimeZone } from "@/booking/browser-time-zone";
 import { Toaster } from "@/components/ui/sonner";
 import { restoreOnLine, stubOnLine } from "@/components/ui/story-helpers";
-import { isLocale, type Locale } from "@/i18n/locales";
+import type { Locale } from "@/i18n/locales";
 import {
   changeSlug,
   checkSlug,
@@ -23,27 +19,17 @@ import {
 import type { SettingsData } from "./load";
 import { SettingsScreen } from "./settings-screen";
 import {
+  dictionaries,
+  formatterOf,
+  localeOf,
+  row,
   settingsStories,
   settingsView,
   siteHost,
   storyTimeZones,
 } from "./story-settings";
 
-const dictionaries = { uk, ru, en };
-
-const localeOf = (value: unknown): Locale => (isLocale(value) ? value : "uk");
-
 const textsOf = (locale: unknown) => dictionaries[localeOf(locale)];
-
-const formatterOf = (locale: unknown) =>
-  createTranslator({
-    locale: localeOf(locale),
-    messages: dictionaries[localeOf(locale)],
-    namespace: "MasterCabinet.settings",
-  });
-
-const row = (canvas: HTMLElement, label: string) =>
-  within(canvas).getByRole("button", { name: new RegExp(`^${label}`) });
 
 const openSheet = async (
   canvas: HTMLElement,
@@ -145,6 +131,9 @@ export const NameInvalid: Story = {
     await expect(input).toHaveAttribute("aria-invalid", "true");
     await expect(input).toHaveValue("   ");
     await expect(screen.getByRole("dialog")).toBe(dialog);
+    await userEvent.type(input, "A");
+    await expect(within(dialog).queryByRole("alert")).toBeNull();
+    await expect(input).not.toHaveAttribute("aria-invalid");
   },
 };
 
@@ -253,6 +242,7 @@ export const SlugInvalid: Story = {
     await expect(await within(dialog).findByRole("alert")).toHaveTextContent(
       s.slug.invalid,
     );
+    await expect(dialog).not.toHaveTextContent(s.slug.checking);
     await expect(checkSlug).not.toHaveBeenCalled();
     await expect(
       within(dialog).getByRole("button", { name: s.slug.submit }),
@@ -498,6 +488,19 @@ export const TimeZoneSearchMiss: Story = {
       "Atlantis",
     );
     await expect(dialog).toHaveTextContent(s.timeZone.nothingFound);
+    await expect(within(dialog).getAllByRole("radio")).toHaveLength(1);
+  },
+};
+
+export const TimeZoneSearchCurrentOnly: Story = {
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = textsOf(globals.locale).MasterCabinet.settings;
+    const dialog = await openSheet(canvasElement, userEvent, s.timeZone.label);
+    await userEvent.type(
+      within(dialog).getByRole("searchbox", { name: s.timeZone.search }),
+      "Kyiv",
+    );
+    await expect(dialog).not.toHaveTextContent(s.timeZone.nothingFound);
     await expect(within(dialog).getAllByRole("radio")).toHaveLength(1);
   },
 };

@@ -9,6 +9,7 @@ import { useOnline } from "@/lib/use-online";
 import { updateCurrency } from "./actions";
 import { SettingsRow } from "./settings-row";
 import {
+  optionRowClass,
   SettingsFooter,
   SettingsSheet,
   SettingsWarning,
@@ -67,10 +68,7 @@ function CurrencyForm({
           className="gap-0"
         >
           {currencies.map((code) => (
-            <Label
-              key={code}
-              className="flex min-h-12 items-center justify-between gap-3 border-b py-2 text-base leading-snug font-normal last:border-b-0"
-            >
+            <Label key={code} className={optionRowClass}>
               <span className="flex flex-col gap-0.5">
                 {t(`currency.names.${code}`)}
                 <span className="text-sm text-muted-foreground">

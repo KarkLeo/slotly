@@ -13,7 +13,12 @@ const base: SettingsData = {
   currency: "UAH",
   published: true,
   everPublished: true,
-  slugPolicy: { limited: true, nextChangeAt: null, changesLeft: 2 },
+  slugPolicy: {
+    limited: true,
+    nextChangeAt: null,
+    lastChangeAt: null,
+    changesLeft: 2,
+  },
 };
 const view = (patch: Partial<SettingsData> = {}, locale: "uk" | "en" = "uk") =>
   toSettingsView({ ...base, ...patch }, locale, now);
@@ -24,7 +29,12 @@ describe("toSettingsView", () => {
       view({
         published: false,
         everPublished: false,
-        slugPolicy: { limited: false, nextChangeAt: null, changesLeft: 3 },
+        slugPolicy: {
+          limited: false,
+          nextChangeAt: null,
+          lastChangeAt: null,
+          changesLeft: 3,
+        },
       }),
     ).toMatchObject({
       slugLock: null,
@@ -42,11 +52,13 @@ describe("toSettingsView", () => {
     const slugPolicy = {
       limited: true,
       nextChangeAt: "2026-12-02T23:30:00Z",
+      lastChangeAt: "2026-11-02T23:30:00Z",
       changesLeft: 1,
     };
     expect(view({ slugPolicy }).slugLock).toEqual({
       nextChangeAt: "2026-12-02T23:30:00Z",
       date: "04.12.2026",
+      lastChangeDate: "03.11.2026",
     });
     expect(view({ slugPolicy }, "en").slugLock?.date).toBe("12/04/2026");
     expect(view({ slugPolicy }).changesLeft).toBe(1);
@@ -56,9 +68,17 @@ describe("toSettingsView", () => {
     const slugPolicy = {
       limited: true,
       nextChangeAt: "2026-12-02T22:00:00Z",
+      lastChangeAt: null,
       changesLeft: 1,
     };
-    expect(view({ slugPolicy }).slugLock?.date).toBe("03.12.2026");
+    expect(view({ slugPolicy }).slugLock).toMatchObject({
+      date: "03.12.2026",
+      lastChangeDate: null,
+    });
+  });
+
+  it("labels a non-hryvnia currency with its symbol", () => {
+    expect(view({ currency: "EUR" }).currency.label).toBe("EUR €");
   });
 
   it("lists the primary language first", () => {

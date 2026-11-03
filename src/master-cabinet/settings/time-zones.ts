@@ -89,21 +89,34 @@ export function timeZoneOption(
   };
 }
 
+const optionsCache = new Map<string, TimeZoneOption[]>();
+
+// Building ~400 options is slow, and the same list is asked for after every save.
 export function timeZoneOptions(
   locale: Locale,
   now: Date,
   include: readonly string[],
 ): TimeZoneOption[] {
+  const key = [
+    locale,
+    now.toISOString().slice(0, 10),
+    ...[...include].sort(),
+  ].join("|");
+  const cached = optionsCache.get(key);
+  if (cached) return cached;
+
   const ids = new Set(
     [...Intl.supportedValuesOf("timeZone"), ...include].map(canonicalTimeZone),
   );
-  return [...ids]
+  const options = [...ids]
     .map((id) => timeZoneOption(id, locale, now))
     .sort(
       (a, b) =>
         offsetMinutes(a.offset) - offsetMinutes(b.offset) ||
-        a.city.localeCompare(b.city),
+        a.city.localeCompare(b.city, "en"),
     );
+  optionsCache.set(key, options);
+  return options;
 }
 
 export function searchTimeZones(

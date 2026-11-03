@@ -147,6 +147,7 @@ describe("updateLocales", () => {
     { locales: [] as string[], primaryLocale: "uk" },
     { locales: ["uk", "uk"], primaryLocale: "uk" },
     { locales: ["de"], primaryLocale: "de" },
+    { locales: ["uk", "de"], primaryLocale: "uk" },
   ])("refuses %j", async (input) => {
     await expect(updateLocales({}, form(input))).resolves.toEqual(unexpected);
     expect(query.update).not.toHaveBeenCalled();
@@ -219,6 +220,22 @@ describe("setPublished", () => {
     expect(query.not).not.toHaveBeenCalled();
     expect(refresh).toHaveBeenCalled();
   });
+
+  it.each([
+    ["publish", "true"],
+    ["unpublish", "false"],
+  ])(
+    "shows the unexpected toast when the database fails to %s",
+    async (_, published) => {
+      query.eq.mockReturnValue(query);
+      query.select.mockResolvedValue(failure("boom"));
+      if (published === "false") query.eq.mockResolvedValue(failure("boom"));
+      await expect(setPublished({}, form({ published }))).resolves.toEqual(
+        unexpected,
+      );
+      expect(refresh).not.toHaveBeenCalled();
+    },
+  );
 
   it("refuses a malformed value", async () => {
     await expect(setPublished({}, form({ published: "yes" }))).resolves.toEqual(

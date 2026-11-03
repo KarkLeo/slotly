@@ -6,13 +6,24 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SheetBody } from "@/components/ui/sheet";
 import { useOnline } from "@/lib/use-online";
-import { updateName } from "./actions";
+import { type SettingsActionState, updateName } from "./actions";
 import { SettingsRow } from "./settings-row";
 import {
   SettingsFooter,
   SettingsSheet,
   useSettingsAction,
 } from "./settings-sheet";
+
+type NameFormState = SettingsActionState & { name?: string };
+
+// Remembers which name the field error belongs to, so editing the field clears it.
+async function updateNameFor(
+  state: NameFormState,
+  formData: FormData,
+): Promise<NameFormState> {
+  const name = String(formData.get("name"));
+  return { ...(await updateName(state, formData)), name };
+}
 
 export function NameSheet({ name }: { name: string }) {
   const t = useTranslations("MasterCabinet.settings");
@@ -36,8 +47,12 @@ function NameForm({ name, onSaved }: { name: string; onSaved: () => void }) {
   const online = useOnline();
   const errorId = useId();
   const [value, setValue] = useState(name);
-  const [state, action, pending] = useSettingsAction(updateName, onSaved, {});
-  const invalid = state.fieldError === "nameInvalid";
+  const [state, action, pending] = useSettingsAction<NameFormState>(
+    updateNameFor,
+    onSaved,
+    {},
+  );
+  const invalid = state.fieldError === "nameInvalid" && state.name === value;
 
   return (
     <form action={action} className="flex min-h-0 flex-col gap-4">

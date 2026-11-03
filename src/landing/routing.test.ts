@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   landingPath,
+  pathLocale,
   resolveLandingLocale,
   resolveLandingSlug,
   retiredSlugPath,
@@ -75,4 +76,17 @@ describe("retiredSlugPath", () => {
   it("points at the bare address without a language", () => {
     expect(retiredSlugPath("anna-kyiv", undefined, "")).toBe("/anna-kyiv");
   });
+});
+
+describe("pathLocale", () => {
+  it("returns the one valid locale segment", () => {
+    expect(pathLocale(["ru"])).toBe("ru");
+  });
+
+  it.each([undefined, [], ["de"], ["uk", "en"], ["en", "extra"]])(
+    "is null for %j",
+    (segments) => {
+      expect(pathLocale(segments)).toBeNull();
+    },
+  );
 });

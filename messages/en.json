@@ -93,7 +93,7 @@
     "notFoundHome": "Go to Slotly",
     "unavailableTitle": "Page unavailable",
     "unavailableText": "The master’s page is temporarily unavailable. Please try again later.",
-    "unpublished": "This page is not published yet: only you can see it.",
+    "unpublished": "This page is not published: only you can see it.",
     "next": "Next",
     "contactTitle": "What is your <accent>name?</accent>",
     "back": "Back",
@@ -281,6 +281,7 @@
         "locked": "You can’t change the address right now.",
         "keep": "Your old address stays yours and will lead here. {left, plural, =0 {This is your last change this year.} other {Next change no earlier than {date}, # of 3 left this year.}}",
         "lockedUntil": "You can change the address from {date}. {count} of 3 changes left this year.",
+        "lockedUntilLast": "You can change the address from {date}: the last change was on {last}. {count} of 3 changes left this year.",
         "retiredTitle": "Your old addresses",
         "retired": "/{slug} → leads here"
       },

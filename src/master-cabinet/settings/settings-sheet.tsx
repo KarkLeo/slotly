@@ -20,6 +20,9 @@ import { useOnline } from "@/lib/use-online";
 import { useShownToastAction } from "@/toasts/use-shown-toast-action";
 import type { SettingsActionState } from "./actions";
 
+export const optionRowClass =
+  "flex min-h-12 items-center justify-between gap-3 border-b py-2 text-base leading-snug font-normal last:border-b-0";
+
 export function SettingsSheet({
   title,
   trigger,

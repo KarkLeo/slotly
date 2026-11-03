@@ -12,6 +12,7 @@ import { useOnline } from "@/lib/use-online";
 import { updateTimeZone } from "./actions";
 import { SettingsRow } from "./settings-row";
 import {
+  optionRowClass,
   SettingsFooter,
   SettingsSheet,
   SettingsWarning,
@@ -67,7 +68,7 @@ function ZoneOption({
     .join(" · ");
 
   return (
-    <Label className="flex min-h-12 items-center justify-between gap-3 border-b py-2 text-base leading-snug font-normal last:border-b-0">
+    <Label className={optionRowClass}>
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="wrap-anywhere">{title}</span>
         <span className="text-sm text-muted-foreground wrap-anywhere">
@@ -112,6 +113,14 @@ function TimeZoneForm({
         option.id !== pinned?.id,
     )
     .slice(0, resultLimit);
+  // The current, phone and pinned rows stay on screen, so only those matching the query count as found.
+  const nothingFound =
+    query.trim() !== "" &&
+    results.length === 0 &&
+    searchTimeZones(
+      [phone, current, pinned].filter((option) => option !== undefined),
+      query,
+    ).length === 0;
 
   // The search box sits outside the form, so Enter or the keyboard's search key never saves.
   return (
@@ -151,7 +160,7 @@ function TimeZoneForm({
               <ZoneOption key={option.id} option={option} title={option.city} />
             ))}
           </RadioGroup>
-          {results.length === 0 && query.trim() && (
+          {nothingFound && (
             <p className="py-3 text-sm text-muted-foreground">
               {t("timeZone.nothingFound")}
             </p>

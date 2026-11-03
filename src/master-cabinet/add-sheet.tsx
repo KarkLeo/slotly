@@ -30,7 +30,7 @@ export function AddSheet({ trigger }: { trigger: ReactElement }) {
             {t("add.title")}
           </SheetTitle>
         </SheetHeader>
-        <SheetBody className="flex flex-col gap-1 pb-2">
+        <SheetBody className="flex flex-col gap-1 pb-3">
           <Link
             href={newBookingHref}
             onClick={() => setOpen(false)}
