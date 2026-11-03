@@ -31,7 +31,7 @@ export function TimeZoneSheet({
   timeZones,
 }: {
   current: TimeZoneOption;
-  timeZones: TimeZoneOption[];
+  timeZones: readonly TimeZoneOption[];
 }) {
   const t = useTranslations("MasterCabinet.settings.timeZone");
   const [open, setOpen] = useState(false);
@@ -86,7 +86,7 @@ function TimeZoneForm({
   onSaved,
 }: {
   current: TimeZoneOption;
-  timeZones: TimeZoneOption[];
+  timeZones: readonly TimeZoneOption[];
   onSaved: () => void;
 }) {
   const t = useTranslations("MasterCabinet.settings");

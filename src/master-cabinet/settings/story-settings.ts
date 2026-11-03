@@ -70,9 +70,9 @@ export function settingsView(data: SettingsData, locale: Locale): SettingsView {
   return toSettingsView(data, locale, now);
 }
 
-const zones = new Map<Locale, TimeZoneOption[]>();
+const zones = new Map<Locale, readonly TimeZoneOption[]>();
 
-export function storyTimeZones(locale: Locale): TimeZoneOption[] {
+export function storyTimeZones(locale: Locale): readonly TimeZoneOption[] {
   const cached = zones.get(locale);
   if (cached) return cached;
   const options = timeZoneOptions(locale, now, [published.timeZone]);

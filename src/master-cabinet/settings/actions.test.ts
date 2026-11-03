@@ -228,7 +228,10 @@ describe("setPublished", () => {
     "shows the unexpected toast when the database fails to %s",
     async (_, published) => {
       query.eq.mockReturnValue(query);
-      query.select.mockResolvedValue(failure("boom"));
+      query.select.mockResolvedValue({
+        data: [{ id: masterId }],
+        error: { code: "P0001", message: "boom" },
+      });
       if (published === "false") query.eq.mockResolvedValue(failure("boom"));
       await expect(setPublished({}, form({ published }))).resolves.toEqual(
         unexpected,

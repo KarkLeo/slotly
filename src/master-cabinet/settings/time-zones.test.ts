@@ -53,6 +53,14 @@ describe("time zones", () => {
     expect(timeZoneOptions("ru", winter, ["Europe/Kyiv"])).not.toBe(options);
   });
 
+  it("drops the previous day's lists", () => {
+    const tomorrow = new Date("2026-01-16T12:00:00Z");
+    const next = timeZoneOptions("uk", tomorrow, ["Europe/Kyiv"]);
+    expect(next).not.toBe(options);
+    expect(timeZoneOptions("uk", tomorrow, ["Europe/Kyiv"])).toBe(next);
+    expect(timeZoneOptions("uk", winter, ["Europe/Kyiv"])).not.toBe(options);
+  });
+
   it("finds a zone by city and by localized region", () => {
     expect(searchTimeZones(options, "kyiv").map((o) => o.id)).toContain(
       "Europe/Kyiv",

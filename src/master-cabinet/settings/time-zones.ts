@@ -89,19 +89,22 @@ export function timeZoneOption(
   };
 }
 
-const optionsCache = new Map<string, TimeZoneOption[]>();
+const optionsCache = new Map<string, readonly TimeZoneOption[]>();
+let cachedDay = "";
 
 // Building ~400 options is slow, and the same list is asked for after every save.
 export function timeZoneOptions(
   locale: Locale,
   now: Date,
   include: readonly string[],
-): TimeZoneOption[] {
-  const key = [
-    locale,
-    now.toISOString().slice(0, 10),
-    ...[...include].sort(),
-  ].join("|");
+): readonly TimeZoneOption[] {
+  const day = now.toISOString().slice(0, 10);
+  // Only today's lists are kept, so the cache never outgrows the locales and zones in use.
+  if (day !== cachedDay) {
+    optionsCache.clear();
+    cachedDay = day;
+  }
+  const key = [locale, ...[...include].sort()].join("|");
   const cached = optionsCache.get(key);
   if (cached) return cached;
 

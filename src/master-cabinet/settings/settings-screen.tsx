@@ -20,7 +20,7 @@ export function SettingsScreen({
   email,
 }: {
   view: SettingsView;
-  timeZones: TimeZoneOption[];
+  timeZones: readonly TimeZoneOption[];
   siteHost: string;
   theme: Theme;
   email: string | null;
