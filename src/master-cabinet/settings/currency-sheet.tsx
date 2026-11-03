@@ -86,6 +86,7 @@ function CurrencyForm({
       <SettingsFooter
         label={t("save")}
         pending={pending}
+        disabled={selected === current}
         notice={
           selected !== current && (
             <SettingsWarning>

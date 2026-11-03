@@ -57,7 +57,11 @@ function NameForm({ name, onSaved }: { name: string; onSaved: () => void }) {
           {invalid && <FieldError id={errorId}>{t("name.invalid")}</FieldError>}
         </Field>
       </SheetBody>
-      <SettingsFooter label={t("save")} pending={pending} />
+      <SettingsFooter
+        label={t("save")}
+        pending={pending}
+        disabled={value.trim() === name}
+      />
     </form>
   );
 }

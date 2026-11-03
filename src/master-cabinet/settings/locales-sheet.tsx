@@ -59,6 +59,10 @@ function LocalesForm({
   const [primary, setPrimary] = useState(primaryLocale);
   const [, action, pending] = useSettingsAction(updateLocales, onSaved, {});
   const turnedOff = initial.filter((locale) => !enabled.includes(locale));
+  const unchanged =
+    primary === primaryLocale &&
+    enabled.length === initial.length &&
+    enabled.every((locale) => initial.includes(locale));
 
   const toggle = (locale: Locale, on: boolean) =>
     setEnabled((before) =>
@@ -126,6 +130,7 @@ function LocalesForm({
       <SettingsFooter
         label={t("save")}
         pending={pending}
+        disabled={unchanged}
         notice={
           turnedOff.length > 0 && (
             <SettingsWarning>

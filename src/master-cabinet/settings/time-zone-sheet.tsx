@@ -100,8 +100,9 @@ function TimeZoneForm({
     .filter((option) => option.id !== current.id && option.id !== phone?.id)
     .slice(0, resultLimit);
 
+  // The search box sits outside the form, so Enter or the keyboard's search key never saves.
   return (
-    <form action={action} className="flex min-h-0 flex-col gap-4">
+    <>
       <div className="relative px-4">
         <SearchIcon
           aria-hidden
@@ -116,41 +117,44 @@ function TimeZoneForm({
           className="pl-9"
         />
       </div>
-      <SheetBody>
-        <RadioGroup
-          value={selected}
-          onValueChange={(value) => setSelected(String(value))}
-          aria-label={t("timeZone.label")}
-          disabled={!online}
-          className="gap-0"
-        >
-          {phone && (
-            <ZoneOption
-              option={phone}
-              title={t("timeZone.phone", { city: phone.city })}
-            />
+      <form action={action} className="flex min-h-0 flex-col gap-4">
+        <SheetBody>
+          <RadioGroup
+            value={selected}
+            onValueChange={(value) => setSelected(String(value))}
+            aria-label={t("timeZone.label")}
+            disabled={!online}
+            className="gap-0"
+          >
+            {phone && (
+              <ZoneOption
+                option={phone}
+                title={t("timeZone.phone", { city: phone.city })}
+              />
+            )}
+            <ZoneOption option={current} title={current.city} current />
+            {results.map((option) => (
+              <ZoneOption key={option.id} option={option} title={option.city} />
+            ))}
+          </RadioGroup>
+          {results.length === 0 && query.trim() && (
+            <p className="py-3 text-sm text-muted-foreground">
+              {t("timeZone.nothingFound")}
+            </p>
           )}
-          <ZoneOption option={current} title={current.city} current />
-          {results.map((option) => (
-            <ZoneOption key={option.id} option={option} title={option.city} />
-          ))}
-        </RadioGroup>
-        {results.length === 0 && query.trim() && (
-          <p className="py-3 text-sm text-muted-foreground">
-            {t("timeZone.nothingFound")}
-          </p>
-        )}
-        <input type="hidden" name="timeZone" value={selected} />
-      </SheetBody>
-      <SettingsFooter
-        label={t("save")}
-        pending={pending}
-        notice={
-          selected !== current.id && (
-            <SettingsWarning>{t("timeZone.warning")}</SettingsWarning>
-          )
-        }
-      />
-    </form>
+          <input type="hidden" name="timeZone" value={selected} />
+        </SheetBody>
+        <SettingsFooter
+          label={t("save")}
+          pending={pending}
+          disabled={selected === current.id}
+          notice={
+            selected !== current.id && (
+              <SettingsWarning>{t("timeZone.warning")}</SettingsWarning>
+            )
+          }
+        />
+      </form>
+    </>
   );
 }

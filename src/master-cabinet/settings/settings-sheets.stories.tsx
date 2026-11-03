@@ -108,9 +108,14 @@ export const Name: Story = {
     await expect(input).toHaveValue("Анна Коваль");
     await expect(input).toBeRequired();
     await expect(input).toHaveAttribute("maxlength", "100");
+    const save = within(dialog).getByRole("button", { name: s.save });
+    await expect(save).toBeDisabled();
+    await userEvent.type(input, " ");
+    await expect(save).toBeDisabled();
     await userEvent.clear(input);
     await userEvent.type(input, "Анна Шевчук");
-    await userEvent.click(within(dialog).getByRole("button", { name: s.save }));
+    await expect(save).toBeEnabled();
+    await userEvent.click(save);
     await waitFor(() =>
       expect(screen.getByText(texts.Toasts.settingsSaved)).toBeVisible(),
     );
@@ -155,6 +160,10 @@ export const Saving: Story = {
   play: async ({ canvasElement, userEvent, globals }) => {
     const s = textsOf(globals.locale).MasterCabinet.settings;
     const dialog = await openSheet(canvasElement, userEvent, s.name.label);
+    await userEvent.type(
+      within(dialog).getByRole("textbox", { name: s.name.label }),
+      "-Шевчук",
+    );
     const save = within(dialog).getByRole("button", { name: s.save });
     await userEvent.click(save);
     await waitFor(() => expect(save).toHaveAttribute("aria-busy", "true"));
@@ -361,6 +370,12 @@ export const Locales: Story = {
     );
     await expect(toggle("en")).toBeChecked();
     await expect(toggle("ru")).not.toBeChecked();
+    const save = within(dialog).getByRole("button", { name: s.save });
+    await expect(save).toBeDisabled();
+    await userEvent.click(toggle("en"));
+    await expect(save).toBeEnabled();
+    await userEvent.click(toggle("en"));
+    await expect(save).toBeDisabled();
 
     await userEvent.click(toggle("uk"));
     await expect(toggle("uk")).toBeChecked();
@@ -414,6 +429,8 @@ export const TimeZone: Story = {
     await expect(radios[1]).toBeChecked();
     await expect(radios.length).toBeLessThanOrEqual(52);
     await expect(dialog).not.toHaveTextContent(s.timeZone.warning);
+    const save = within(dialog).getByRole("button", { name: s.save });
+    await expect(save).toBeDisabled();
 
     await userEvent.type(
       within(dialog).getByRole("searchbox", { name: s.timeZone.search }),
@@ -423,7 +440,8 @@ export const TimeZone: Story = {
       within(dialog).getByRole("radio", { name: /^Berlin/ }),
     );
     await expect(dialog).toHaveTextContent(s.timeZone.warning);
-    await userEvent.click(within(dialog).getByRole("button", { name: s.save }));
+    await expect(save).toBeEnabled();
+    await userEvent.click(save);
     await waitFor(() =>
       expect(screen.getByText(texts.Toasts.settingsSaved)).toBeVisible(),
     );
@@ -436,6 +454,31 @@ export const TimeZone: Story = {
 export const TimeZoneRussian: Story = {
   ...TimeZone,
   globals: { locale: "ru" },
+};
+
+// On a phone, the keyboard's search key is how the master hides the keyboard.
+export const TimeZoneSearchEnter: Story = {
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = textsOf(globals.locale).MasterCabinet.settings;
+    const dialog = await openSheet(canvasElement, userEvent, s.timeZone.label);
+    const search = within(dialog).getByRole("searchbox", {
+      name: s.timeZone.search,
+    });
+    await userEvent.type(search, "Berlin{Enter}");
+    await expect(updateTimeZone).not.toHaveBeenCalled();
+    await expect(screen.getByRole("dialog")).toBe(dialog);
+
+    await userEvent.click(
+      within(dialog).getByRole("radio", { name: /^Berlin/ }),
+    );
+    await userEvent.type(search, "{Enter}");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    await expect(updateTimeZone).not.toHaveBeenCalled();
+    await expect(screen.getByRole("dialog")).toBe(dialog);
+    await expect(
+      within(dialog).getByRole("radio", { name: /^Berlin/ }),
+    ).toBeChecked();
+  },
 };
 
 export const TimeZoneSearchMiss: Story = {
@@ -482,6 +525,9 @@ export const Currency: Story = {
       }),
     ).toBeChecked();
     await expect(within(dialog).getAllByRole("radio")).toHaveLength(4);
+    await expect(
+      within(dialog).getByRole("button", { name: s.save }),
+    ).toBeDisabled();
     await userEvent.click(
       within(dialog).getByRole("radio", {
         name: new RegExp(`^${s.currency.names.EUR}.*EUR €$`),
