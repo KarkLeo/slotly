@@ -97,7 +97,7 @@ function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sheet-body"
       className={cn(
-        "min-h-0 overflow-y-auto px-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+        "-my-1 min-h-0 overflow-y-auto px-4 py-1 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
         className,
       )}
       {...props}

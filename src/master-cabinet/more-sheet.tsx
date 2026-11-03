@@ -40,7 +40,7 @@ export function MoreSheet({
             {t("more")}
           </SheetTitle>
         </SheetHeader>
-        <SheetBody className="flex flex-col gap-4 pb-2">
+        <SheetBody className="flex flex-col gap-4 pb-3">
           <ul className="flex flex-col gap-1">
             {moreSections.map(({ key, href, icon: Icon }) => (
               <li key={key}>

@@ -280,6 +280,7 @@ export type Database = {
           cancel_deadline_minutes: number;
           created_at: string;
           currency: string;
+          first_published_at: string | null;
           horizon_days: number;
           id: string;
           locales: Database["public"]["Enums"]["locale"][];
@@ -298,6 +299,7 @@ export type Database = {
           cancel_deadline_minutes?: number;
           created_at?: string;
           currency?: string;
+          first_published_at?: string | null;
           horizon_days?: number;
           id: string;
           locales?: Database["public"]["Enums"]["locale"][];
@@ -315,6 +317,7 @@ export type Database = {
           cancel_deadline_minutes?: number;
           created_at?: string;
           currency?: string;
+          first_published_at?: string | null;
           horizon_days?: number;
           id?: string;
           locales?: Database["public"]["Enums"]["locale"][];
@@ -328,6 +331,33 @@ export type Database = {
           timezone?: string;
         };
         Relationships: [];
+      };
+      retired_slugs: {
+        Row: {
+          master_id: string | null;
+          retired_at: string;
+          slug: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          master_id?: string | null;
+          retired_at?: string;
+          slug: string;
+        };
+        Update: {
+          master_id?: string | null;
+          retired_at?: string;
+          slug?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "retired_slugs_master_id_fkey";
+            columns: ["master_id"];
+            isOneToOne: false;
+            referencedRelation: "masters";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       schedule_exceptions: {
         Row: {
@@ -649,7 +679,17 @@ export type Database = {
           time_zone: string;
         }[];
       };
+      get_slug_policy: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          changes_left: number;
+          last_change_at: string;
+          limited: boolean;
+          next_change_at: string;
+        }[];
+      };
       health: { Args: Record<PropertyKey, never>; Returns: string };
+      is_slug_available: { Args: { slug: string }; Returns: boolean };
       release_booking: { Args: { appointment_id: string }; Returns: undefined };
       reschedule_appointment: {
         Args: { appointment_id: string; starts_at: string };
@@ -659,6 +699,7 @@ export type Database = {
         Args: { appointment_id: string; starts_at: string };
         Returns: Database["public"]["Enums"]["appointment_status"];
       };
+      resolve_landing_slug: { Args: { slug: string }; Returns: string };
       set_no_show: {
         Args: { appointment_id: string; no_show: boolean };
         Returns: undefined;

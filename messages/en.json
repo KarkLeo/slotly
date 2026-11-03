@@ -67,7 +67,11 @@
     "appointmentConfirmed": "Appointment confirmed. The client will be notified.",
     "appointmentDeclined": "Appointment declined. The client will be notified.",
     "decisionExpired": "The time to respond has run out, the appointment is already cancelled.",
-    "appointmentChanged": "This appointment has already changed. The screen was refreshed."
+    "appointmentChanged": "This appointment has already changed. The screen was refreshed.",
+    "settingsSaved": "Saved.",
+    "slugChanged": "Address changed.",
+    "pagePublished": "Your page is published again.",
+    "pageUnpublished": "Your page is unpublished."
   },
   "Landing": {
     "languages": "Page language",
@@ -87,7 +91,9 @@
     "notFoundTitle": "Page <accent>not found</accent>",
     "notFoundText": "The master may have changed the address or not published the page yet.",
     "notFoundHome": "Go to Slotly",
-    "unpublished": "This page is not published yet: only you can see it.",
+    "unavailableTitle": "Page unavailable",
+    "unavailableText": "The master’s page is temporarily unavailable. Please try again later.",
+    "unpublished": "This page is not published: only you can see it.",
     "next": "Next",
     "contactTitle": "What is your <accent>name?</accent>",
     "back": "Back",
@@ -249,6 +255,76 @@
         "text": "No appointments today or tomorrow, and nobody is waiting for your reply."
       }
     },
+    "settings": {
+      "groups": {
+        "profile": "Profile",
+        "page": "Page",
+        "timeAndMoney": "Time and money",
+        "contact": "Contact"
+      },
+      "save": "Save",
+      "cancel": "Cancel",
+      "soon": "soon",
+      "telegram": "Telegram",
+      "name": {
+        "label": "Name",
+        "invalid": "Enter a name of 1 to 100 characters."
+      },
+      "slug": {
+        "label": "Page address",
+        "submit": "Change address",
+        "checking": "Checking…",
+        "available": "Available",
+        "checkFailed": "Couldn’t check the address. Check your connection.",
+        "taken": "This address is taken",
+        "invalid": "3 to 40 characters: Latin letters, digits and hyphens, starting with a letter. Reserved words are not allowed.",
+        "locked": "You can’t change the address right now.",
+        "keep": "Your old address stays yours and will lead here. {left, plural, =0 {This is your last change this year.} other {Next change no earlier than {date}, # of 3 left this year.}}",
+        "lockedUntil": "You can change the address from {date}. {count} of 3 changes left this year.",
+        "lockedUntilLast": "You can change the address from {date}: the last change was on {last}. {count} of 3 changes left this year.",
+        "retiredTitle": "Your old addresses",
+        "retired": "/{slug} → leads here"
+      },
+      "locales": {
+        "label": "Languages",
+        "title": "Page languages",
+        "primaryBadge": "primary",
+        "primaryLabel": "Primary language",
+        "primaryHint": "The primary language opens at the address without a language and fills in when a text is missing in another one.",
+        "turnOff": "Turning off {languages}: texts in {count, plural, one {it} other {them}} won’t be deleted, just hidden from the page."
+      },
+      "timeZone": {
+        "label": "Time zone",
+        "search": "City or country",
+        "phone": "Your phone: {city}",
+        "current": "current",
+        "nothingFound": "Nothing found",
+        "warning": "Working hours keep the same numbers, such as “10:00–18:00”, but in the new zone. Appointments already booked won’t move in time."
+      },
+      "currency": {
+        "label": "Currency",
+        "names": {
+          "UAH": "Hryvnia",
+          "EUR": "Euro",
+          "PLN": "Zloty",
+          "USD": "Dollar"
+        },
+        "warning": "Prices won’t be converted: “500 {from}” becomes “500 {to}”. Check your prices in Services."
+      },
+      "publication": {
+        "label": "Publication",
+        "published": "Published",
+        "unpublished": "Unpublished",
+        "neverPublished": "Not published",
+        "unpublishTitle": "Unpublish the page?",
+        "unpublishText": "Clients will see “Page unavailable” at /{slug} and your old addresses. No new bookings. Existing ones stay: clients can cancel them but not reschedule.",
+        "unpublishHint": "The address stays yours. You can bring the page back at the same address any time.",
+        "unpublish": "Unpublish",
+        "publishTitle": "Publish the page again?",
+        "publishText": "The page opens to clients again at /{slug}, and your old addresses lead to it.",
+        "publish": "Publish again"
+      }
+    },
     "stub": {
       "calendar": {
         "title": "Your <accent>calendar</accent> will be here",
@@ -277,10 +353,6 @@
       "agents": {
         "title": "Your <accent>agents</accent> will be here",
         "text": "Agents that help manage bookings for you."
-      },
-      "settings": {
-        "title": "Your <accent>settings</accent> will be here",
-        "text": "Profile, landing address, time zone, currency and Telegram."
       },
       "newBooking": {
         "title": "A <accent>booking</accent> form will be here",

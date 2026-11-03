@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   landingPath,
+  pathLocale,
   resolveLandingLocale,
   resolveLandingSlug,
+  retiredSlugPath,
 } from "./routing";
 
 const master = { primaryLocale: "uk", locales: ["uk", "en"] } as const;
@@ -62,4 +64,29 @@ describe("resolveLandingSlug", () => {
     expect(resolveLandingSlug("app")).toEqual({ kind: "notFound" });
     expect(resolveLandingSlug("APP")).toEqual({ kind: "notFound" });
   });
+});
+
+describe("retiredSlugPath", () => {
+  it("keeps the language and the query string", () => {
+    expect(retiredSlugPath("anna-kyiv", ["en"], "?service=x")).toBe(
+      "/anna-kyiv/en?service=x",
+    );
+  });
+
+  it("points at the bare address without a language", () => {
+    expect(retiredSlugPath("anna-kyiv", undefined, "")).toBe("/anna-kyiv");
+  });
+});
+
+describe("pathLocale", () => {
+  it("returns the one valid locale segment", () => {
+    expect(pathLocale(["ru"])).toBe("ru");
+  });
+
+  it.each([undefined, [], ["de"], ["uk", "en"], ["en", "extra"]])(
+    "is null for %j",
+    (segments) => {
+      expect(pathLocale(segments)).toBeNull();
+    },
+  );
 });
