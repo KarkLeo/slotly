@@ -26,6 +26,14 @@ export function resolveLandingLocale(
   return { kind: "page", locale: segment };
 }
 
+// The locale of a path that carries exactly one valid locale segment, otherwise null.
+export function pathLocale(
+  segments: readonly string[] | undefined,
+): Locale | null {
+  const [segment] = segments ?? [];
+  return segments?.length === 1 && isLocale(segment) ? segment : null;
+}
+
 export function landingPath(
   slug: string,
   locale: Locale,

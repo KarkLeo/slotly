@@ -8,6 +8,7 @@ import { findLandingSlug, getLanding } from "@/landing/load";
 import { landingMetadata } from "@/landing/metadata";
 import {
   resolveLandingLocale,
+  pathLocale,
   resolveLandingSlug,
   retiredSlugPath,
 } from "@/landing/routing";
@@ -39,8 +40,9 @@ async function load({ params, searchParams }: Props) {
     if (current !== slug) {
       permanentRedirect(retiredSlugPath(current, locale, await query()));
     }
-    if (locale && (locale.length !== 1 || !isLocale(locale[0]))) notFound();
-    const requested = locale?.[0] ?? (await getLocale());
+    const fromPath = pathLocale(locale);
+    if (locale && !fromPath) notFound();
+    const requested = fromPath ?? (await getLocale());
     const unavailableLocale: Locale = isLocale(requested) ? requested : "uk";
     setRequestLocale(unavailableLocale);
     return { kind: "unavailable" as const, locale: unavailableLocale };
