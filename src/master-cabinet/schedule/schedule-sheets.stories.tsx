@@ -1,7 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { expect, mocked, screen, waitFor, within } from "storybook/test";
+import {
+  expect,
+  fireEvent,
+  mocked,
+  screen,
+  waitFor,
+  within,
+} from "storybook/test";
 import { Toaster } from "@/components/ui/sonner";
 import {
   overflowsX,
@@ -9,10 +16,11 @@ import {
   settle,
   stubOnLine,
 } from "@/components/ui/story-helpers";
-import { saveTemplateDays } from "./actions";
+import { deleteException, saveException, saveTemplateDays } from "./actions";
 import { ScheduleScreen } from "./schedule-screen";
 import {
   dayRow,
+  exceptionRow,
   localeOf,
   scheduleFormatterOf,
   scheduleStories,
@@ -296,6 +304,336 @@ export const DayOffline: Story = {
     );
     await expect(
       within(dialog).getByRole("button", { name: t.schedule.save }),
+    ).toBeDisabled();
+    await waitFor(() => expect(dialog).toHaveTextContent(t.offline));
+    await expect(
+      dialog.querySelector("[data-slot=sheet-body]"),
+    ).toHaveAttribute("tabindex", "0");
+  },
+};
+
+const openAdd = async (canvas: HTMLElement, user: User, locale: unknown) => {
+  const s = scheduleTextsOf(locale).schedule;
+  await user.click(
+    within(canvas).getByRole("button", { name: s.exceptions.add }),
+  );
+  const dialog = await screen.findByRole("dialog", {
+    name: s.exception.titleNew,
+  });
+  await waitFor(() => {
+    settle();
+    expect(dialog).toBeVisible();
+  });
+  return dialog;
+};
+
+const openPeriod = async (
+  canvas: HTMLElement,
+  user: User,
+  locale: unknown,
+  data: ScheduleData,
+  index: number,
+) => {
+  const dates = scheduleView(data, localeOf(locale)).periods[index].dates;
+  await user.click(exceptionRow(canvas, dates));
+  const dialog = await screen.findByRole("dialog", {
+    name: scheduleTextsOf(locale).schedule.exception.titleEdit,
+  });
+  await waitFor(() => {
+    settle();
+    expect(dialog).toBeVisible();
+  });
+  return dialog;
+};
+
+const setDate = (dialog: HTMLElement, label: string, value: string) =>
+  fireEvent.change(within(dialog).getByLabelText(label), {
+    target: { value },
+  });
+
+export const ExceptionAddOff: Story = {
+  beforeEach: () => {
+    mocked(saveException).mockResolvedValue(saved);
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const dialog = await openAdd(canvasElement, userEvent, globals.locale);
+    const from = within(dialog).getByLabelText(s.exception.from);
+    const to = within(dialog).getByLabelText(s.exception.to);
+    await expect(from).toHaveValue("2026-11-05");
+    await expect(to).toHaveValue("2026-11-05");
+    await expect(from).toHaveAttribute("min", "2026-11-04");
+    await expect(to).toHaveAttribute("min", "2026-11-05");
+    await expect(
+      within(dialog).getByRole("button", { name: s.exception.off }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(
+      within(dialog).queryByRole("button", { name: s.exception.delete }),
+    ).toBeNull();
+    await expect(
+      within(dialog).queryByRole("group", {
+        name: scheduleFormatterOf(globals.locale)("intervals.row", { n: 1 }),
+      }),
+    ).toBeNull();
+
+    await userEvent.click(within(dialog).getByRole("button", { name: s.save }));
+    await waitFor(() =>
+      expect(
+        screen.getByText(toastsOf(globals.locale).settingsSaved),
+      ).toBeVisible(),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    const data = mocked(saveException).mock.calls[0][1];
+    await expect(data.get("kind")).toBe("off");
+    await expect(data.get("from")).toBe("2026-11-05");
+    await expect(data.get("to")).toBe("2026-11-05");
+    await expect(data.get("hours")).toBe("{}");
+    await expect(data.get("replacedFrom")).toBeNull();
+  },
+};
+
+export const ExceptionVacationWithAppointments: Story = {
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const format = scheduleFormatterOf(globals.locale);
+    const locale = localeOf(globals.locale);
+    const view = scheduleView(scheduleStories.filled, locale);
+    const dialog = await openPeriod(
+      canvasElement,
+      userEvent,
+      globals.locale,
+      scheduleStories.filled,
+      1,
+    );
+    await expect(within(dialog).getByLabelText(s.exception.from)).toHaveValue(
+      "2026-11-25",
+    );
+    await expect(within(dialog).getByLabelText(s.exception.to)).toHaveValue(
+      "2026-12-02",
+    );
+    await expect(
+      within(dialog).getByText(format("exception.span", { count: 8 }), {
+        exact: false,
+      }),
+    ).toBeVisible();
+    await expect(
+      within(dialog).getByText(format("outside.outside", { count: 2 })),
+    ).toBeVisible();
+    const items = within(dialog).getAllByRole("listitem");
+    await expect(items).toHaveLength(2);
+    for (const id of ["iryna", "sofia"]) {
+      const appointment = view.appointments.find((a) => a.id === id)!;
+      await expect(dialog).toHaveTextContent(
+        appointmentLine(appointment, locale),
+      );
+    }
+    await expect(
+      within(dialog).getByRole("button", { name: s.save }),
+    ).toBeDisabled();
+    await expect(overflowsX(dialog)).toBe(false);
+  },
+};
+
+export const ExceptionVacationWithAppointmentsRu: Story = {
+  ...ExceptionVacationWithAppointments,
+  globals: { locale: "ru" },
+};
+
+export const ExceptionSpecialHours: Story = {
+  beforeEach: () => {
+    mocked(saveException).mockImplementation(async (_state, formData) =>
+      String(formData.get("hours")) === "{}"
+        ? { fieldError: "intervalsInvalid", submittedHours: "{}" }
+        : saved,
+    );
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const dialog = await openAdd(canvasElement, userEvent, globals.locale);
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: s.exception.hours }),
+    );
+    const row = interval(dialog, 1, globals.locale);
+    await expect(
+      within(row).getByRole("combobox", { name: s.intervals.start }),
+    ).toHaveTextContent("10:00");
+    await expect(
+      within(row).getByRole("combobox", { name: s.intervals.end }),
+    ).toHaveTextContent("19:00");
+
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: s.intervals.remove }),
+    );
+    await userEvent.click(within(dialog).getByRole("button", { name: s.save }));
+    await expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      s.intervals.invalid,
+    );
+    await expect(screen.getByRole("dialog")).toBe(dialog);
+
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: s.intervals.add }),
+    );
+    await expect(within(dialog).queryByRole("alert")).toBeNull();
+    await userEvent.click(within(dialog).getByRole("button", { name: s.save }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    const data = mocked(saveException).mock.calls[1][1];
+    await expect(data.get("kind")).toBe("hours");
+    await expect(data.get("hours")).toBe("{[600,1140)}");
+  },
+};
+
+export const ExceptionReplaces: Story = {
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const format = scheduleFormatterOf(globals.locale);
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const view = scheduleView(scheduleStories.filled, localeOf(globals.locale));
+    const dialog = await openAdd(canvasElement, userEvent, globals.locale);
+    const replaces = format("exception.replaces", {
+      periods: view.periods[1].dates,
+    });
+    await expect(within(dialog).queryByText(replaces)).toBeNull();
+
+    setDate(dialog, s.exception.from, "2026-11-27");
+    await expect(within(dialog).getByLabelText(s.exception.to)).toHaveValue(
+      "2026-11-27",
+    );
+    await expect(within(dialog).getByText(replaces)).toBeVisible();
+  },
+};
+
+export const ExceptionShortened: Story = {
+  parameters: { data: scheduleStories.releasedDay },
+  beforeEach: () => {
+    mocked(saveException).mockResolvedValue(saved);
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const format = scheduleFormatterOf(globals.locale);
+    const locale = localeOf(globals.locale);
+    const view = scheduleView(scheduleStories.releasedDay, locale);
+    const dialog = await openPeriod(
+      canvasElement,
+      userEvent,
+      globals.locale,
+      scheduleStories.releasedDay,
+      1,
+    );
+    await expect(
+      within(dialog).getByText(format("outside.outside", { count: 3 })),
+    ).toBeVisible();
+
+    setDate(dialog, s.exception.to, "2026-11-28");
+    const warning = await waitFor(() =>
+      within(dialog).getByText(format("outside.outside", { count: 2 })),
+    );
+    const items = within(warning).getAllByRole("listitem");
+    await expect(items).toHaveLength(2);
+    const kateryna = view.appointments.find((a) => a.id === "kateryna")!;
+    await expect(warning).toHaveTextContent(appointmentLine(kateryna, locale));
+    const sofia = view.appointments.find((a) => a.id === "sofia")!;
+    await expect(warning).not.toHaveTextContent(appointmentLine(sofia, locale));
+
+    await userEvent.click(within(dialog).getByRole("button", { name: s.save }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    const data = mocked(saveException).mock.calls[0][1];
+    await expect(data.get("from")).toBe("2026-11-25");
+    await expect(data.get("to")).toBe("2026-11-28");
+    await expect(data.get("replacedFrom")).toBe("2026-11-25");
+    await expect(data.get("replacedTo")).toBe("2026-12-02");
+  },
+};
+
+export const ExceptionDeleteWarns: Story = {
+  parameters: { data: scheduleStories.widerHours },
+  beforeEach: () => {
+    mocked(deleteException).mockResolvedValue({
+      toast: { type: "success", key: "exceptionDeleted" },
+    });
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const format = scheduleFormatterOf(globals.locale);
+    const locale = localeOf(globals.locale);
+    const view = scheduleView(scheduleStories.widerHours, locale);
+    const dialog = await openPeriod(
+      canvasElement,
+      userEvent,
+      globals.locale,
+      scheduleStories.widerHours,
+      0,
+    );
+    await expect(
+      within(dialog).queryByText(format("outside.outside", { count: 1 })),
+    ).toBeNull();
+    await expect(
+      within(dialog).getByText(format("outside.afterDelete", { count: 1 })),
+    ).toBeVisible();
+    await expect(within(dialog).getByRole("listitem")).toHaveTextContent(
+      appointmentLine(
+        view.appointments.find((a) => a.id === "marichka")!,
+        locale,
+      ),
+    );
+    await expect(
+      within(dialog).getByRole("button", { name: s.save }),
+    ).toBeDisabled();
+
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: s.exception.delete }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByText(toastsOf(globals.locale).exceptionDeleted),
+      ).toBeVisible(),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    const data = mocked(deleteException).mock.calls[0][1];
+    await expect(data.get("from")).toBe("2026-12-05");
+    await expect(data.get("to")).toBe("2026-12-05");
+    await expect(saveException).not.toHaveBeenCalled();
+  },
+};
+
+export const ExceptionTooLong: Story = {
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const format = scheduleFormatterOf(globals.locale);
+    const dialog = await openAdd(canvasElement, userEvent, globals.locale);
+    const save = within(dialog).getByRole("button", { name: s.save });
+    await expect(save).toBeEnabled();
+
+    setDate(dialog, s.exception.to, "2027-11-05");
+    await expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      format("exception.tooLong", { max: 365 }),
+    );
+    await expect(save).toBeDisabled();
+
+    setDate(dialog, s.exception.to, "2027-11-04");
+    await waitFor(() => expect(within(dialog).queryByRole("alert")).toBeNull());
+    await expect(save).toBeEnabled();
+  },
+};
+
+export const ExceptionOffline: Story = {
+  beforeEach: () => {
+    stubOnLine(false);
+    return restoreOnLine;
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const t = scheduleTextsOf(globals.locale);
+    const s = t.schedule;
+    const dialog = await openPeriod(
+      canvasElement,
+      userEvent,
+      globals.locale,
+      scheduleStories.filled,
+      1,
+    );
+    await expect(
+      within(dialog).getByRole("button", { name: s.save }),
+    ).toBeDisabled();
+    await expect(
+      within(dialog).getByRole("button", { name: s.exception.delete }),
     ).toBeDisabled();
     await waitFor(() => expect(dialog).toHaveTextContent(t.offline));
     await expect(

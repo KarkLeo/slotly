@@ -79,8 +79,23 @@ const filled: ScheduleData = {
   autoConfirm: true,
 };
 
+const kateryna = {
+  id: "kateryna",
+  clientName: "Катерина",
+  startsAt: "2026-11-29T09:00:00Z",
+  endsAt: "2026-11-29T10:00:00Z",
+};
+
 export const scheduleStories = {
   filled,
+  noExceptions: { ...filled, exceptionDays: [] },
+  // Sunday 29 Nov is a day off in the template, so shortening the vacation releases it to a day off with an appointment.
+  releasedDay: { ...filled, appointments: [...appointments, kateryna] },
+  // Special hours on Saturday 5 Dec cover the 16:00 appointment that the template does not.
+  widerHours: {
+    ...filled,
+    exceptionDays: [{ day: "2026-12-05", hours: [{ start: 600, end: 1200 }] }],
+  },
   emptyTemplate: { ...filled, template: off },
   // 09:10 is off the 15-minute grid, as if an agent had saved it.
   offGrid: {
@@ -119,3 +134,8 @@ export const dayRow = (canvas: HTMLElement, name: string) =>
 
 export const toastsOf = (locale: unknown) =>
   dictionaries[localeOf(locale)].Toasts;
+
+export const exceptionRow = (canvas: HTMLElement, dates: string) =>
+  within(canvas).getByRole("button", {
+    name: (name) => name.startsWith(dates),
+  });

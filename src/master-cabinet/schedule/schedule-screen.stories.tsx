@@ -5,6 +5,7 @@ import { overflowsX } from "@/components/ui/story-helpers";
 import { ScheduleScreen } from "./schedule-screen";
 import {
   dayRow,
+  exceptionRow,
   localeOf,
   scheduleFormatterOf,
   scheduleStories,
@@ -105,5 +106,53 @@ export const EmptyTemplate: Story = {
       warning.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     await expect(within(group).getAllByText(s.dayOff)).toHaveLength(7);
+  },
+};
+
+export const Exceptions: Story = {
+  play: async ({ canvasElement, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const format = scheduleFormatterOf(globals.locale);
+    const view = scheduleView(scheduleStories.filled, localeOf(globals.locale));
+    const canvas = within(canvasElement);
+    const group = canvas.getByRole("region", { name: s.groups.exceptions });
+    await expect(within(group).getAllByRole("button")).toHaveLength(4);
+    await expect(exceptionRow(group, view.periods[0].dates)).toHaveTextContent(
+      s.dayOff,
+    );
+    const vacation = exceptionRow(group, view.periods[1].dates);
+    await expect(vacation).toHaveTextContent(
+      format("exceptions.offRange", { count: 8 }),
+    );
+    await expect(vacation).toHaveTextContent(
+      format("exceptions.outsideBadge", { count: 2 }),
+    );
+    await expect(exceptionRow(group, view.periods[2].dates)).toHaveTextContent(
+      "10:00–14:00",
+    );
+    await expect(
+      within(group).getByRole("button", { name: s.exceptions.add }),
+    ).toBeVisible();
+    await expect(canvas.queryByText(s.exceptions.empty)).toBeNull();
+    await expect(overflowsX(document.documentElement)).toBe(false);
+  },
+};
+
+export const ExceptionsRu: Story = {
+  ...Exceptions,
+  globals: { locale: "ru" },
+};
+
+export const ExceptionsEmpty: Story = {
+  parameters: { data: scheduleStories.noExceptions },
+  play: async ({ canvasElement, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText(s.exceptions.empty)).toBeVisible();
+    const group = canvas.getByRole("region", { name: s.groups.exceptions });
+    await expect(within(group).getAllByRole("button")).toHaveLength(1);
+    await expect(
+      within(group).getByRole("button", { name: s.exceptions.add }),
+    ).toBeVisible();
   },
 };

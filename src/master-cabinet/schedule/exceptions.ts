@@ -42,12 +42,12 @@ export function periodLength(from: string, to: string): number {
   return Math.round(ms / 86_400_000) + 1;
 }
 
-export function overlappingPeriods(
-  periods: ExceptionPeriod[],
+export function overlappingPeriods<P extends ExceptionPeriod>(
+  periods: P[],
   from: string,
   to: string,
   except: ExceptionPeriod | null,
-): ExceptionPeriod[] {
+): P[] {
   return periods.filter(
     (p) =>
       p.from <= to &&

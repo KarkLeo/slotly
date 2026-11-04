@@ -4,6 +4,7 @@ import { PageHeader } from "../page-header";
 import { SettingsGroup } from "../settings/settings-row";
 import { SettingsWarning } from "../settings/settings-sheet";
 import { DaySheet } from "./day-sheet";
+import { ExceptionRows } from "./exceptions-group";
 import type { ScheduleView } from "./view";
 
 export function ScheduleScreen({
@@ -37,6 +38,16 @@ export function ScheduleScreen({
           <p className="px-1 text-sm text-muted-foreground">
             {t("schedule.zoneNote", { zone: view.zone })}
           </p>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <SettingsGroup title={t("schedule.groups.exceptions")}>
+            <ExceptionRows view={view} />
+          </SettingsGroup>
+          {view.periods.length === 0 && (
+            <p className="px-1 text-sm text-muted-foreground">
+              {t("schedule.exceptions.empty")}
+            </p>
+          )}
         </div>
       </div>
     </>
