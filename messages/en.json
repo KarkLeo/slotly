@@ -76,7 +76,8 @@
     "serviceArchived": "Service moved to the archive.",
     "serviceRestored": "Service restored.",
     "categoryAdded": "Category added.",
-    "categoryDeleted": "Category deleted."
+    "categoryDeleted": "Category deleted.",
+    "exceptionDeleted": "Exception deleted."
   },
   "Landing": {
     "languages": "Page language",
@@ -330,6 +331,81 @@
         "publish": "Publish again"
       }
     },
+    "schedule": {
+      "groups": {
+        "template": "Work template",
+        "exceptions": "Exceptions",
+        "params": "Booking parameters"
+      },
+      "dayOff": "Day off",
+      "emptyTemplate": "The work template is empty, so clients can't book. Start with any day.",
+      "zoneNote": "Times are in your time zone: {zone}. You can change the zone in Settings.",
+      "save": "Save",
+      "day": {
+        "working": "Working day",
+        "offHint": "A day off every week: clients can't book this day.",
+        "alsoFor": "Same hours also for"
+      },
+      "exceptions": {
+        "add": "+ Add exception",
+        "empty": "A day off, vacation or special hours for specific dates.",
+        "offRange": "Days off, {count, plural, one {# day} other {# days}}",
+        "outsideBadge": "{count, plural, one {# appointment} other {# appointments}}"
+      },
+      "exception": {
+        "titleNew": "New exception",
+        "titleEdit": "Exception",
+        "kind": "Exception type",
+        "off": "Not working",
+        "hours": "Special hours",
+        "from": "From",
+        "to": "To",
+        "span": "{count, plural, one {# day} other {# days}}. For a day off keep one date, for a vacation pick a range.",
+        "tooLong": "An exception can't be longer than {max} days.",
+        "replaces": "Will replace existing exceptions: {periods}.",
+        "delete": "Delete exception"
+      },
+      "intervals": {
+        "row": "Interval {n}",
+        "start": "Start",
+        "end": "End",
+        "remove": "Remove interval",
+        "add": "+ Add interval",
+        "invalid": "Intervals overlap or an end is before its start.",
+        "empty": "Add at least one interval.",
+        "midnight": "Until 24:00: an appointment can run into the next day if that day starts at 00:00."
+      },
+      "outside": {
+        "outside": "There {count, plural, one {is already # appointment} other {are already # appointments}} outside this time. They will stay and clients will get nothing: move or cancel them yourself if needed.",
+        "afterDelete": "If you delete the exception, these will fall outside the work template:"
+      },
+      "params": {
+        "step": {
+          "label": "Grid step",
+          "hint": "How often clients are offered a start time: 10:00, 10:15, 10:30."
+        },
+        "notice": {
+          "label": "Minimum notice",
+          "hint": "Clients can't book later than this before the start. You can book a client at any time yourself."
+        },
+        "horizon": {
+          "label": "Booking horizon",
+          "hint": "How many days ahead a client can book. Bookings already made won't change."
+        },
+        "deadline": {
+          "label": "Cancel deadline",
+          "hint": "How long before the start a client can still cancel or reschedule on their own."
+        },
+        "deadlineWarning": "The new deadline also applies to bookings already made.",
+        "noLimit": "No limit",
+        "untilStart": "Until the very start"
+      },
+      "autoConfirm": {
+        "label": "Auto-confirm",
+        "on": "New bookings are confirmed at once. The ones already waiting are up to you",
+        "off": "Every new booking waits for your decision for up to 24 h"
+      }
+    },
     "stub": {
       "calendar": {
         "title": "Your <accent>calendar</accent> will be here",
@@ -346,10 +422,6 @@
       "services": {
         "title": "Your <accent>services</accent> will be here",
         "text": "Your services with duration and price."
-      },
-      "schedule": {
-        "title": "Your <accent>schedule</accent> will be here",
-        "text": "The weekly working template and exceptions for single days."
       },
       "landing": {
         "title": "Your <accent>landing</accent> will be here",

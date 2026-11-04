@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { useOnline } from "@/lib/use-online";
 import { useShownToastAction } from "@/toasts/use-shown-toast-action";
-import type { SettingsActionState } from "./actions";
+import type { ActionToast } from "@/toasts/toast";
 
 export const optionRowClass =
   "flex min-h-12 items-center justify-between gap-3 border-b py-2 text-base leading-snug font-normal last:border-b-0";
@@ -50,7 +50,7 @@ export function SettingsSheet({
 }
 
 // Shows the toast as the action resolves and closes the sheet on success.
-export function useSettingsAction<S extends SettingsActionState>(
+export function useSettingsAction<S extends { toast?: ActionToast }>(
   action: (state: S, formData: FormData) => Promise<S>,
   onSaved: () => void,
   initialState: Awaited<S>,

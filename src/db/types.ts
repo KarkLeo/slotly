@@ -688,6 +688,15 @@ export type Database = {
           next_change_at: string;
         }[];
       };
+      get_upcoming_appointments: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          client_name: string;
+          ends_at: string;
+          id: string;
+          starts_at: string;
+        }[];
+      };
       health: { Args: Record<PropertyKey, never>; Returns: string };
       is_slug_available: { Args: { slug: string }; Returns: boolean };
       release_booking: { Args: { appointment_id: string }; Returns: undefined };
@@ -707,6 +716,20 @@ export type Database = {
       resolve_landing_slug: { Args: { slug: string }; Returns: string };
       set_no_show: {
         Args: { appointment_id: string; no_show: boolean };
+        Returns: undefined;
+      };
+      set_schedule_exceptions: {
+        Args: {
+          from_date: string;
+          hours: unknown;
+          replaced_from?: string;
+          replaced_to?: string;
+          to_date: string;
+        };
+        Returns: undefined;
+      };
+      set_work_template_days: {
+        Args: { hours: unknown; weekdays: number[] };
         Returns: undefined;
       };
       take_rate_limit: {
