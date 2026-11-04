@@ -117,6 +117,9 @@ update public.appointments
 set during = tstzrange(lower(during), lower(during) + interval '2 hours')
 where id = (select appointment_id from booked where name = 'olena');
 
+insert into public.schedule_exceptions (master_id, day, hours) values
+  ('00000000-0000-0000-0000-00000000000a', (now() at time zone 'Europe/Kyiv')::date + 6, '{}');
+
 set local role authenticated;
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000c1');
 
@@ -129,7 +132,7 @@ select is(
     (select appointment_id from booked where name = 'olena')
   ) as s),
   (((now() at time zone 'Europe/Kyiv')::date + 5) + time '22:00') at time zone 'Europe/Kyiv',
-  'a two-hour appointment can move no later than two hours before the end of the day'
+  'a two-hour appointment can move no later than two hours before a day off'
 );
 
 select throws_ok(
