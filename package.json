@@ -20,7 +20,7 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
-    "db:types": "supabase gen types typescript --local > src/db/types.ts && prettier --write src/db/types.ts"
+    "db:types": "supabase gen types typescript > src/db/types.ts && prettier --write src/db/types.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -62,7 +62,7 @@
     "prettier": "^3.9.10",
     "shadcn": "^4.23.0",
     "storybook": "10.6.5",
-    "supabase": "^2.122.0",
+    "supabase": "^3.0.0",
     "tailwindcss": "^4",
     "typescript": "^6",
     "vite": "^8.3.5",
