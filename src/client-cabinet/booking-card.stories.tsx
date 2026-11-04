@@ -1,9 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { expect, mocked, screen, waitFor, within } from "storybook/test";
 import en from "../../messages/en.json";
 import ru from "../../messages/ru.json";
 import uk from "../../messages/uk.json";
 import { slotTimeLabel, zoneLabel } from "@/booking/dates";
+import { Toaster } from "@/components/ui/sonner";
 import { isLocale, type Locale } from "@/i18n/locales";
 import { cancelBooking } from "./actions";
 import type { MyBooking } from "./booking";
@@ -145,4 +148,50 @@ export const CancelDialog: Story = {
     await expect(form.get("appointmentId")).toBe("b1");
     await expect(form.get("comment")).toBe("Захворіла");
   },
+};
+
+// The refusal refreshes the page, which removes the dialog in the commit that delivers the action's result.
+function RefusedCard({ locale }: { locale: Locale }) {
+  const [booking, setBooking] = useState<MyBooking>(stories.confirmed);
+  useEffect(() => {
+    mocked(cancelBooking).mockImplementation(async () => {
+      setBooking(stories.late);
+      return { toast: { type: "error", key: "changeClosed" } };
+    });
+  }, []);
+  return (
+    <>
+      <Toaster />
+      <BookingCard booking={view(booking, locale)} />
+    </>
+  );
+}
+
+export const CancelRefused: Story = {
+  globals: { viewport: { value: "mobile360" } },
+  render: (_args, { globals }) => (
+    <RefusedCard locale={localeOf(globals.locale)} />
+  ),
+  beforeEach: () => () => {
+    toast.dismiss();
+  },
+  play: async ({ canvas, userEvent, globals }) => {
+    const texts = dictionaries[localeOf(globals.locale)];
+    const t = texts.MyBookings;
+    await userEvent.click(canvas.getByRole("button", { name: t.cancel }));
+    const dialog = await screen.findByRole("dialog", { name: t.cancelTitle });
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: t.cancelConfirm }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText(texts.Toasts.changeClosed)).toBeVisible(),
+    );
+    await expect(canvas.queryByRole("button", { name: t.cancel })).toBeNull();
+    await expect(screen.queryByRole("dialog")).toBeNull();
+  },
+};
+
+export const CancelRefusedRussian: Story = {
+  ...CancelRefused,
+  globals: { ...CancelRefused.globals, locale: "ru" },
 };
