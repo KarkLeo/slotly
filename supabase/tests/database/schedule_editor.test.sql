@@ -209,11 +209,6 @@ select throws_ok(
   'a period that starts before today is rejected'
 );
 
-select lives_ok(
-  $$ select public.set_schedule_exceptions(pg_temp.today() + 100, pg_temp.today() + 364, '{}') $$,
-  'a period of 365 days is accepted'
-);
-
 select throws_ok(
   $$ select public.set_schedule_exceptions(pg_temp.today() + 1, pg_temp.today() + 2, '{[0,1500)}') $$,
   '23514', null,
@@ -230,6 +225,12 @@ select pg_temp.act_as('00000000-0000-0000-0000-00000000000c');
 select lives_ok(
   $$ select public.set_schedule_exceptions((now() at time zone 'Pacific/Pago_Pago')::date, (now() at time zone 'Pacific/Pago_Pago')::date, '{}') $$,
   'today follows the master''s zone, west of the server'
+);
+
+select lives_ok(
+  $$ select public.set_schedule_exceptions(
+       (now() at time zone 'Pacific/Pago_Pago')::date + 1, (now() at time zone 'Pacific/Pago_Pago')::date + 365, '{}') $$,
+  'a period of 365 days counting both ends is accepted'
 );
 
 select pg_temp.act_as('00000000-0000-0000-0000-00000000000d');
