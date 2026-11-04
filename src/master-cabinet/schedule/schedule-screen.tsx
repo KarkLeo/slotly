@@ -22,12 +22,14 @@ export function ScheduleScreen({
       <PageHeader title={t("sections.schedule")} back={{ theme, email }} />
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-1.5">
-          <SettingsGroup title={t("schedule.groups.template")}>
-            {view.templateEmpty && (
-              <div className="p-3">
+          <SettingsGroup
+            title={t("schedule.groups.template")}
+            notice={
+              view.templateEmpty && (
                 <SettingsWarning>{t("schedule.emptyTemplate")}</SettingsWarning>
-              </div>
-            )}
+              )
+            }
+          >
             {view.days.map((day) => (
               <DaySheet key={day.weekday} view={view} day={day} />
             ))}

@@ -62,9 +62,11 @@ export function StaticSettingsRow({
 
 export function SettingsGroup({
   title,
+  notice,
   children,
 }: {
   title: ReactNode;
+  notice?: ReactNode;
   children: ReactNode;
 }) {
   const id = useId();
@@ -76,6 +78,7 @@ export function SettingsGroup({
       >
         {title}
       </h2>
+      {notice}
       <div className="flex flex-col divide-y divide-border overflow-hidden rounded-xl bg-card">
         {children}
       </div>

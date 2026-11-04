@@ -1,6 +1,7 @@
-import { addDays, localDate, zoneLabel } from "@/booking/dates";
+import { addDays, localDate } from "@/booking/dates";
 import type { Locale } from "@/i18n/locales";
 import { formatDuration } from "@/landing/format";
+import { timeZoneOption } from "../settings/time-zones";
 import {
   type LocalAppointment,
   outsideInPeriod,
@@ -142,7 +143,7 @@ export function toScheduleView(
   const weekdays = [1, 2, 3, 4, 5, 6, 7];
   return {
     today,
-    zone: zoneLabel(data.timeZone, locale),
+    zone: timeZoneOption(data.timeZone, locale, now).city,
     schedule,
     appointments,
     days: weekdays.map((weekday) => {

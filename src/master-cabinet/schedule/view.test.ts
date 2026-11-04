@@ -53,6 +53,10 @@ describe("toScheduleView", () => {
     expect(view().today).toBe("2026-11-05");
   });
 
+  it("names the zone by its city, as the settings row does", () => {
+    expect(view().zone).toBe("Kyiv");
+  });
+
   it("gives seven days with a null label for a day off", () => {
     const { days } = view();
     expect(days.map((d) => d.weekday)).toEqual([1, 2, 3, 4, 5, 6, 7]);

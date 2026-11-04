@@ -77,6 +77,16 @@ export const Filled: Story = {
   },
 };
 
+export const FilledZoneNote: Story = {
+  play: async ({ canvasElement }) => {
+    await expect(
+      within(canvasElement).getByText(
+        "Час у вашому поясі: Kyiv. Змінити пояс можна в «Налаштуваннях».",
+      ),
+    ).toBeVisible();
+  },
+};
+
 export const FilledRu: Story = { ...Filled, globals: { locale: "ru" } };
 
 export const FilledEn: Story = { ...Filled, globals: { locale: "en" } };
@@ -86,8 +96,14 @@ export const EmptyTemplate: Story = {
   play: async ({ canvasElement, globals }) => {
     const s = scheduleTextsOf(globals.locale).schedule;
     const canvas = within(canvasElement);
-    await expect(canvas.getByText(s.emptyTemplate)).toBeVisible();
+    const warning = canvas.getByText(s.emptyTemplate);
+    await expect(warning).toBeVisible();
     const group = canvas.getByRole("region", { name: s.groups.template });
+    const list = within(group).getAllByRole("button")[0].parentElement!;
+    await expect(list.contains(warning)).toBe(false);
+    await expect(
+      warning.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     await expect(within(group).getAllByText(s.dayOff)).toHaveLength(7);
   },
 };
