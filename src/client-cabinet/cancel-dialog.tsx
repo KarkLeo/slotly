@@ -4,19 +4,15 @@ import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { CommentDialog } from "@/components/comment-dialog";
 import { Button } from "@/components/ui/button";
-import { useActionToast } from "@/toasts/use-action-toast";
-import { withUnexpectedToast } from "@/toasts/with-unexpected-toast";
+import { useShownToastAction } from "@/toasts/use-shown-toast-action";
 import { cancelBooking, type CancelBookingState } from "./actions";
-
-const submit = withUnexpectedToast(cancelBooking);
 
 export function CancelDialog({ appointmentId }: { appointmentId: string }) {
   const t = useTranslations("MyBookings");
-  const [state, action, pending] = useActionState<CancelBookingState, FormData>(
-    submit,
+  const [, action, pending] = useActionState<CancelBookingState, FormData>(
+    useShownToastAction(cancelBooking),
     {},
   );
-  useActionToast(state.toast);
 
   return (
     <CommentDialog
