@@ -76,7 +76,8 @@
     "serviceArchived": "Услуга перенесена в архив.",
     "serviceRestored": "Услуга возвращена.",
     "categoryAdded": "Категория добавлена.",
-    "categoryDeleted": "Категория удалена."
+    "categoryDeleted": "Категория удалена.",
+    "exceptionDeleted": "Исключение удалено."
   },
   "Landing": {
     "languages": "Язык страницы",

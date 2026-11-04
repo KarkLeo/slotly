@@ -76,7 +76,8 @@
     "serviceArchived": "Service moved to the archive.",
     "serviceRestored": "Service restored.",
     "categoryAdded": "Category added.",
-    "categoryDeleted": "Category deleted."
+    "categoryDeleted": "Category deleted.",
+    "exceptionDeleted": "Exception deleted."
   },
   "Landing": {
     "languages": "Page language",

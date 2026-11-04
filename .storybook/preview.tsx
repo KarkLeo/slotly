@@ -23,6 +23,7 @@ sb.mock(import("../src/landing/booking-actions.ts"));
 sb.mock(import("../src/landing/booking-api.ts"));
 sb.mock(import("../src/master-cabinet/services/actions.ts"));
 sb.mock(import("../src/master-cabinet/settings/actions.ts"));
+sb.mock(import("../src/master-cabinet/schedule/actions.ts"));
 sb.mock(import("../src/master-cabinet/today/actions.ts"));
 sb.mock(import("../src/theme/actions.ts"));
 

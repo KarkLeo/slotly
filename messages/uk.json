@@ -76,7 +76,8 @@
     "serviceArchived": "Послугу перенесено в архів.",
     "serviceRestored": "Послугу повернуто.",
     "categoryAdded": "Категорію додано.",
-    "categoryDeleted": "Категорію видалено."
+    "categoryDeleted": "Категорію видалено.",
+    "exceptionDeleted": "Виняток видалено."
   },
   "Landing": {
     "languages": "Мова сторінки",

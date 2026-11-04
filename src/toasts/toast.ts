@@ -35,6 +35,7 @@ const toastKeys = {
   serviceRestored: true,
   categoryAdded: true,
   categoryDeleted: true,
+  exceptionDeleted: true,
 } satisfies Record<ToastKey, true>;
 
 export function encodeFlash(toast: ActionToast): string {
