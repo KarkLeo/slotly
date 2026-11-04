@@ -331,6 +331,33 @@
         "publish": "Publish again"
       }
     },
+    "schedule": {
+      "groups": {
+        "template": "Work template"
+      },
+      "dayOff": "Day off",
+      "emptyTemplate": "The work template is empty, so clients can't book. Start with any day.",
+      "zoneNote": "Times are in your time zone: {zone}. You can change the zone in Settings.",
+      "save": "Save",
+      "day": {
+        "working": "Working day",
+        "offHint": "A day off every week: clients can't book this day.",
+        "alsoFor": "Same hours also for"
+      },
+      "intervals": {
+        "row": "Interval {n}",
+        "start": "Start",
+        "end": "End",
+        "remove": "Remove interval",
+        "add": "+ Add interval",
+        "invalid": "Intervals overlap or an end is before its start.",
+        "midnight": "Until 24:00: an appointment can run into the next day if that day starts at 00:00."
+      },
+      "outside": {
+        "outside": "There {count, plural, one {is already # appointment} other {are already # appointments}} outside this time. They will stay and clients will get nothing: move or cancel them yourself if needed.",
+        "afterDelete": "If you delete the exception, these will fall outside the work template:"
+      }
+    },
     "stub": {
       "calendar": {
         "title": "Your <accent>calendar</accent> will be here",
