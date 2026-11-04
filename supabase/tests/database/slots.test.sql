@@ -1,6 +1,6 @@
 begin;
 
-select plan(43);
+select plan(47);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'olena@example.com'),
@@ -356,6 +356,41 @@ select is_empty(
      where p.proname in ('available_slots')
        and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute')) $$,
   'the internal slot function is not callable directly'
+);
+
+-- Midnight: Olena still works around the clock, and 2030-02-06 is a day off.
+insert into public.schedule_exceptions (master_id, day, hours) values
+  ('00000000-0000-0000-0000-00000000000a', '2030-02-06', '{}');
+
+create function pg_temp.slots(day_from date, day_to date, minutes integer)
+returns setof timestamptz
+language sql
+stable
+as $$
+  select private.available_slots('00000000-0000-0000-0000-0000000000a1', day_from, day_to, '2030-01-01 00:00+00', minutes, null, true);
+$$;
+
+select ok(
+  '2030-02-04 23:00 Europe/Kyiv'::timestamptz in (select pg_temp.slots('2030-02-04', '2030-02-04', 120)),
+  'a service may run past midnight when the next day works from midnight'
+);
+
+select ok(
+  '2030-02-04 23:00 Europe/Kyiv'::timestamptz in (select pg_temp.slots('2030-02-04', '2030-02-04', 60)),
+  'a service may end exactly at midnight'
+);
+
+select ok(
+  '2030-02-05 22:00 Europe/Kyiv'::timestamptz in (select pg_temp.slots('2030-02-05', '2030-02-05', 120))
+    and '2030-02-05 23:00 Europe/Kyiv'::timestamptz not in (select pg_temp.slots('2030-02-05', '2030-02-05', 120)),
+  'a service cannot run past midnight into a day off'
+);
+
+select results_eq(
+  $$ select s from pg_temp.slots('2030-02-04', '2030-02-04', 120) as s order by s $$,
+  $$ select s from pg_temp.slots('2030-02-03', '2030-02-05', 120) as s
+     where (s at time zone 'Europe/Kyiv')::date = '2030-02-04' order by s $$,
+  'the slots of a day do not depend on the days asked for'
 );
 
 select * from finish();
