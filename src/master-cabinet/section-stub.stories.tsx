@@ -26,15 +26,15 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Services: Story = {
-  args: { section: "services" },
+export const Schedule: Story = {
+  args: { section: "schedule" },
   beforeEach: () => {
-    mocked(usePathname).mockReturnValue("/app/services");
+    mocked(usePathname).mockReturnValue("/app/schedule");
   },
   play: async ({ canvas, userEvent, globals }) => {
     const t = textsOf(globals.locale);
     await expect(
-      canvas.getByRole("heading", { level: 1, name: t.sections.services }),
+      canvas.getByRole("heading", { level: 1, name: t.sections.schedule }),
     ).toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: t.back }));
     await screen.findByRole("dialog", { name: t.more });
@@ -101,6 +101,6 @@ export const NewBooking: Story = {
   },
 };
 
-export const Russian: Story = { ...Services, globals: { locale: "ru" } };
+export const Russian: Story = { ...Schedule, globals: { locale: "ru" } };
 
-export const English: Story = { ...Services, globals: { locale: "en" } };
+export const English: Story = { ...Schedule, globals: { locale: "en" } };

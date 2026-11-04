@@ -10,7 +10,9 @@ import { PageHeader } from "./page-header";
 import { sections, type SectionKey } from "./sections";
 
 type StubKey =
-  Exclude<SectionKey, "today" | "settings"> | "newBooking" | "newBlock";
+  | Exclude<SectionKey, "today" | "settings" | "services">
+  | "newBooking"
+  | "newBlock";
 
 export function SectionStub({
   section,

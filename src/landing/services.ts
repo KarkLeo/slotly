@@ -19,20 +19,20 @@ export type Service = {
   format: Database["public"]["Enums"]["service_format"];
 };
 
-export type ServiceGroup = {
+export type ServiceGroup<S extends Service = Service> = {
   category: Category | null;
-  services: Service[];
+  services: S[];
 };
 
 const byPosition = (a: { position: number }, b: { position: number }) =>
   a.position - b.position;
 
-export function groupServices(
+export function groupServices<S extends Service>(
   categories: Category[],
-  services: Service[],
-): ServiceGroup[] {
+  services: S[],
+): ServiceGroup<S>[] {
   const sorted = [...services].sort(byPosition);
-  const groups: ServiceGroup[] = [...categories]
+  const groups: ServiceGroup<S>[] = [...categories]
     .sort(byPosition)
     .map((category) => ({
       category,

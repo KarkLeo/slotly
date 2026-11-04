@@ -71,7 +71,12 @@
     "settingsSaved": "Saved.",
     "slugChanged": "Address changed.",
     "pagePublished": "Your page is published again.",
-    "pageUnpublished": "Your page is unpublished."
+    "pageUnpublished": "Your page is unpublished.",
+    "serviceAdded": "Service added.",
+    "serviceArchived": "Service moved to the archive.",
+    "serviceRestored": "Service restored.",
+    "categoryAdded": "Category added.",
+    "categoryDeleted": "Category deleted."
   },
   "Landing": {
     "languages": "Page language",
@@ -361,6 +366,83 @@
       "newBlock": {
         "title": "A <accent>block</accent> form will be here",
         "text": "A form to close time for bookings."
+      }
+    },
+    "services": {
+      "add": "Add service",
+      "addTitle": "New service",
+      "editTitle": "Edit service",
+      "noCategory": "No category",
+      "priceFrom": "from {price}",
+      "bufferMeta": "buffer {duration}",
+      "formats": {
+        "on_site": "On site",
+        "online": "Online",
+        "at_client": "Home visit"
+      },
+      "empty": {
+        "title": "No services <accent>yet</accent>",
+        "text": "Add your first service, and clients will be able to book it."
+      },
+      "order": {
+        "open": "Order",
+        "done": "Done",
+        "hint": "Services appear on your page in this order. To move a service to another category, open it.",
+        "up": "Move “{name}” up",
+        "down": "Move “{name}” down",
+        "moved": "“{name}”: place {position} of {total}"
+      },
+      "archive": {
+        "title": "Archive",
+        "action": "Move to archive",
+        "hint": "Clients will no longer be able to book this service. Existing bookings stay.",
+        "restore": "Restore",
+        "restoreLabel": "Restore “{name}”"
+      },
+      "form": {
+        "name": "Name",
+        "description": "Description",
+        "optional": "(optional)",
+        "category": "Category",
+        "duration": "Duration, min",
+        "buffer": "Buffer, min",
+        "bufferHint": "Buffer is the time after a service that stays closed for booking: cleaning, travel.",
+        "changeHint": "A new duration and buffer apply to new bookings.",
+        "price": "Price",
+        "priceKinds": {
+          "fixed": "Exact",
+          "from": "Starting at",
+          "none": "No price"
+        },
+        "amount": "Amount, {currency}",
+        "format": "Format",
+        "atClientHint": "The client gives an address when booking. Allow for travel in the buffer.",
+        "save": "Save",
+        "add": "Add",
+        "errors": {
+          "name": "Enter a name in the primary language: up to 100 characters.",
+          "description": "Description: up to 1000 characters.",
+          "duration": "From 5 to 720 min, in steps of 5.",
+          "buffer": "From 0 to 240 min, in steps of 5.",
+          "price": "Enter an amount, for example 900 or 900.50."
+        }
+      },
+      "categories": {
+        "title": "Categories",
+        "text": "Categories group services on your page.",
+        "add": "Add category",
+        "addTitle": "New category",
+        "editTitle": "Edit category",
+        "addSubmit": "Add",
+        "save": "Save",
+        "back": "Back",
+        "name": "Name",
+        "nameInvalid": "Enter a name in the primary language: up to 100 characters.",
+        "count": "{count, plural, =0 {no services} one {# service} other {# services}}",
+        "delete": "Delete category",
+        "deleteTitle": "Delete the category?",
+        "deleteSubmit": "Delete",
+        "deleteText": "The category “{name}” will be deleted.{count, plural, =0 {} one { # service will stay without a category.} other { # services will stay without a category.}}"
       }
     }
   }

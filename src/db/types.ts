@@ -691,6 +691,11 @@ export type Database = {
       health: { Args: Record<PropertyKey, never>; Returns: string };
       is_slug_available: { Args: { slug: string }; Returns: boolean };
       release_booking: { Args: { appointment_id: string }; Returns: undefined };
+      reorder_service_categories: {
+        Args: { ids: string[] };
+        Returns: undefined;
+      };
+      reorder_services: { Args: { ids: string[] }; Returns: undefined };
       reschedule_appointment: {
         Args: { appointment_id: string; starts_at: string };
         Returns: undefined;
