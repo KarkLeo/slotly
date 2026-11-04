@@ -422,10 +422,6 @@
         "title": "Your <accent>services</accent> will be here",
         "text": "Your services with duration and price."
       },
-      "schedule": {
-        "title": "Your <accent>schedule</accent> will be here",
-        "text": "The weekly working template and exceptions for single days."
-      },
       "landing": {
         "title": "Your <accent>landing</accent> will be here",
         "text": "Blocks, theme and publishing of your landing."
