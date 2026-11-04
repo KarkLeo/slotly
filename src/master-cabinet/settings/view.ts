@@ -68,7 +68,7 @@ function localDate(instant: string, timeZone: string, locale: Locale) {
   return formatDate(new Date(instant), timeZone, locale);
 }
 
-function endonym(locale: Locale): string {
+export function endonym(locale: Locale): string {
   const name = new Intl.DisplayNames([locale], { type: "language" }).of(locale);
   return name
     ? name.charAt(0).toLocaleUpperCase(locale) + name.slice(1)

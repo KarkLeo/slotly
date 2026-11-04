@@ -30,6 +30,11 @@ const toastKeys = {
   slugChanged: true,
   pagePublished: true,
   pageUnpublished: true,
+  serviceAdded: true,
+  serviceArchived: true,
+  serviceRestored: true,
+  categoryAdded: true,
+  categoryDeleted: true,
 } satisfies Record<ToastKey, true>;
 
 export function encodeFlash(toast: ActionToast): string {
