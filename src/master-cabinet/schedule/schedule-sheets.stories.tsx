@@ -85,7 +85,10 @@ type User = Parameters<NonNullable<Story["play"]>>[0]["userEvent"];
 const openDay = async (canvas: HTMLElement, user: User, name: string) => {
   await user.click(dayRow(canvas, name));
   const dialog = await screen.findByRole("dialog", { name });
-  settle();
+  await waitFor(() => {
+    settle();
+    expect(dialog).toBeVisible();
+  });
   return dialog;
 };
 
@@ -167,7 +170,9 @@ export const DayTurnedOff: Story = {
       within(dialog).getByRole("button", { name: s.intervals.remove }),
     );
     await expect(working).not.toBeChecked();
-    await expect(within(dialog).getByText(s.day.offHint)).toBeVisible();
+    await waitFor(() =>
+      expect(within(dialog).getByText(s.day.offHint)).toBeVisible(),
+    );
 
     await userEvent.click(working);
     await expect(working).toBeChecked();
@@ -248,9 +253,11 @@ export const DayOutsideAppointments: Story = {
         }),
       ).getByRole("button", { name: s.intervals.remove }),
     );
-    await expect(
-      within(dialog).getByText(format("outside.outside", { count: 1 })),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(
+        within(dialog).getByText(format("outside.outside", { count: 1 })),
+      ).toBeVisible(),
+    );
     const olena = view.appointments.find((a) => a.id === "olena")!;
     await expect(within(dialog).getByRole("listitem")).toHaveTextContent(
       appointmentLine(olena, locale),
@@ -423,14 +430,18 @@ export const ExceptionVacationWithAppointments: Story = {
     await expect(within(dialog).getByLabelText(s.exception.to)).toHaveValue(
       "2026-12-02",
     );
-    await expect(
-      within(dialog).getByText(format("exception.span", { count: 8 }), {
-        exact: false,
-      }),
-    ).toBeVisible();
-    await expect(
-      within(dialog).getByText(format("outside.outside", { count: 2 })),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(
+        within(dialog).getByText(format("exception.span", { count: 8 }), {
+          exact: false,
+        }),
+      ).toBeVisible(),
+    );
+    await waitFor(() =>
+      expect(
+        within(dialog).getByText(format("outside.outside", { count: 2 })),
+      ).toBeVisible(),
+    );
     const items = within(dialog).getAllByRole("listitem");
     await expect(items).toHaveLength(2);
     for (const id of ["iryna", "sofia"]) {
@@ -509,7 +520,9 @@ export const ExceptionReplaces: Story = {
     await expect(within(dialog).getByLabelText(s.exception.to)).toHaveValue(
       "2026-11-27",
     );
-    await expect(within(dialog).getByText(replaces)).toBeVisible();
+    await waitFor(() =>
+      expect(within(dialog).getByText(replaces)).toBeVisible(),
+    );
   },
 };
 
@@ -530,9 +543,11 @@ export const ExceptionShortened: Story = {
       scheduleStories.releasedDay,
       1,
     );
-    await expect(
-      within(dialog).getByText(format("outside.outside", { count: 3 })),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(
+        within(dialog).getByText(format("outside.outside", { count: 3 })),
+      ).toBeVisible(),
+    );
 
     setDate(dialog, s.exception.to, "2026-11-28");
     const warning = await waitFor(() =>
@@ -577,9 +592,11 @@ export const ExceptionDeleteWarns: Story = {
     await expect(
       within(dialog).queryByText(format("outside.outside", { count: 1 })),
     ).toBeNull();
-    await expect(
-      within(dialog).getByText(format("outside.afterDelete", { count: 1 })),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(
+        within(dialog).getByText(format("outside.afterDelete", { count: 1 })),
+      ).toBeVisible(),
+    );
     await expect(within(dialog).getByRole("listitem")).toHaveTextContent(
       appointmentLine(
         view.appointments.find((a) => a.id === "marichka")!,
@@ -688,7 +705,9 @@ export const ParamNotice: Story = {
       globals.locale,
       "notice",
     );
-    await expect(within(dialog).getByText(s.params.notice.hint)).toBeVisible();
+    await waitFor(() =>
+      expect(within(dialog).getByText(s.params.notice.hint)).toBeVisible(),
+    );
     await expect(
       within(dialog).getByRole("radio", {
         name: optionName(globals.locale, "notice", 120),
@@ -733,9 +752,9 @@ export const ParamDeadlineWarns: Story = {
         name: optionName(globals.locale, "deadline", 1440),
       }),
     );
-    await expect(
-      within(dialog).getByText(s.params.deadlineWarning),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(within(dialog).getByText(s.params.deadlineWarning)).toBeVisible(),
+    );
     await userEvent.click(
       within(dialog).getByRole("radio", {
         name: optionName(globals.locale, "deadline", 720),
@@ -811,16 +830,16 @@ export const AutoConfirmOff: Story = {
     const s = scheduleTextsOf(globals.locale).schedule;
     const toggle = autoConfirmSwitch(canvasElement, s.autoConfirm.label);
     await expect(toggle).toBeChecked();
-    await expect(
-      within(canvasElement).getByText(s.autoConfirm.on),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(within(canvasElement).getByText(s.autoConfirm.on)).toBeVisible(),
+    );
 
     await userEvent.click(toggle);
     await waitFor(() => expect(toggle).not.toBeChecked());
     await expect(toggle).toHaveAttribute("aria-disabled", "true");
-    await expect(
-      within(canvasElement).getByText(s.autoConfirm.off),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(within(canvasElement).getByText(s.autoConfirm.off)).toBeVisible(),
+    );
     const data = mocked(setAutoConfirm).mock.calls[0][1];
     await expect(data.get("autoConfirm")).toBe("false");
   },
@@ -863,9 +882,9 @@ export const AutoConfirmFails: Story = {
     );
     await waitFor(() => expect(toggle).toBeChecked());
     await expect(toggle).not.toHaveAttribute("aria-disabled");
-    await expect(
-      within(canvasElement).getByText(s.autoConfirm.on),
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(within(canvasElement).getByText(s.autoConfirm.on)).toBeVisible(),
+    );
   },
 };
 
