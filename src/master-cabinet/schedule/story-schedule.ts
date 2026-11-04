@@ -102,6 +102,13 @@ export const scheduleStories = {
     ...filled,
     template: { ...week, 1: [{ start: 550, end: 840 }] },
   },
+  // 45 minutes is off the notice list, as if an agent had saved it.
+  offListParam: { ...filled, params: { ...filled.params, notice: 45 } },
+  zeroParams: {
+    ...filled,
+    params: { ...filled.params, notice: 0, deadline: 0 },
+  },
+  autoConfirmOff: { ...filled, autoConfirm: false },
   threeIntervals: {
     ...filled,
     template: {
@@ -138,4 +145,9 @@ export const toastsOf = (locale: unknown) =>
 export const exceptionRow = (canvas: HTMLElement, dates: string) =>
   within(canvas).getByRole("button", {
     name: (name) => name.startsWith(dates),
+  });
+
+export const paramRow = (canvas: HTMLElement, label: string) =>
+  within(canvas).getByRole("button", {
+    name: (name) => name.startsWith(label),
   });

@@ -16,19 +16,31 @@ import {
   settle,
   stubOnLine,
 } from "@/components/ui/story-helpers";
-import { deleteException, saveException, saveTemplateDays } from "./actions";
+import {
+  deleteException,
+  saveException,
+  saveTemplateDays,
+  setAutoConfirm,
+  updateBookingParam,
+} from "./actions";
 import { ScheduleScreen } from "./schedule-screen";
 import {
   dayRow,
   exceptionRow,
   localeOf,
+  paramRow,
   scheduleFormatterOf,
   scheduleStories,
   scheduleTextsOf,
   scheduleView,
   toastsOf,
 } from "./story-schedule";
-import { appointmentLine, type ScheduleData } from "./view";
+import {
+  appointmentLine,
+  paramLabel,
+  type ParamKey,
+  type ScheduleData,
+} from "./view";
 
 const saved = { toast: { type: "success", key: "settingsSaved" } } as const;
 
@@ -639,5 +651,235 @@ export const ExceptionOffline: Story = {
     await expect(
       dialog.querySelector("[data-slot=sheet-body]"),
     ).toHaveAttribute("tabindex", "0");
+  },
+};
+
+const openParam = async (
+  canvas: HTMLElement,
+  user: User,
+  locale: unknown,
+  key: ParamKey,
+) => {
+  const label = scheduleTextsOf(locale).schedule.params[key].label;
+  await user.click(paramRow(canvas, label));
+  const dialog = await screen.findByRole("dialog", { name: label });
+  await waitFor(() => {
+    settle();
+    expect(dialog).toBeVisible();
+  });
+  return dialog;
+};
+
+const optionName = (locale: unknown, key: ParamKey, value: number): string =>
+  paramLabel(key, value, localeOf(locale)) ??
+  scheduleTextsOf(locale).schedule.params[
+    key === "notice" ? "noLimit" : "untilStart"
+  ];
+
+export const ParamNotice: Story = {
+  beforeEach: () => {
+    mocked(updateBookingParam).mockResolvedValue(saved);
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const dialog = await openParam(
+      canvasElement,
+      userEvent,
+      globals.locale,
+      "notice",
+    );
+    await expect(within(dialog).getByText(s.params.notice.hint)).toBeVisible();
+    await expect(
+      within(dialog).getByRole("radio", {
+        name: optionName(globals.locale, "notice", 120),
+      }),
+    ).toBeChecked();
+    const save = within(dialog).getByRole("button", { name: s.save });
+    await expect(save).toBeDisabled();
+
+    await userEvent.click(
+      within(dialog).getByRole("radio", {
+        name: optionName(globals.locale, "notice", 1440),
+      }),
+    );
+    await expect(save).toBeEnabled();
+    await userEvent.click(save);
+    await waitFor(() =>
+      expect(
+        screen.getByText(toastsOf(globals.locale).settingsSaved),
+      ).toBeVisible(),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    const data = mocked(updateBookingParam).mock.calls[0][1];
+    await expect(data.get("key")).toBe("notice");
+    await expect(data.get("value")).toBe("1440");
+  },
+};
+
+export const ParamDeadlineWarns: Story = {
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const dialog = await openParam(
+      canvasElement,
+      userEvent,
+      globals.locale,
+      "deadline",
+    );
+    await expect(
+      within(dialog).queryByText(s.params.deadlineWarning),
+    ).toBeNull();
+    await userEvent.click(
+      within(dialog).getByRole("radio", {
+        name: optionName(globals.locale, "deadline", 1440),
+      }),
+    );
+    await expect(
+      within(dialog).getByText(s.params.deadlineWarning),
+    ).toBeVisible();
+    await userEvent.click(
+      within(dialog).getByRole("radio", {
+        name: optionName(globals.locale, "deadline", 720),
+      }),
+    );
+    await expect(
+      within(dialog).queryByText(s.params.deadlineWarning),
+    ).toBeNull();
+    await expect(
+      within(dialog).getByRole("button", { name: s.save }),
+    ).toBeDisabled();
+  },
+};
+
+export const ParamOffListValue: Story = {
+  parameters: { data: scheduleStories.offListParam },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const text = optionName(globals.locale, "notice", 45);
+    await expect(
+      paramRow(canvasElement, s.params.notice.label),
+    ).toHaveTextContent(text);
+    const dialog = await openParam(
+      canvasElement,
+      userEvent,
+      globals.locale,
+      "notice",
+    );
+    await expect(
+      within(dialog).getByRole("radio", { name: text }),
+    ).toBeChecked();
+    await expect(
+      within(dialog).getByRole("button", { name: s.save }),
+    ).toBeDisabled();
+  },
+};
+
+export const ParamZeroLabels: Story = {
+  parameters: { data: scheduleStories.zeroParams },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    await expect(
+      paramRow(canvasElement, s.params.notice.label),
+    ).toHaveTextContent(s.params.noLimit);
+    await expect(
+      paramRow(canvasElement, s.params.deadline.label),
+    ).toHaveTextContent(s.params.untilStart);
+    const dialog = await openParam(
+      canvasElement,
+      userEvent,
+      globals.locale,
+      "deadline",
+    );
+    await expect(
+      within(dialog).getByRole("radio", { name: s.params.untilStart }),
+    ).toBeChecked();
+  },
+};
+
+const autoConfirmSwitch = (canvas: HTMLElement, label: string) =>
+  within(canvas).getByRole("switch", { name: label });
+
+export const AutoConfirmOff: Story = {
+  beforeEach: () => {
+    // Held open so the requested value stays on screen; released on teardown so no transition leaks into the next story.
+    let release: () => void = () => {};
+    mocked(setAutoConfirm).mockImplementation(
+      () => new Promise((resolve) => (release = () => resolve({}))),
+    );
+    return () => release();
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const toggle = autoConfirmSwitch(canvasElement, s.autoConfirm.label);
+    await expect(toggle).toBeChecked();
+    await expect(
+      within(canvasElement).getByText(s.autoConfirm.on),
+    ).toBeVisible();
+
+    await userEvent.click(toggle);
+    await waitFor(() => expect(toggle).not.toBeChecked());
+    await expect(toggle).toHaveAttribute("aria-disabled", "true");
+    await expect(
+      within(canvasElement).getByText(s.autoConfirm.off),
+    ).toBeVisible();
+    const data = mocked(setAutoConfirm).mock.calls[0][1];
+    await expect(data.get("autoConfirm")).toBe("false");
+  },
+};
+
+export const AutoConfirmSaved: Story = {
+  parameters: { data: scheduleStories.autoConfirmOff },
+  beforeEach: () => {
+    mocked(setAutoConfirm).mockResolvedValue(saved);
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const toggle = autoConfirmSwitch(canvasElement, s.autoConfirm.label);
+    await expect(toggle).not.toBeChecked();
+    await userEvent.click(toggle);
+    await waitFor(() =>
+      expect(
+        screen.getByText(toastsOf(globals.locale).settingsSaved),
+      ).toBeVisible(),
+    );
+    const data = mocked(setAutoConfirm).mock.calls[0][1];
+    await expect(data.get("autoConfirm")).toBe("true");
+  },
+};
+
+export const AutoConfirmFails: Story = {
+  beforeEach: () => {
+    mocked(setAutoConfirm).mockResolvedValue({
+      toast: { type: "error", key: "unexpected" },
+    });
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const toggle = autoConfirmSwitch(canvasElement, s.autoConfirm.label);
+    await userEvent.click(toggle);
+    await waitFor(() =>
+      expect(
+        screen.getByText(toastsOf(globals.locale).unexpected),
+      ).toBeVisible(),
+    );
+    await waitFor(() => expect(toggle).toBeChecked());
+    await expect(toggle).not.toHaveAttribute("aria-disabled");
+    await expect(
+      within(canvasElement).getByText(s.autoConfirm.on),
+    ).toBeVisible();
+  },
+};
+
+export const AutoConfirmOffline: Story = {
+  beforeEach: () => {
+    stubOnLine(false);
+    return restoreOnLine;
+  },
+  play: async ({ canvasElement, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    await waitFor(() =>
+      expect(
+        autoConfirmSwitch(canvasElement, s.autoConfirm.label),
+      ).toHaveAttribute("aria-disabled", "true"),
+    );
   },
 };

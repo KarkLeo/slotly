@@ -334,7 +334,8 @@
     "schedule": {
       "groups": {
         "template": "Work template",
-        "exceptions": "Exceptions"
+        "exceptions": "Exceptions",
+        "params": "Booking parameters"
       },
       "dayOff": "Day off",
       "emptyTemplate": "The work template is empty, so clients can't book. Start with any day.",
@@ -376,6 +377,32 @@
       "outside": {
         "outside": "There {count, plural, one {is already # appointment} other {are already # appointments}} outside this time. They will stay and clients will get nothing: move or cancel them yourself if needed.",
         "afterDelete": "If you delete the exception, these will fall outside the work template:"
+      },
+      "params": {
+        "step": {
+          "label": "Grid step",
+          "hint": "How often clients are offered a start time: 10:00, 10:15, 10:30."
+        },
+        "notice": {
+          "label": "Minimum notice",
+          "hint": "Clients can't book later than this before the start. You can book a client at any time yourself."
+        },
+        "horizon": {
+          "label": "Booking horizon",
+          "hint": "How many days ahead a client can book. Bookings already made won't change."
+        },
+        "deadline": {
+          "label": "Cancel deadline",
+          "hint": "How long before the start a client can still cancel or reschedule on their own."
+        },
+        "deadlineWarning": "The new deadline also applies to bookings already made.",
+        "noLimit": "No limit",
+        "untilStart": "Until the very start"
+      },
+      "autoConfirm": {
+        "label": "Auto-confirm",
+        "on": "New bookings are confirmed at once. The ones already waiting are up to you",
+        "off": "Every new booking waits for your decision for up to 24 h"
       }
     },
     "stub": {

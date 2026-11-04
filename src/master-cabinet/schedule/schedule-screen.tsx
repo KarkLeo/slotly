@@ -3,8 +3,10 @@ import type { Theme } from "@/theme/theme";
 import { PageHeader } from "../page-header";
 import { SettingsGroup } from "../settings/settings-row";
 import { SettingsWarning } from "../settings/settings-sheet";
+import { AutoConfirmRow } from "./auto-confirm-row";
 import { DaySheet } from "./day-sheet";
 import { ExceptionRows } from "./exceptions-group";
+import { ParamSheet } from "./param-sheet";
 import type { ScheduleView } from "./view";
 
 export function ScheduleScreen({
@@ -49,6 +51,12 @@ export function ScheduleScreen({
             </p>
           )}
         </div>
+        <SettingsGroup title={t("schedule.groups.params")}>
+          {view.params.map((param) => (
+            <ParamSheet key={param.key} param={param} />
+          ))}
+          <AutoConfirmRow autoConfirm={view.autoConfirm} />
+        </SettingsGroup>
       </div>
     </>
   );
