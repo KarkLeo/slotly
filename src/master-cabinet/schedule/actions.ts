@@ -117,6 +117,8 @@ export async function saveException(
     ...(replacedFrom !== undefined && { replaced_from: replacedFrom }),
     ...(replacedTo !== undefined && { replaced_to: replacedTo }),
   });
+  // The sheet was open past midnight: refresh so it shows the new today.
+  if (error?.message.includes("invalid_range")) refresh();
   return saved(error);
 }
 

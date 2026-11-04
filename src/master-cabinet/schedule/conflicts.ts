@@ -77,21 +77,26 @@ function templateHours(schedule: Schedule, date: string): Interval[] {
   return schedule.template[isoWeekday(date)] ?? [];
 }
 
-// hoursOf returns null for a date the change does not affect.
+function savedHours(schedule: Schedule, date: string): Interval[] {
+  const exception = schedule.exceptions.find((e) => e.day === date);
+  return exception ? exception.hours : templateHours(schedule, date);
+}
+
+// changed returns the new hours of an affected date and null for any other.
 function outside(
   appointments: LocalAppointment[],
-  hoursOf: (date: string) => Interval[] | null,
+  schedule: Schedule,
+  changed: (date: string) => Interval[] | null,
 ): LocalAppointment[] {
-  return appointments.filter((appointment) =>
-    appointment.parts.some((part) => {
-      const hours = hoursOf(part.date);
-      return (
-        hours !== null &&
-        !mergeIntervals(hours).some(
+  return appointments.filter(
+    (appointment) =>
+      appointment.parts.some((part) => changed(part.date) !== null) &&
+      appointment.parts.some((part) => {
+        const hours = changed(part.date) ?? savedHours(schedule, part.date);
+        return !mergeIntervals(hours).some(
           (i) => i.start <= part.start && part.end <= i.end,
-        )
-      );
-    }),
+        );
+      }),
   );
 }
 
@@ -102,7 +107,7 @@ export function outsideAfterTemplateChange(
   hours: Interval[],
 ): LocalAppointment[] {
   const excepted = new Set(schedule.exceptions.map((e) => e.day));
-  return outside(appointments, (date) =>
+  return outside(appointments, schedule, (date) =>
     weekdays.includes(isoWeekday(date)) && !excepted.has(date) ? hours : null,
   );
 }
@@ -118,7 +123,7 @@ export function outsideAfterExceptionChange(
   },
 ): LocalAppointment[] {
   const { from, to, hours, replaced } = change;
-  return outside(appointments, (date) => {
+  return outside(appointments, schedule, (date) => {
     if (date >= from && date <= to) return hours;
     if (replaced && date >= replaced.from && date <= replaced.to) {
       return templateHours(schedule, date);
@@ -132,7 +137,7 @@ export function outsideAfterExceptionDelete(
   schedule: Schedule,
   period: ExceptionPeriod,
 ): LocalAppointment[] {
-  return outside(appointments, (date) =>
+  return outside(appointments, schedule, (date) =>
     date >= period.from && date <= period.to
       ? templateHours(schedule, date)
       : null,
@@ -141,9 +146,10 @@ export function outsideAfterExceptionDelete(
 
 export function outsideInPeriod(
   appointments: LocalAppointment[],
+  schedule: Schedule,
   period: ExceptionPeriod,
 ): LocalAppointment[] {
-  return outside(appointments, (date) =>
+  return outside(appointments, schedule, (date) =>
     date >= period.from && date <= period.to ? period.hours : null,
   );
 }

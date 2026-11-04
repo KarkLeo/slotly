@@ -5,6 +5,7 @@ import {
   type ReactElement,
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
 } from "react";
@@ -32,15 +33,13 @@ import {
   outsideAfterExceptionDelete,
 } from "./conflicts";
 import { maxPeriodDays, overlappingPeriods, periodLength } from "./exceptions";
-import { formatHours, type Interval } from "./hours";
+import { defaultHours, formatHours } from "./hours";
 import { IntervalsEditor } from "./intervals-editor";
 import { OutsideWarning } from "./outside-warning";
 import type { ScheduleView } from "./view";
 
 type Period = ScheduleView["periods"][number];
 type Kind = "off" | "hours";
-
-const defaultHours: Interval[] = [{ start: 600, end: 1140 }];
 
 export function ExceptionSheet({
   view,
@@ -79,11 +78,15 @@ function ExceptionForm({
   const t = useTranslations("MasterCabinet.schedule");
   const online = useOnline();
   const formRef = useRef<HTMLFormElement>(null);
+  const errorId = useId();
   const tomorrow = addDays(view.today, 1);
   const initialKind: Kind = period?.hours.length ? "hours" : "off";
   const [kind, setKind] = useState<Kind>(initialKind);
-  const [from, setFrom] = useState(period?.from ?? tomorrow);
-  const [to, setTo] = useState(period?.to ?? tomorrow);
+  // The last valid dates, committed on blur, and the raw text being typed.
+  const [committedFrom, setCommittedFrom] = useState(period?.from ?? tomorrow);
+  const [committedTo, setCommittedTo] = useState(period?.to ?? tomorrow);
+  const [fromText, setFromText] = useState(committedFrom);
+  const [toText, setToText] = useState(committedTo);
   const [intervals, setIntervals] = useState(
     period?.hours.length ? period.hours : defaultHours,
   );
@@ -98,6 +101,15 @@ function ExceptionForm({
     {},
   );
 
+  const clampedFrom = !fromText
+    ? committedFrom
+    : fromText < view.today
+      ? view.today
+      : fromText;
+  const clampedTo = !toText ? committedTo : toText;
+  const from = clampedFrom;
+  const to = clampedTo < from ? from : clampedTo;
+
   const literal = kind === "hours" ? formatHours(intervals) : "{}";
   const invalid =
     state.fieldError === "intervalsInvalid" && state.submittedHours === literal;
@@ -109,16 +121,19 @@ function ExceptionForm({
     from === period.from &&
     to === period.to &&
     literal === (period.hours.length > 0 ? formatHours(period.hours) : "{}");
-  const replaced = overlappingPeriods(view.periods, from, to, period);
+  const replaced = overlappingPeriods(
+    view.periods,
+    committedFrom,
+    committedTo,
+    period,
+  );
 
-  const changeFrom = (value: string) => {
-    if (!value) return;
-    const next = value < view.today ? view.today : value;
-    setFrom(next);
-    if (to < next) setTo(next);
-  };
-  const changeTo = (value: string) => {
-    if (value) setTo(value < from ? from : value);
+  // Chromium fires input per typed segment, so clamping waits for blur.
+  const commit = () => {
+    setCommittedFrom(from);
+    setCommittedTo(to);
+    setFromText(from);
+    setToText(to);
   };
 
   // The field at fault may be scrolled out of the sheet.
@@ -142,6 +157,8 @@ function ExceptionForm({
         >
           <input type="hidden" name="kind" value={kind} />
           <input type="hidden" name="hours" value={literal} />
+          <input type="hidden" name="from" value={from} />
+          <input type="hidden" name="to" value={to} />
           {period && (
             <>
               <input type="hidden" name="replacedFrom" value={period.from} />
@@ -149,20 +166,20 @@ function ExceptionForm({
             </>
           )}
           <ToggleGroup
-            variant="outline"
+            spacing={0.5}
             aria-label={t("exception.kind")}
             value={[kind]}
             disabled={!online}
             onValueChange={(next) => {
               if (next[0]) setKind(next[0] as Kind);
             }}
-            className="w-full"
+            className="w-full rounded-xl bg-muted p-[3px]"
           >
             {(["off", "hours"] as const).map((value) => (
               <ToggleGroupItem
                 key={value}
                 value={value}
-                className="min-w-0 flex-1 shrink px-2 aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-accent-foreground"
+                className="h-9.5 min-w-0 flex-1 shrink rounded-[10px] px-2 text-sm font-semibold text-muted-foreground hover:bg-transparent aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:hover:bg-background"
               >
                 {t(`exception.${value}`)}
               </ToggleGroupItem>
@@ -173,29 +190,31 @@ function ExceptionForm({
               {t("exception.from")}
               <Input
                 type="date"
-                name="from"
                 min={view.today}
-                value={from}
+                value={fromText}
                 disabled={!online}
                 aria-invalid={tooLong || undefined}
-                onChange={(event) => changeFrom(event.target.value)}
+                aria-describedby={tooLong ? errorId : undefined}
+                onChange={(event) => setFromText(event.target.value)}
+                onBlur={commit}
               />
             </Label>
             <Label className="flex flex-col items-stretch gap-1.5 text-sm font-medium">
               {t("exception.to")}
               <Input
                 type="date"
-                name="to"
                 min={from}
-                value={to}
+                value={toText}
                 disabled={!online}
                 aria-invalid={tooLong || undefined}
-                onChange={(event) => changeTo(event.target.value)}
+                aria-describedby={tooLong ? errorId : undefined}
+                onChange={(event) => setToText(event.target.value)}
+                onBlur={commit}
               />
             </Label>
           </div>
           {tooLong ? (
-            <FieldError>
+            <FieldError id={errorId}>
               {t("exception.tooLong", { max: maxPeriodDays })}
             </FieldError>
           ) : (
@@ -223,8 +242,8 @@ function ExceptionForm({
               view.appointments,
               view.schedule,
               {
-                from,
-                to,
+                from: committedFrom,
+                to: committedTo,
                 hours: kind === "hours" ? intervals : [],
                 replaced: period,
               },

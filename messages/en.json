@@ -372,6 +372,7 @@
         "remove": "Remove interval",
         "add": "+ Add interval",
         "invalid": "Intervals overlap or an end is before its start.",
+        "empty": "Add at least one interval.",
         "midnight": "Until 24:00: an appointment can run into the next day if that day starts at 00:00."
       },
       "outside": {

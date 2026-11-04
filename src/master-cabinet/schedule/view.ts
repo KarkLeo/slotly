@@ -46,7 +46,7 @@ export type ScheduleView = {
     outsideCount: number;
   })[];
   templateEmpty: boolean;
-  params: { key: ParamKey; value: number; label: string | null }[];
+  params: { key: ParamKey; value: number }[];
   autoConfirm: boolean;
 };
 
@@ -62,7 +62,7 @@ const paramLists: Record<ParamKey, number[]> = {
 // A value set outside the list, for example by an agent, stays selectable.
 export function paramOptions(key: ParamKey, current: number): number[] {
   const options = paramLists[key];
-  return (options.includes(current) ? options : [...options, current]).sort(
+  return (options.includes(current) ? options : [...options, current]).toSorted(
     (a, b) => a - b,
   );
 }
@@ -83,6 +83,9 @@ export function paramLabel(
 ): string | null {
   if (value === 0) return null;
   if (key === "horizon") return days(value, locale);
+  // The cancel deadline reads in hours up to a day: "24 год", then "2 дні".
+  if (key === "deadline" && value === 1440)
+    return formatDuration(value, locale);
   return value % 1440 === 0
     ? days(value / 1440, locale)
     : formatDuration(value, locale);
@@ -160,7 +163,7 @@ export function toScheduleView(
       ...period,
       dates: datesLabel(period.from, period.to, locale),
       length: periodLength(period.from, period.to),
-      outsideCount: outsideInPeriod(appointments, period).length,
+      outsideCount: outsideInPeriod(appointments, schedule, period).length,
     })),
     templateEmpty: weekdays.every(
       (weekday) => (data.template[weekday] ?? []).length === 0,
@@ -168,7 +171,6 @@ export function toScheduleView(
     params: paramKeys.map((key) => ({
       key,
       value: data.params[key],
-      label: paramLabel(key, data.params[key], locale),
     })),
     autoConfirm: data.autoConfirm,
   };

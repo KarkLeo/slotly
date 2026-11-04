@@ -39,7 +39,12 @@ describe("paramLabel", () => {
 
   it("formats whole days as days", () => {
     expect(paramLabel("notice", 1440, "uk")).toBe("1 день");
+    expect(paramLabel("deadline", 2880, "uk")).toBe("2 дні");
     expect(paramLabel("horizon", 30, "uk")).toBe("30 днів");
+  });
+
+  it("reads a one-day cancel deadline as 24 hours", () => {
+    expect(paramLabel("deadline", 1440, "uk")).toMatch(/^24\s?г/);
   });
 
   it("formats other minutes as a duration", () => {

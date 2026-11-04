@@ -14,16 +14,22 @@ export function OutsideWarning({
 }) {
   const t = useTranslations("MasterCabinet.schedule.outside");
   const locale = useLocale() as Locale;
-  if (appointments.length === 0) return null;
 
+  // The wrapper stays mounted so a screen reader announces the warning; empty, it cancels the parent's gap.
   return (
-    <div className="rounded-lg bg-warning-bg p-3 text-sm text-warning wrap-anywhere">
-      {t(text, { count: appointments.length })}
-      <ul className="mt-2 flex flex-col gap-1">
-        {appointments.map((appointment) => (
-          <li key={appointment.id}>{appointmentLine(appointment, locale)}</li>
-        ))}
-      </ul>
+    <div aria-live="polite" className="empty:-mt-4">
+      {appointments.length > 0 && (
+        <div className="rounded-lg bg-warning-bg p-3 text-sm text-warning wrap-anywhere">
+          {t(text, { count: appointments.length })}
+          <ul className="mt-2 flex flex-col gap-1">
+            {appointments.map((appointment) => (
+              <li key={appointment.id}>
+                {appointmentLine(appointment, locale)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

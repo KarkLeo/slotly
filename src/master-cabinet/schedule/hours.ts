@@ -1,5 +1,8 @@
 export type Interval = { start: number; end: number };
 
+// The hours a new working day or special-hours exception starts with.
+export const defaultHours: Interval[] = [{ start: 600, end: 1140 }];
+
 const dayMinutes = 1440;
 const grid = 5;
 const choiceStep = 15;

@@ -170,6 +170,7 @@ export const DayTurnedOff: Story = {
       within(dialog).getByRole("button", { name: s.intervals.remove }),
     );
     await expect(working).not.toBeChecked();
+    await expect(working).toHaveFocus();
     await waitFor(() =>
       expect(within(dialog).getByText(s.day.offHint)).toBeVisible(),
     );
@@ -268,8 +269,30 @@ export const DayOutsideAppointments: Story = {
   },
 };
 
+export const DayRemoveIntervalFocus: Story = {
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const dialog = await openDay(
+      canvasElement,
+      userEvent,
+      mondayName(globals.locale),
+    );
+    await userEvent.click(
+      within(interval(dialog, 1, globals.locale)).getByRole("button", {
+        name: s.intervals.remove,
+      }),
+    );
+    await expect(
+      within(dialog).getByRole("button", { name: s.intervals.add }),
+    ).toHaveFocus();
+  },
+};
+
 export const DayOffGridValue: Story = {
   parameters: { data: scheduleStories.offGrid },
+  beforeEach: () => {
+    mocked(saveTemplateDays).mockResolvedValue(saved);
+  },
   play: async ({ canvasElement, userEvent, globals }) => {
     const s = scheduleTextsOf(globals.locale).schedule;
     const dialog = await openDay(
@@ -293,6 +316,10 @@ export const DayOffGridValue: Story = {
         name: s.intervals.start,
       }),
     ).toHaveTextContent("09:10");
+    await userEvent.click(save);
+    await waitFor(() => expect(saveTemplateDays).toHaveBeenCalled());
+    const data = mocked(saveTemplateDays).mock.calls[0][1];
+    await expect(data.get("hours")).toBe("{[550,840),[900,1140)}");
   },
 };
 
@@ -365,10 +392,63 @@ const openPeriod = async (
   return dialog;
 };
 
-const setDate = (dialog: HTMLElement, label: string, value: string) =>
+const typeDate = (dialog: HTMLElement, label: string, value: string) =>
   fireEvent.change(within(dialog).getByLabelText(label), {
     target: { value },
   });
+
+const blurDate = (dialog: HTMLElement, label: string) => {
+  const input = within(dialog).getByLabelText(label);
+  fireEvent.blur(input);
+  fireEvent.focusOut(input);
+};
+
+const setDate = (dialog: HTMLElement, label: string, value: string) => {
+  typeDate(dialog, label, value);
+  blurDate(dialog, label);
+};
+
+export const ExceptionTypedDates: Story = {
+  beforeEach: () => {
+    mocked(saveException).mockResolvedValue(saved);
+  },
+  play: async ({ canvasElement, userEvent, globals }) => {
+    const s = scheduleTextsOf(globals.locale).schedule;
+    const dialog = await openAdd(canvasElement, userEvent, globals.locale);
+    const from = within(dialog).getByLabelText(s.exception.from);
+    const to = within(dialog).getByLabelText(s.exception.to);
+
+    // Chromium reports the day typed so far as a whole date, before the next digit.
+    typeDate(dialog, s.exception.from, "2026-11-01");
+    await expect(from).toHaveValue("2026-11-01");
+    typeDate(dialog, s.exception.from, "2026-11-15");
+    await expect(from).toHaveValue("2026-11-15");
+    blurDate(dialog, s.exception.from);
+    await expect(from).toHaveValue("2026-11-15");
+    await expect(to).toHaveValue("2026-11-15");
+
+    typeDate(dialog, s.exception.to, "2026-11-10");
+    await expect(to).toHaveValue("2026-11-10");
+    blurDate(dialog, s.exception.to);
+    await expect(to).toHaveValue("2026-11-15");
+
+    typeDate(dialog, s.exception.to, "");
+    blurDate(dialog, s.exception.to);
+    await expect(to).toHaveValue("2026-11-15");
+
+    typeDate(dialog, s.exception.from, "2026-10-01");
+    blurDate(dialog, s.exception.from);
+    await expect(from).toHaveValue("2026-11-04");
+    await expect(to).toHaveValue("2026-11-15");
+
+    typeDate(dialog, s.exception.to, "2026-11-20");
+    await userEvent.click(within(dialog).getByRole("button", { name: s.save }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    const data = mocked(saveException).mock.calls[0][1];
+    await expect(data.get("from")).toBe("2026-11-04");
+    await expect(data.get("to")).toBe("2026-11-20");
+  },
+};
 
 export const ExceptionAddOff: Story = {
   beforeEach: () => {
@@ -487,11 +567,17 @@ export const ExceptionSpecialHours: Story = {
     await userEvent.click(
       within(dialog).getByRole("button", { name: s.intervals.remove }),
     );
+    await expect(
+      within(dialog).getByRole("button", { name: s.intervals.add }),
+    ).toHaveFocus();
     await userEvent.click(within(dialog).getByRole("button", { name: s.save }));
     await expect(await within(dialog).findByRole("alert")).toHaveTextContent(
-      s.intervals.invalid,
+      s.intervals.empty,
     );
     await expect(screen.getByRole("dialog")).toBe(dialog);
+    await expect(
+      within(dialog).getByRole("button", { name: s.intervals.add }),
+    ).toHaveAccessibleDescription(s.intervals.empty);
 
     await userEvent.click(
       within(dialog).getByRole("button", { name: s.intervals.add }),

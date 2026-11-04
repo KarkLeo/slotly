@@ -16,14 +16,12 @@ import {
 } from "../settings/settings-sheet";
 import { saveTemplateDays, type ScheduleActionState } from "./actions";
 import { outsideAfterTemplateChange } from "./conflicts";
-import { formatHours, type Interval } from "./hours";
+import { defaultHours, formatHours } from "./hours";
 import { IntervalsEditor } from "./intervals-editor";
 import { OutsideWarning } from "./outside-warning";
 import type { ScheduleView } from "./view";
 
 type Day = ScheduleView["days"][number];
-
-const defaultHours: Interval[] = [{ start: 600, end: 1140 }];
 
 export function DaySheet({ view, day }: { view: ScheduleView; day: Day }) {
   const t = useTranslations("MasterCabinet.schedule");
@@ -57,6 +55,7 @@ function DayForm({
   const online = useOnline();
   const id = useId();
   const formRef = useRef<HTMLFormElement>(null);
+  const workingRef = useRef<HTMLElement>(null);
   const [intervals, setIntervals] = useState(day.hours);
   const [also, setAlso] = useState<number[]>([]);
   const [state, action, pending] = useSettingsAction<ScheduleActionState>(
@@ -91,6 +90,7 @@ function DayForm({
         <Label className={optionRowClass}>
           {t("day.working")}
           <Switch
+            ref={workingRef}
             checked={intervals.length > 0}
             onCheckedChange={(on) => setIntervals(on ? defaultHours : [])}
             disabled={!online}
@@ -102,6 +102,7 @@ function DayForm({
             onChange={setIntervals}
             invalid={invalid}
             disabled={!online}
+            onEmptied={() => workingRef.current?.focus()}
           />
         ) : (
           <p className="text-sm text-muted-foreground">{t("day.offHint")}</p>
@@ -128,7 +129,7 @@ function DayForm({
                 key={other.weekday}
                 value={String(other.weekday)}
                 disabled={other.weekday === day.weekday}
-                className="min-w-0 flex-1 shrink px-1 aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-accent-foreground"
+                className="min-w-0 flex-1 shrink px-1 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary"
               >
                 {other.short}
               </ToggleGroupItem>

@@ -2,7 +2,7 @@
 
 import { XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId } from "react";
+import { useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field";
 import {
@@ -12,14 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { type Interval, timeChoices, timeLabel } from "./hours";
+import { defaultHours, type Interval, timeChoices, timeLabel } from "./hours";
 
 const lastStart = 1380;
 const dayEnd = 1440;
 
 function nextInterval(value: Interval[]): Interval {
   const last = value.at(-1);
-  if (!last) return { start: 600, end: 1140 };
+  if (!last) return defaultHours[0];
   const start = Math.min(last.end + 60, lastStart);
   return { start, end: Math.min(start + 240, dayEnd) };
 }
@@ -29,14 +29,18 @@ export function IntervalsEditor({
   onChange,
   invalid,
   disabled,
+  onEmptied,
 }: {
   value: Interval[];
   onChange: (value: Interval[]) => void;
   invalid: boolean;
   disabled: boolean;
+  // Called instead of focusing the add button when the last interval is removed.
+  onEmptied?: () => void;
 }) {
   const t = useTranslations("MasterCabinet.schedule.intervals");
   const errorId = useId();
+  const addRef = useRef<HTMLButtonElement>(null);
   const update = (index: number, patch: Partial<Interval>) =>
     onChange(value.map((i, at) => (at === index ? { ...i, ...patch } : i)));
 
@@ -74,22 +78,33 @@ export function IntervalsEditor({
             size="icon"
             aria-label={t("remove")}
             disabled={disabled}
-            onClick={() => onChange(value.filter((_, at) => at !== index))}
+            onClick={() => {
+              onChange(value.filter((_, at) => at !== index));
+              if (value.length === 1 && onEmptied) onEmptied();
+              else addRef.current?.focus();
+            }}
           >
             <XIcon aria-hidden className="size-5" />
           </Button>
         </div>
       ))}
       <Button
+        ref={addRef}
         type="button"
         variant="ghost"
         className="self-start"
         disabled={disabled}
+        aria-invalid={invalid && value.length === 0 ? true : undefined}
+        aria-describedby={invalid && value.length === 0 ? errorId : undefined}
         onClick={() => onChange([...value, nextInterval(value)])}
       >
         {t("add")}
       </Button>
-      {invalid && <FieldError id={errorId}>{t("invalid")}</FieldError>}
+      {invalid && (
+        <FieldError id={errorId}>
+          {t(value.length === 0 ? "empty" : "invalid")}
+        </FieldError>
+      )}
       {value.some((i) => i.end === dayEnd) && (
         <p className="text-sm text-muted-foreground">{t("midnight")}</p>
       )}

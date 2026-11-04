@@ -104,7 +104,36 @@ describe("outsideAfterTemplateChange", () => {
   it("does not flag an appointment ending at midnight when the next day is off", () => {
     const list = [at("2026-11-09", "22:00", 120)];
     expect(
-      outsideAfterTemplateChange(list, empty, [1], hours(1320, 1440)),
+      outsideAfterTemplateChange(list, empty, [1, 2], hours(1320, 1440)),
+    ).toEqual([]);
+  });
+
+  it("flags an appointment whose part on an unchanged day is outside", () => {
+    const list = [at("2026-11-09", "23:00", 120)];
+    expect(
+      ids(outsideAfterTemplateChange(list, empty, [1], hours(1320, 1440))),
+    ).toEqual(["2026-11-09T23:00"]);
+  });
+
+  it("does not flag a night that the unchanged next day still covers", () => {
+    const schedule: Schedule = {
+      template: { 2: hours(0, 120) },
+      exceptions: [],
+    };
+    const list = [at("2026-11-09", "23:00", 120)];
+    expect(
+      outsideAfterTemplateChange(list, schedule, [1], hours(1320, 1440)),
+    ).toEqual([]);
+  });
+
+  it("uses the exception of an unchanged day", () => {
+    const schedule: Schedule = {
+      template: {},
+      exceptions: [{ day: "2026-11-10", hours: hours(0, 120) }],
+    };
+    const list = [at("2026-11-09", "23:00", 120)];
+    expect(
+      outsideAfterTemplateChange(list, schedule, [1], hours(1320, 1440)),
     ).toEqual([]);
   });
 });
@@ -192,6 +221,8 @@ describe("outsideInPeriod", () => {
       hours: hours(600, 840),
     };
     const list = [at("2026-11-09", "11:00"), at("2026-11-10", "15:00")];
-    expect(ids(outsideInPeriod(list, period))).toEqual(["2026-11-10T15:00"]);
+    expect(ids(outsideInPeriod(list, empty, period))).toEqual([
+      "2026-11-10T15:00",
+    ]);
   });
 });

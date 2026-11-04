@@ -203,7 +203,8 @@ describe("saveException", () => {
       await expect(
         saveException({}, form({ kind: "off", ...period })),
       ).resolves.toEqual(unexpected);
-      expect(refresh).not.toHaveBeenCalled();
+      if (message === "invalid_range") expect(refresh).toHaveBeenCalled();
+      else expect(refresh).not.toHaveBeenCalled();
     },
   );
 });
